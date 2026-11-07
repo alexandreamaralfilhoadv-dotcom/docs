@@ -1,6 +1,6 @@
 ---
 name: pesquisa-jurisprudencial
-description: "Padrão de toda pesquisa jurisprudencial feita para Alexandre: primeiro consulta a pasta Jurisprudência do Google Drive dele e só depois os sites; cada precedente vem com link direto para a fonte oficial (inteiro teor ou página do processo), dados completos de identificação e menção expressa ao peso do precedente (vinculante, repetitivo, repercussão geral, súmula ou isolado), para que ele mesmo confira antes de usar. Use SEMPRE que ele pedir pesquisa de jurisprudência, precedentes, julgados, entendimento do STF/STJ/TST/TRFs/TJs, súmulas, temas repetitivos ou de repercussão geral, 'como os tribunais decidem X', 'tem julgado sobre Y', ou pedir para fundamentar uma tese com decisões, mesmo sem dizer 'jurisprudência'. Também vale quando outra skill (peticoes, materiais-estudo, lei-comentada) precisar buscar precedentes."
+description: "Padrão de toda pesquisa jurisprudencial feita para Alexandre: primeiro consulta os arquivos .md da pasta Jurisprudência do Google Drive dele (nunca os PDFs) e só depois os sites; cada precedente vem com link direto para a fonte oficial (inteiro teor ou página do processo), dados completos de identificação e menção expressa ao peso do precedente (vinculante, repetitivo, repercussão geral, súmula ou isolado), para que ele mesmo confira antes de usar. Use SEMPRE que ele pedir pesquisa de jurisprudência, precedentes, julgados, entendimento do STF/STJ/TST/TRFs/TJs, súmulas, temas repetitivos ou de repercussão geral, 'como os tribunais decidem X', 'tem julgado sobre Y', ou pedir para fundamentar uma tese com decisões, mesmo sem dizer 'jurisprudência'. Também vale quando outra skill (peticoes, materiais-estudo, lei-comentada) precisar buscar precedentes."
 ---
 
 # Pesquisa jurisprudencial: padrão de entrega
@@ -31,25 +31,41 @@ Alexandre pelo conector do Google Drive.
 
 - **Pasta:** Jurisprudência
 - **ID:** `1trEsqWYrMijLKsPDWvtypunlAi7-LnTr`
-- **Link:** https://drive.google.com/drive/folders/1trEsqWYrMijLKsPDWvtypunlAi7-LnTr
+- **Link:** https://drive.google.com/open?id=1trEsqWYrMijLKsPDWvtypunlAi7-LnTr
+
+**Pesquise somente os arquivos Markdown (`.md`) desta pasta.** Os PDFs são apenas a versão em PDF
+dos mesmos conteúdos e não trazem nada a mais. Não abra, não leia e não busque dentro dos PDFs.
 
 Como fazer:
 
-1. Liste o conteúdo da pasta (`parentId = '1trEsqWYrMijLKsPDWvtypunlAi7-LnTr'`), incluindo
-   subpastas, se houver. A pasta pode receber arquivos novos, então liste sempre; não presuma o
-   conteúdo.
-2. Busque o tema dentro dos arquivos com `fullText contains '<termo>'` restrito à pasta, usando
-   sinônimos e o número de súmula ou tema quando souber. Abra os arquivos relevantes para ler o
-   trecho exato.
-3. Hoje a pasta reúne compilações de súmulas, temas repetitivos, teses vinculantes e orientações
-   (STF, STJ, TST e AGU) e um material de revisão anotado. Use-as para identificar rapidamente
-   súmulas, temas e teses ligados à pergunta.
+1. Liste só os arquivos `.md` da pasta:
+   `parentId = '1trEsqWYrMijLKsPDWvtypunlAi7-LnTr' and mimeType = 'text/markdown'`.
+   Se algum `.md` vier com outro tipo de arquivo, aceite também os que tenham título terminado em
+   `.md`. A pasta pode receber arquivos novos, então liste sempre; não presuma o conteúdo.
+2. Busque o tema dentro desses arquivos com `fullText contains '<termo>'`, mantendo o filtro de
+   pasta e de `.md`. Use sinônimos e o número de súmula ou tema quando souber. Abra os `.md`
+   relevantes para ler o trecho exato.
+3. Comece pelo `_ÍNDICE.md`: ele mostra o que cada arquivo cobre (tribunal, tipo de enunciado e
+   disciplinas) e ajuda a escolher onde ler. Hoje a pasta tem estes arquivos `.md`:
+   - _ÍNDICE.md
+   - STF - Súmulas Vinculantes, Súmulas e Temas de Repercussão Geral.md
+   - STJ - Súmulas e Temas Repetitivos.md
+   - TST - Teses Vinculantes, Súmulas e OJs.md
+   - AGU - Súmulas e Orientações Normativas.md
+   - Revisão Procurador Federal (Dizer o Direito) - anotado.md
+4. Estrutura dos arquivos: `##` parte, `###` disciplina, `####` assunto e `#####` súmula ou tema
+   (na Revisão Procurador Federal, cada julgado é um `###`). Os marcadores `<!-- pN -->` indicam a
+   página do PDF original. Ao citar um trecho, informe essa página.
+5. Os arquivos são grandes e a leitura pelo conector pode vir incompleta. Se o trecho procurado
+   não aparecer na leitura, avise que o arquivo pode ter sido lido só em parte, em vez de concluir
+   que o tema não está lá.
 
 Como usar o que encontrar:
 
 - Abra a resposta com a seção **"Na sua pasta do Drive"**, listando o que foi achado: nome do
-  arquivo, link do arquivo no Drive, página ou trecho, e o enunciado (súmula, tema, tese ou OJ).
-- As compilações têm data de corte (o nome do arquivo indica, como "05 10"). Por isso, **confirme
+  arquivo `.md`, link do arquivo no Drive, página (pelo marcador `<!-- pN -->`) e o enunciado
+  (súmula, tema, tese ou OJ).
+- As compilações têm data de corte. Por isso, **confirme
   cada item no site oficial** do tribunal na etapa seguinte, para checar se continua vigente, se
   foi revisado ou cancelado, e para trazer o link oficial. O link do Drive não substitui o link
   oficial.
@@ -115,8 +131,8 @@ Notas sobre os campos:
 
 ## Checklist antes de entregar
 
-- [ ] A pasta Jurisprudência do Drive foi consultada antes da internet, e o resultado aparece na
-      seção "Na sua pasta do Drive".
+- [ ] A pasta Jurisprudência do Drive foi consultada antes da internet, só nos arquivos `.md`
+      (nenhum PDF), e o resultado aparece na seção "Na sua pasta do Drive".
 - [ ] Cada item vindo do Drive foi confirmado no site oficial ou marcado como `[verificar]`.
 - [ ] Todo precedente da lista principal tem link clicável.
 - [ ] Todo precedente tem o campo **Peso** preenchido.
