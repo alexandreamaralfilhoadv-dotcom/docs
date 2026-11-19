@@ -811,8 +811,11 @@ if (typeof document !== 'undefined') (function () {
   /* ---- Sorteio e item de prova ---- */
   function pickQuestion(kind, who) {
     const all = pool(kind); if (!all.length) return null;
-    let cands = all.filter(q => !G.used.includes(q.id));
-    if (!cands.length) { G.used = []; cands = all; }
+    // Sorteia primeiro o gabarito (meio a meio), para o banco não favorecer "Certo".
+    const want = Math.random() < .5;
+    const side = all.filter(q => q.g === want), base = side.length ? side : all;
+    let cands = base.filter(q => !G.used.includes(q.id));
+    if (!cands.length) { const ids = new Set(base.map(q => q.id)); G.used = G.used.filter(id => !ids.has(id)); cands = base; }
     let weights = cands.map(() => 1);
     if (prefs.reforco) {
       const idx = new Map(analyze(history.filter(e => e.p === who)).map(r => [r.subject, r.index]));
