@@ -78,6 +78,19 @@ button { cursor: pointer; }
 }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
 .btn.small { padding: 3px 9px; min-height: 28px; font-size: 13px; }
+.chip { display: inline-flex; align-items: center; min-height: 36px; padding: 4px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); font-size: 13px; font-weight: 500; max-width: 100%; overflow-wrap: anywhere; }
+.field select { border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; background: var(--surface-2); color: var(--ink); width: 100%; min-height: 40px; }
+.errgroup { display: flex; flex-direction: column; gap: 8px; }
+details.err { border: 1px solid var(--line); border-left: 3px solid var(--bad); border-radius: 6px; background: var(--surface); }
+details.err summary { cursor: pointer; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; list-style: none; }
+details.err summary::-webkit-details-marker { display: none; }
+details.err summary .q { font-family: var(--f-item); font-size: 15px; overflow-wrap: anywhere; }
+details.err summary .meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+details.err summary .more { font-size: 12px; color: var(--accent); font-weight: 600; }
+details.err[open] summary .more { display: none; }
+details.err .ans-box { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; overflow-wrap: anywhere; }
+details.err .ans-box p { margin: 0; }
+details.err .just { background: var(--surface-2); border-radius: 6px; padding: 10px 12px; }
 
 /* Grade principal */
 .main { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
@@ -125,7 +138,7 @@ button { cursor: pointer; }
 .book { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
 .tabs { display: flex; border-bottom: 1px solid var(--line); }
 .tab {
-  flex: 1; border: 0; background: none; padding: 12px 8px; font-family: var(--f-display); font-weight: 500; font-size: 15px;
+  flex: 1; border: 0; background: none; padding: 12px 4px; font-family: var(--f-display); font-weight: 500; font-size: 14px; min-width: 0;
   color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px;
 }
 .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
@@ -231,15 +244,7 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
       <p>Toda captura passa por um item de certo ou errado. Nas suas capturas, acertar garante a peça. Nas do adversário, um item de jurisprudência decide: se você acertar, a captura dele é anulada.</p>
     </div>
     <div class="controls">
-      <select id="sel-mode" aria-label="Modo de jogo">
-        <option value="ai">Contra o computador</option>
-        <option value="2p">Dois jogadores</option>
-      </select>
-      <select id="sel-level" aria-label="Nível do computador">
-        <option value="1">Nível fácil</option>
-        <option value="2" selected>Nível médio</option>
-        <option value="3">Nível difícil</option>
-      </select>
+      <span class="chip" id="chip-subject">Todas as matérias</span>
       <button class="btn primary" id="btn-new" type="button">Nova partida</button>
     </div>
   </header>
@@ -251,6 +256,7 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
       <div class="side-strip"><span class="who" id="who-bottom">Brancas</span><span class="caps" id="caps-bottom"></span></div>
       <div class="status" id="status" role="status" aria-live="polite"></div>
       <p class="note" id="pool-note"></p>
+      <div class="row"><button class="btn" id="btn-errs" type="button" hidden></button></div>
     </section>
 
     <section class="book" aria-label="Caderno">
@@ -258,6 +264,7 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
         <button class="tab" role="tab" id="tab-partida" aria-controls="panel-partida" aria-selected="true" type="button">Partida</button>
         <button class="tab" role="tab" id="tab-questoes" aria-controls="panel-questoes" aria-selected="false" type="button">Questões</button>
         <button class="tab" role="tab" id="tab-desempenho" aria-controls="panel-desempenho" aria-selected="false" type="button">Desempenho</button>
+        <button class="tab" role="tab" id="tab-erros" aria-controls="panel-erros" aria-selected="false" type="button">Erros</button>
       </div>
 
       <div class="panel" id="panel-partida" role="tabpanel" aria-labelledby="tab-partida">
@@ -275,6 +282,7 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
           <h3>Regras da captura</h3>
           <ul class="rules">
             <li>As peças e os movimentos são os do xadrez clássico, com roque, <i>en passant</i> e promoção.</li>
+            <li><b>Matéria da partida:</b> ao começar, você escolhe todas as matérias ou uma só. A escolha vale para as suas capturas e para a defesa.</li>
             <li><b>Sua captura abre uma questão</b> sorteada das listas de ataque. Ao tocar na peça adversária, o lance está declarado.</li>
             <li><b>Você acertou:</b> a captura acontece. <b>Você errou:</b> o lance é anulado e a vez passa para o adversário.</li>
             <li><b>Captura do computador abre uma questão de jurisprudência</b>, sorteada das listas de defesa.</li>
@@ -321,6 +329,18 @@ Direito Penal;A tentativa é punida com a mesma pena do crime consumado.;E</pre>
           <input type="checkbox" id="opt-reforco">
           <span><b>Modo reforço.</b> Sorteia com mais frequência as matérias em que você mais erra.</span>
         </label>
+      </div>
+
+      <div class="panel" id="panel-erros" role="tabpanel" aria-labelledby="tab-erros" hidden>
+        <div class="block">
+          <h2>Caderno de erros</h2>
+          <p class="note" id="errs-where"></p>
+          <label class="field" for="err-filter">Mostrar
+            <select id="err-filter"><option value="">Todas as matérias</option></select>
+          </label>
+        </div>
+        <div id="errs" class="block"></div>
+        <div class="row"><button class="btn small" id="btn-clear-errs" type="button" hidden>Apagar todo o caderno</button></div>
       </div>
 
       <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho" hidden>
@@ -677,15 +697,46 @@ if (typeof document !== 'undefined') (function () {
 
   function newGame() {
     clearTimeout(aiTimer);
-    G = { st: startState(), mode: prefs.mode, level: prefs.level, sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '' };
+    G = { st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '' };
     G.reps[posKey(G.st)] = 1;
     closeVeil(); renderAll();
   }
+  /* ---- Matérias ---- */
+  const subjCache = new Map();
+  function subjectsOf(m) {
+    if (subjCache.has(m)) return subjCache.get(m);
+    let out;
+    const raw = String(m || 'Geral').trim(), isDir = /^Direitos? /i.test(raw);
+    if (/Digital e Prote|Crian[çc]a e do Adolescente|Difusos e Coletivos/i.test(raw)) out = [raw];
+    else if (/Internacional/i.test(raw)) out = ['Direito Internacional'];
+    else if (/Empresarial/i.test(raw)) out = ['Direito Empresarial'];
+    else if (!isDir && !/Trabalho e Process/i.test(raw)) out = [raw];
+    else out = raw.replace(/^(Direitos? )+/i, '').split(/,\s*| e /).map(p => {
+      p = p.trim();
+      if (/process(o|ual) (do )?trabalho/i.test(p)) return 'Direito Processual do Trabalho';
+      if (/^(do )?trabalho$/i.test(p)) return 'Direito do Trabalho';
+      if (/process(o|ual) civil/i.test(p)) return 'Direito Processual Civil';
+      if (/process(o|ual) penal/i.test(p)) return 'Direito Processual Penal';
+      if (/^tribu/i.test(p)) return 'Direito Tributário';
+      return 'Direito ' + p;
+    });
+    subjCache.set(m, out); return out;
+  }
+  function subjectCounts() {
+    const c = new Map();
+    for (const l of lists) for (const q of l.items) for (const s of subjectsOf(q.m)) {
+      if (!c.has(s)) c.set(s, { atk: 0, def: 0 });
+      c.get(s)[l.juris ? 'def' : 'atk']++;
+    }
+    return [...c.entries()].map(([name, v]) => Object.assign({ name }, v)).sort((a, b) => (b.atk + b.def) - (a.atk + a.def) || a.name.localeCompare(b.name));
+  }
   const allQ = ls => ls.flatMap(l => l.items.map((q, i) => Object.assign({ id: l.id + ':' + i }, q)));
   // 'def': só jurisprudência. 'atk': listas comuns (ou jurisprudência, se for tudo o que há).
+  // Com matéria escolhida na partida, só entram as questões dessa matéria.
   function pool(kind) {
     const jur = lists.filter(l => l.juris), reg = lists.filter(l => !l.juris);
-    return allQ(kind === 'def' ? jur : (reg.length ? reg : jur));
+    const all = allQ(kind === 'def' ? jur : (reg.length ? reg : jur)), f = G && G.subject;
+    return f ? all.filter(q => subjectsOf(q.m).includes(f)) : all;
   }
   const humanTurn = () => G.mode === '2p' || G.st.turn === 'w';
   const currentLegal = () => legalMoves(G.st).filter(m => !G.banned.includes(m.from * 64 + m.to));
@@ -731,8 +782,12 @@ if (typeof document !== 'undefined') (function () {
     el.className = cls; el.textContent = text;
     const na = pool('atk').length, nd = pool('def').length, qs = n => n + (n === 1 ? ' questão' : ' questões');
     if (bank === 'loading') { $('pool-note').textContent = 'Carregando o banco de questões…'; return; }
-    let note = na ? qs(na) + ' para as suas capturas' : 'Sem questões de ataque: suas capturas estão livres';
-    if (G.mode === 'ai') note += nd ? ' · ' + qs(nd) + ' de jurisprudência para a defesa' : ' · sem jurisprudência carregada: o computador captura sem questão';
+    $('chip-subject').textContent = G.subject || 'Todas as matérias';
+    const mine = errors.filter(e => e.g === G.id).length, be = $('btn-errs');
+    be.hidden = !(G.over && mine); be.textContent = 'Ver os ' + mine + (mine === 1 ? ' erro' : ' erros') + ' desta partida';
+    if (mine === 1) be.textContent = 'Ver o erro desta partida';
+    let note = na ? qs(na) + ' para as suas capturas' : 'Sem questões de ataque' + (G.subject ? ' nesta matéria' : '') + ': suas capturas estão livres';
+    if (G.mode === 'ai') note += nd ? ' · ' + qs(nd) + ' de jurisprudência para a defesa' : ' · sem jurisprudência' + (G.subject ? ' nesta matéria' : ' carregada') + ': o computador captura sem questão';
     $('pool-note').textContent = (bank === 'fail' ? 'O banco de questões embutido não pôde ser carregado. ' : '') + note + '.';
   }
   function renderLog() {
@@ -845,9 +900,10 @@ if (typeof document !== 'undefined') (function () {
     const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
     const answer = given => {
       const ok = given === q.g, checked = inCheck(G.st);
-      history.push({ m: q.m, ok, t: Date.now() - t0, p: who, k: kind, g: G.id, q: q.q, gab: q.g, y: q.y ? 1 : 0, c: q.c || '', ts: Date.now() });
-      if (history.length > 3000) history = history.slice(-3000);
+      history.push({ m: q.m, ok, t: Date.now() - t0, p: who, k: kind, g: G.id, ts: Date.now() });
+      if (history.length > 5000) history = history.slice(-5000);
       store.set('xq.history', history);
+      if (!ok) addError({ id: G.id + '-' + Date.now().toString(36), m: q.m, q: q.q, gab: !!q.g, y: q.y ? 1 : 0, given: !!given, c: q.c || '', k: kind, p: who, g: G.id, gs: G.subject || '', ts: Date.now() });
       let conseq;
       if (def) conseq = !ok ? 'O computador captura ' + yours + '.' : checked ? 'A captura foi anulada e fica proibida neste turno. O computador está em xeque e precisa sair dele com outro lance.' : 'A captura foi anulada e o computador perde a vez.';
       else conseq = ok ? 'A captura está confirmada.' : checked ? 'O lance foi anulado e esta captura fica proibida neste turno. Seu rei está em xeque: escolha outro lance.' : 'O lance foi anulado e a vez passa para as ' + SIDE[opp(mover)] + '.';
@@ -856,8 +912,9 @@ if (typeof document !== 'undefined') (function () {
         h('div', { class: 'verdict ' + (ok ? 'ok' : 'bad') },
           h('span', { class: 'big' }, ok ? 'Resposta certa' : 'Resposta errada'),
           h('p', null, 'Gabarito: ', h('b', null, q.g ? YES : NO), '. Você marcou ' + (given ? YES : NO) + '.'),
-          q.c ? h('p', null, q.c) : null,
-          h('p', null, conseq)),
+          h('p', null, q.c || 'Este item não tem justificativa no material.'),
+          h('p', null, conseq),
+          ok ? null : h('p', { class: 'note' }, 'A questão e a justificativa ficaram guardadas na aba Erros.')),
         h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'));
     };
     openVeil(head, stake, h('p', { class: 'cmd' }, (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, a captura é anulada. Se errar, você perde a peça.' : '')), text,
@@ -931,10 +988,7 @@ if (typeof document !== 'undefined') (function () {
     box.append(h('div', { class: 'scroll-x' }, h('table', { class: 'rank' },
       h('thead', null, h('tr', null, ['Matéria', 'Erro', 'Erros/total', 'Tempo médio', 'Situação'].map(t => h('th', { scope: 'col' }, t)))), tbody)));
     box.append(h('p', { class: 'note' }, 'As matérias aparecem da mais difícil para a mais fácil. A ordem usa a taxa de erro ajustada pela quantidade de respostas (limite inferior de Wilson, 90%), para que uma matéria com poucas questões não passe na frente de outra com erro consistente.'));
-    const wrong = entries.filter(e => !e.ok).slice(-8).reverse();
-    if (wrong.length) box.append(h('h3', null, 'Itens para revisar'), h('ul', { class: 'review' }, wrong.map(e => h('li', null,
-      h('div', { class: 'meta' }, e.m + ' · gabarito: ' + (e.gab ? (e.y ? 'Sim' : 'Certo') : (e.y ? 'Não' : 'Errado'))),
-      h('p', { class: 'q' }, e.q), e.c ? h('div', { class: 'meta' }, e.c) : null))));
+    if (wrongTotal) box.append(h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn small', onclick: () => showTab('erros') }, 'Abrir o caderno de erros')));
   }
   $('scope-game').addEventListener('click', () => { view.scope = 'game'; renderPerf(); });
   $('scope-all').addEventListener('click', () => { view.scope = 'all'; renderPerf(); });
@@ -948,28 +1002,130 @@ if (typeof document !== 'undefined') (function () {
   });
 
   /* ---- Abas e controles ---- */
-  const TABS = ['partida', 'questoes', 'desempenho'];
-  function showTab(name) { for (const t of TABS) { $('tab-' + t).setAttribute('aria-selected', t === name); $('panel-' + t).hidden = t !== name; } if (name === 'desempenho') renderPerf(); }
+  const TABS = ['partida', 'questoes', 'desempenho', 'erros'];
+  function showTab(name) { for (const t of TABS) { $('tab-' + t).setAttribute('aria-selected', t === name); $('panel-' + t).hidden = t !== name; } if (name === 'desempenho') renderPerf(); if (name === 'erros') renderErrs(); }
   TABS.forEach(t => $('tab-' + t).addEventListener('click', () => showTab(t)));
-  $('sel-mode').value = prefs.mode; $('sel-level').value = String(prefs.level); $('opt-reforco').checked = !!prefs.reforco;
-  const syncLevel = () => { $('sel-level').hidden = prefs.mode !== 'ai'; };
-  $('sel-mode').addEventListener('change', ev => { prefs.mode = ev.target.value; store.set('xq.prefs', prefs); syncLevel(); newGame(); });
-  $('sel-level').addEventListener('change', ev => { prefs.level = +ev.target.value; G.level = prefs.level; store.set('xq.prefs', prefs); });
+  $('opt-reforco').checked = !!prefs.reforco;
   $('opt-reforco').addEventListener('change', ev => { prefs.reforco = ev.target.checked; store.set('xq.prefs', prefs); });
-  $('btn-new').addEventListener('click', newGame);
-  syncLevel();
+  $('btn-new').addEventListener('click', openSetup);
+  $('btn-errs').addEventListener('click', () => { errView.game = G.id; showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); });
+
+  /* ---- Início de partida: matéria, adversário, nível ---- */
+  let setupOpen = false;
+  function fillSubjects() {
+    const sel = $('set-subject'); if (!sel) return;
+    const cur = sel.value || prefs.subject || '', counts = subjectCounts(), n = v => v.toLocaleString('pt-BR');
+    sel.textContent = '';
+    sel.append(h('option', { value: '' }, bank === 'loading' ? 'Todas as matérias (carregando…)' : 'Todas as matérias'));
+    for (const c of counts) sel.append(h('option', { value: c.name }, c.name + ' — ' + n(c.atk) + ' de ataque · ' + n(c.def) + ' de defesa'));
+    sel.value = counts.some(c => c.name === cur) ? cur : '';
+    setupNote();
+  }
+  function setupNote() {
+    const sel = $('set-subject'), note = $('set-note'); if (!sel || !note) return;
+    const c = subjectCounts().find(x => x.name === sel.value), ai = $('set-mode').value === 'ai';
+    $('set-level-wrap').hidden = !ai;
+    note.textContent = !c ? 'As questões serão sorteadas de todas as matérias.'
+      : !c.atk && !c.def ? ''
+      : !c.atk ? 'Não há questões de ataque nesta matéria: as suas capturas ficarão livres.'
+      : (ai && !c.def) ? 'Não há jurisprudência desta matéria: o computador vai capturar sem questão.'
+      : 'Só entram questões de ' + c.name + ', nas suas capturas e na defesa.';
+  }
+  function openSetup() {
+    setupOpen = true;
+    const opt = (v, t, cur) => h('option', { value: v, selected: String(cur) === String(v) ? '' : null }, t);
+    openVeil(
+      h('p', { class: 'stake', id: 'item-stake' }, 'Nova partida'),
+      h('label', { class: 'field', for: 'set-subject' }, 'Matéria das questões', h('select', { id: 'set-subject', onchange: setupNote })),
+      h('p', { class: 'note', id: 'set-note' }),
+      h('label', { class: 'field', for: 'set-mode' }, 'Adversário', h('select', { id: 'set-mode', onchange: setupNote }, opt('ai', 'Computador', prefs.mode), opt('2p', 'Outro jogador, no mesmo aparelho', prefs.mode))),
+      h('label', { class: 'field', id: 'set-level-wrap', for: 'set-level' }, 'Nível do computador', h('select', { id: 'set-level' }, opt(1, 'Fácil', prefs.level), opt(2, 'Médio', prefs.level), opt(3, 'Difícil', prefs.level))),
+      h('div', { class: 'row' },
+        h('button', { type: 'button', class: 'btn primary', onclick: () => {
+          prefs.subject = $('set-subject').value; prefs.mode = $('set-mode').value; prefs.level = +$('set-level').value;
+          store.set('xq.prefs', prefs); setupOpen = false; newGame();
+        } }, 'Começar'),
+        h('button', { type: 'button', class: 'btn', onclick: () => { setupOpen = false; closeVeil(); } }, 'Cancelar')));
+    fillSubjects(); $('set-subject').focus();
+  }
+
+  /* ---- Caderno de erros: guardado na conta (db) e, como reserva, no navegador ---- */
+  let errors = store.get('xq.errors', []); if (!Array.isArray(errors)) errors = [];
+  if (!errors.length) errors = history.filter(e => e && e.ok === false && e.q).map((e, i) => ({ id: (e.g || 'x') + '-' + (e.ts || i).toString(36), m: e.m, q: e.q, gab: !!e.gab, y: e.y ? 1 : 0, given: !e.gab, c: e.c || '', k: e.k || 'atk', p: e.p || 'w', g: e.g || 'x', gs: '', ts: e.ts || 0 }));
+  history = history.map(e => ({ m: e.m, ok: e.ok, t: e.t, p: e.p, k: e.k, g: e.g, ts: e.ts }));
+  const errView = { game: '' };
+  let cloudCol = null, cloudState = 'local';
+  const saveErrLocal = () => store.set('xq.errors', errors.slice(-800));
+  const putCloud = e => { if (!cloudCol) return Promise.resolve(); const v = Object.assign({}, e); delete v.id; return cloudCol.doc(e.id).set(v).catch(() => {}); };
+  function addError(e) { errors.push(e); saveErrLocal(); putCloud(e); if (!$('panel-erros').hidden) renderErrs(); }
+  function removeError(e) { errors = errors.filter(x => x !== e); saveErrLocal(); if (cloudCol) cloudCol.doc(e.id).delete().catch(() => {}); renderErrs(); renderStatus(); }
+  async function initCloud() {
+    try {
+      if (!window.claude || !window.claude.use) return;
+      const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+      if (!db || !user) return;
+      const uid = await user.id(); if (!uid) return;
+      cloudCol = db.doc('data/users/' + uid + '/caderno').collection('erros');
+      const snap = await cloudCol.orderBy('ts', 'desc').limit(1000).get();
+      const have = new Set(errors.map(e => e.id)), remote = new Set();
+      for (const d of snap.docs) { remote.add(d.id); const v = d.data(); if (!have.has(d.id) && v && typeof v.q === 'string') errors.push(Object.assign({}, v, { id: d.id })); }
+      errors.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+      cloudState = 'conta'; saveErrLocal(); renderErrs(); if (G) renderStatus();
+      for (const e of errors.filter(e => !remote.has(e.id)).slice(-200)) await putCloud(e);
+    } catch (err) { cloudCol = null; cloudState = 'local'; renderErrs(); }
+  }
+  const lbl = (v, y) => v ? (y ? 'Sim' : 'Certo') : (y ? 'Não' : 'Errado');
+  function renderErrs() {
+    const box = $('errs'); if (!box) return;
+    $('errs-where').textContent = cloudState === 'conta'
+      ? 'Toda resposta errada fica guardada aqui com a justificativa, por partida. O caderno está salvo na sua conta e aparece em qualquer aparelho em que você abrir o jogo.'
+      : 'Toda resposta errada fica guardada aqui com a justificativa, por partida. O caderno está salvo neste navegador.';
+    const fsel = $('err-filter'), cur = fsel.value, subs = [...new Set(errors.flatMap(e => subjectsOf(e.m)))].sort((a, b) => a.localeCompare(b));
+    fsel.textContent = ''; fsel.append(h('option', { value: '' }, 'Todas as matérias (' + errors.length + ')'));
+    for (const s of subs) fsel.append(h('option', { value: s }, s + ' (' + errors.filter(e => subjectsOf(e.m).includes(s)).length + ')'));
+    fsel.value = subs.includes(cur) ? cur : '';
+    const shown = errors.filter(e => !fsel.value || subjectsOf(e.m).includes(fsel.value));
+    box.textContent = ''; $('btn-clear-errs').hidden = !errors.length;
+    if (!shown.length) { box.append(h('p', { class: 'note' }, errors.length ? 'Nenhum erro nesta matéria.' : 'Nenhum erro guardado ainda. Quando você errar uma questão, ela aparece aqui com o gabarito e a justificativa.')); return; }
+    const groups = new Map();
+    for (const e of shown) { if (!groups.has(e.g)) groups.set(e.g, []); groups.get(e.g).push(e); }
+    const order = [...groups.entries()].sort((a, b) => Math.max(...b[1].map(e => e.ts || 0)) - Math.max(...a[1].map(e => e.ts || 0)));
+    for (const [gid, arr] of order) {
+      const first = Math.min(...arr.map(e => e.ts || 0));
+      const when = first ? new Date(first).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'Data não registrada';
+      const title = (G && gid === G.id ? 'Partida atual · ' : 'Partida de ') + when + ' · ' + (arr[0].gs || 'Todas as matérias') + ' · ' + arr.length + (arr.length === 1 ? ' erro' : ' erros');
+      box.append(h('div', { class: 'errgroup' }, h('h3', null, title), arr.slice().reverse().map(e => h('details', { class: 'err', open: errView.game === gid ? '' : null },
+        h('summary', null,
+          h('span', { class: 'meta' }, h('span', null, e.m), h('span', { class: 'tag ' + (e.k === 'def' ? 'bad' : 'dim') }, e.k === 'def' ? 'Defesa' : 'Ataque')),
+          h('span', { class: 'q' }, e.q), h('span', { class: 'more' }, 'Ver gabarito e justificativa')),
+        h('div', { class: 'ans-box' },
+          h('p', null, 'Você marcou ', h('b', null, lbl(e.given, e.y)), '. Gabarito: ', h('b', null, lbl(e.gab, e.y)), '.'),
+          h('p', { class: 'just' }, e.c || 'Este item não tem justificativa no material.'),
+          h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn small', onclick: () => removeError(e) }, 'Já aprendi: remover do caderno')))))));
+    }
+    errView.game = '';
+  }
+  $('err-filter').addEventListener('change', renderErrs);
+  let clearErrArmed = false;
+  $('btn-clear-errs').addEventListener('click', ev => {
+    if (!clearErrArmed) { clearErrArmed = true; ev.target.textContent = 'Confirmar: apagar todos os erros'; setTimeout(() => { clearErrArmed = false; ev.target.textContent = 'Apagar todo o caderno'; }, 4000); return; }
+    clearErrArmed = false; ev.target.textContent = 'Apagar todo o caderno';
+    const old = errors; errors = []; saveErrLocal(); renderErrs(); renderStatus();
+    if (cloudCol) (async () => { for (const e of old) await cloudCol.doc(e.id).delete().catch(() => {}); })();
+  });
 
   $('btn-restore').addEventListener('click', () => { off = []; jurOv = {}; store.set('xq.off', off); store.set('xq.jur', jurOv); rebuildLists(); renderLists(); renderStatus(); });
   rebuildLists();
   fetch('questoes.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(d => { builtin = Array.isArray(d.lists) ? d.lists : []; bank = 'ok'; })
     .catch(() => { bank = 'fail'; })
-    .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } });
+    .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } if (setupOpen) fillSubjects(); });
   function start(data) {
     if (data && data.G && data.G.st) {
       G = data.G; G.thinking = false; G.sel = -1; closeVeil();
       if (!G.over && G.mode === 'ai' && G.st.turn === 'b') afterTurn(legalMoves(G.st), inCheck(G.st)); else renderAll();
-    } else newGame();
+    } else { newGame(); openSetup(); }
+    renderErrs(); initCloud();
   }
   const hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(() => ({ G }));
