@@ -241,7 +241,7 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
   <header class="top">
     <div>
       <h1>Xadrez de Concurso</h1>
-      <p>Toda captura passa por um item de certo ou errado. Nas suas capturas, acertar garante a peça. Nas do adversário, um item de jurisprudência decide: se você acertar, a captura dele é anulada.</p>
+      <p>Toda captura passa por um item de certo ou errado. Nas suas capturas, acertar garante a peça. Nas do adversário, um item de jurisprudência decide: se você acertar, a captura dele é anulada, e ele só perde a vez depois de três capturas anuladas na mesma jogada.</p>
     </div>
     <div class="controls">
       <span class="chip" id="chip-subject">Todas as matérias</span>
@@ -286,7 +286,9 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
             <li><b>Sua captura abre uma questão</b> sorteada das listas de ataque. Ao tocar na peça adversária, o lance está declarado.</li>
             <li><b>Você acertou:</b> a captura acontece. <b>Você errou:</b> o lance é anulado e a vez passa para o adversário.</li>
             <li><b>Captura do computador abre uma questão de jurisprudência</b>, sorteada das listas de defesa.</li>
-            <li><b>Você acertou:</b> a captura dele é anulada e ele perde a vez. <b>Você errou:</b> ele leva a sua peça.</li>
+            <li><b>Você errou:</b> ele leva a sua peça. <b>Você acertou:</b> a captura é anulada, mas ele joga de novo e pode insistir em capturar.</li>
+            <li><b>Se ele insistir,</b> a nova questão vem de uma matéria diferente da escolhida para a partida. Ele tem até três tentativas por jogada; se você acertar as três, ele perde a vez.</li>
+            <li><b>Quando faltam questões da matéria escolhida,</b> o jogo busca as matérias que você menos respondeu até agora.</li>
             <li><b>Captura anulada com o rei em xeque:</b> aquela captura fica proibida no turno e é preciso sair do xeque com outro lance. Se não houver outro, a partida está perdida para quem estava em xeque.</li>
           </ul>
         </div>
@@ -697,7 +699,7 @@ if (typeof document !== 'undefined') (function () {
 
   function newGame() {
     clearTimeout(aiTimer);
-    G = { st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '' };
+    G = { st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [] };
     G.reps[posKey(G.st)] = 1;
     closeVeil(); renderAll();
   }
@@ -733,9 +735,12 @@ if (typeof document !== 'undefined') (function () {
   const allQ = ls => ls.flatMap(l => l.items.map((q, i) => Object.assign({ id: l.id + ':' + i }, q)));
   // 'def': só jurisprudência. 'atk': listas comuns (ou jurisprudência, se for tudo o que há).
   // Com matéria escolhida na partida, só entram as questões dessa matéria.
-  function pool(kind) {
+  function basePool(kind) {
     const jur = lists.filter(l => l.juris), reg = lists.filter(l => !l.juris);
-    const all = allQ(kind === 'def' ? jur : (reg.length ? reg : jur)), f = G && G.subject;
+    return allQ(kind === 'def' ? jur : (reg.length ? reg : jur));
+  }
+  function pool(kind) {
+    const all = basePool(kind), f = G && G.subject;
     return f ? all.filter(q => subjectsOf(q.m).includes(f)) : all;
   }
   const humanTurn = () => G.mode === '2p' || G.st.turn === 'w';
@@ -786,8 +791,8 @@ if (typeof document !== 'undefined') (function () {
     const mine = errors.filter(e => e.g === G.id).length, be = $('btn-errs');
     be.hidden = !(G.over && mine); be.textContent = 'Ver os ' + mine + (mine === 1 ? ' erro' : ' erros') + ' desta partida';
     if (mine === 1) be.textContent = 'Ver o erro desta partida';
-    let note = na ? qs(na) + ' para as suas capturas' : 'Sem questões de ataque' + (G.subject ? ' nesta matéria' : '') + ': suas capturas estão livres';
-    if (G.mode === 'ai') note += nd ? ' · ' + qs(nd) + ' de jurisprudência para a defesa' : ' · sem jurisprudência' + (G.subject ? ' nesta matéria' : ' carregada') + ': o computador captura sem questão';
+    let note = na ? qs(na) + ' para as suas capturas' : G.subject && basePool('atk').length ? 'Sem questões de ataque nesta matéria: entram matérias pouco vistas' : 'Sem questões de ataque: suas capturas estão livres';
+    if (G.mode === 'ai') note += nd ? ' · ' + qs(nd) + ' de jurisprudência para a defesa' : (G.subject && basePool('def').length ? ' · sem jurisprudência nesta matéria: entram matérias pouco vistas' : ' · sem jurisprudência carregada: o computador captura sem questão');
     $('pool-note').textContent = (bank === 'fail' ? 'O banco de questões embutido não pôde ser carregado. ' : '') + note + '.';
   }
   function renderLog() {
@@ -815,31 +820,43 @@ if (typeof document !== 'undefined') (function () {
   }
   function attempt(m) {
     G.flash = '';
-    if (m.cap && pool('atk').length) askQuestion(m, 'atk'); else commit(m);
+    if (m.cap && basePool('atk').length) askQuestion(m, 'atk'); else commit(m);
   }
   function label(m, legal) { return (G.st.turn === 'w' ? G.st.full + '. ' : G.st.full + '… ') + notate(G.st, m, legal); }
   function commit(m, kind) {
     const legal = legalMoves(G.st), text = label(m, legal), mover = G.st.turn;
     if (m.cap) (mover === 'w' ? G.capW : G.capB).push(m.cap);
-    G.st = make(G.st, m); G.last = { from: m.from, to: m.to }; G.banned = []; G.sel = -1;
+    G.st = make(G.st, m); G.last = { from: m.from, to: m.to }; G.banned = []; G.sel = -1; G.defTries = 0; G.defSubj = [];
     const k = posKey(G.st); G.reps[k] = (G.reps[k] || 0) + 1;
     const replies = legalMoves(G.st), chk = inCheck(G.st);
     G.log.push({ text: text + (chk ? (replies.length ? '+' : '#') : ''), kind: kind || 'move' });
     afterTurn(replies, chk);
   }
+  const DEF_TRIES = 3;
   function fail(m) {
     const legal = legalMoves(G.st), text = label(m, legal), mover = G.st.turn, ai = G.mode === 'ai' && mover === 'b';
     G.log.push({ text, kind: 'void' }); G.sel = -1;
-    if (ai) G.last = null;
+    if (ai) {
+      // O computador não perde a vez de imediato: pode jogar de novo, até a terceira captura anulada.
+      G.last = null; G.defTries = (G.defTries || 0) + 1;
+      if (G.defTries < DEF_TRIES) { scheduleAI(); return; }
+      if (inCheck(G.st)) {
+        for (const x of legalMoves(G.st)) if (x.cap) G.banned.push(x.from * 64 + x.to);
+        if (!currentLegal().length) { G.over = 'As pretas tiveram três capturas anuladas e não têm outro lance para sair do xeque. Vitória das brancas.'; renderAll(); return; }
+        scheduleAI(); return;
+      }
+      G.st = passTurn(G.st); G.banned = []; G.defTries = 0; G.defSubj = [];
+      G.flash = 'Três capturas anuladas: o computador perdeu a vez.';
+      afterTurn(legalMoves(G.st), false); return;
+    }
     if (inCheck(G.st)) {
       G.banned.push(m.from * 64 + m.to);
-      if (!currentLegal().length) G.over = 'As ' + SIDE[mover] + (ai ? ' tiveram a captura anulada' : ' erraram a questão') + ' e não têm outro lance para sair do xeque. Vitória das ' + SIDE[opp(mover)] + '.';
-      else if (ai) { scheduleAI(); return; }
+      if (!currentLegal().length) G.over = 'As ' + SIDE[mover] + ' erraram a questão e não têm outro lance para sair do xeque. Vitória das ' + SIDE[opp(mover)] + '.';
       else G.flash = 'Captura proibida neste turno: saia do xeque com outro lance.';
       renderAll(); return;
     }
     G.st = passTurn(G.st); G.banned = [];
-    G.flash = ai ? 'Captura do computador anulada.' : 'Lance anulado.';
+    G.flash = 'Lance anulado.';
     afterTurn(legalMoves(G.st), false);
   }
   function scheduleAI() {
@@ -850,7 +867,7 @@ if (typeof document !== 'undefined') (function () {
       const m = bestMove(G.st, G.level, G.banned);
       G.thinking = false; G.flash = '';
       if (!m) { renderAll(); return; }
-      if (m.cap && pool('def').length) { G.last = { from: m.from, to: m.to }; renderAll(); askQuestion(m, 'def'); }
+      if (m.cap && basePool('def').length) { G.last = { from: m.from, to: m.to }; renderAll(); askQuestion(m, 'def'); }
       else commit(m);
     }, 350);
   }
@@ -864,21 +881,41 @@ if (typeof document !== 'undefined') (function () {
   }
 
   /* ---- Sorteio e item de prova ---- */
-  function pickQuestion(kind, who) {
-    const all = pool(kind); if (!all.length) return null;
+  // Matérias que o jogador menos respondeu até agora (histórico de todas as partidas).
+  function leastUsed(list, who) {
+    if (!list.length) return list;
+    const use = new Map();
+    for (const e of history) if (e.p === who) for (const s of subjectsOf(e.m)) use.set(s, (use.get(s) || 0) + 1);
+    const key = q => subjectsOf(q.m)[0], n = q => use.get(key(q)) || 0;
+    const min = Math.min(...list.map(n));
+    return list.filter(q => n(q) === min);
+  }
+  // avoid: matérias proibidas (novas tentativas do computador na mesma jogada).
+  function pickQuestion(kind, who, avoid) {
+    const base = basePool(kind); if (!base.length) return null;
+    const fresh = arr => arr.filter(q => !G.used.includes(q.id));
+    let all, extra = '';
+    if (avoid && avoid.length) {
+      all = fresh(base.filter(q => !subjectsOf(q.m).some(s => avoid.includes(s))));
+      if (!all.length) all = base.filter(q => !subjectsOf(q.m).some(s => avoid.includes(s)));
+      extra = 'outra';
+    } else if (G.subject) {
+      all = fresh(base.filter(q => subjectsOf(q.m).includes(G.subject)));
+      if (!all.length) { all = leastUsed(fresh(base.filter(q => !subjectsOf(q.m).includes(G.subject))), who); extra = 'falta'; }
+    } else all = fresh(base);
+    if (!all.length) { const ids = new Set(base.map(q => q.id)); G.used = G.used.filter(id => !ids.has(id)); all = base; extra = ''; }
     // Sorteia primeiro o gabarito (meio a meio), para o banco não favorecer "Certo".
-    const want = Math.random() < .5;
-    const side = all.filter(q => q.g === want), base = side.length ? side : all;
-    let cands = base.filter(q => !G.used.includes(q.id));
-    if (!cands.length) { const ids = new Set(base.map(q => q.id)); G.used = G.used.filter(id => !ids.has(id)); cands = base; }
+    const want = Math.random() < .5, side = all.filter(q => q.g === want);
+    const cands = side.length ? side : all;
+    const done = q => Object.assign({}, q, { extra });
     let weights = cands.map(() => 1);
     if (prefs.reforco) {
       const idx = new Map(analyze(history.filter(e => e.p === who)).map(r => [r.subject, r.index]));
       weights = cands.map(q => 1 + 4 * (idx.has(q.m) ? idx.get(q.m) : .25));
     }
     let x = Math.random() * weights.reduce((a, b) => a + b, 0);
-    for (let i = 0; i < cands.length; i++) { x -= weights[i]; if (x <= 0) return cands[i]; }
-    return cands[cands.length - 1];
+    for (let i = 0; i < cands.length; i++) { x -= weights[i]; if (x <= 0) return done(cands[i]); }
+    return done(cands[cands.length - 1]);
   }
   function openVeil(...kids) { const it = $('item'); it.textContent = ''; it.append(...kids); $('veil').hidden = false; const f = it.querySelector('button'); if (f) f.focus(); }
   function closeVeil() { $('veil').hidden = true; $('item').textContent = ''; }
@@ -890,12 +927,17 @@ if (typeof document !== 'undefined') (function () {
   }
   function askQuestion(m, kind) {
     const mover = G.st.turn, def = kind === 'def', who = def ? opp(mover) : mover;
-    const q = pickQuestion(kind, who), t0 = Date.now();
+    const tryN = def ? (G.defTries || 0) + 1 : 1;
+    const avoid = def && tryN > 1 ? (G.subject ? [G.subject] : (G.defSubj || [])) : null;
+    const q = pickQuestion(kind, who, avoid), t0 = Date.now();
+    if (def) G.defSubj = (G.defSubj || []).concat(subjectsOf(q.m));
+    const why = q.extra === 'falta' ? 'Não há mais questões de ' + G.subject + ' para sortear: esta é de uma matéria que você viu pouco. '
+      : q.extra === 'outra' ? tryN + 'ª tentativa do computador nesta jogada: a questão é de outra matéria. ' : '';
     G.used.push(q.id);
     const pN = NAME[m.p.toUpperCase()], cN = NAME[m.cap.toUpperCase()].toLowerCase();
     const yours = ('QR'.includes(m.cap.toUpperCase()) ? 'sua ' : 'seu ') + cN;
     const stake = h('p', { class: 'stake', id: 'item-stake' }, def ? 'O computador quer capturar ' + yours + ' em ' + sqName(m.to) + ' com ' + ('QR'.includes(m.p.toUpperCase()) ? 'a ' : 'o ') + pN.toLowerCase() : pN + ' captura ' + cN + ' em ' + sqName(m.to));
-    const head = h('div', { class: 'head' }, h('span', null, q.m), h('span', null, def ? 'Defesa' : 'Vez das ' + SIDE[mover]));
+    const head = h('div', { class: 'head' }, h('span', null, q.m), h('span', null, def ? 'Defesa · tentativa ' + tryN + ' de ' + DEF_TRIES : 'Vez das ' + SIDE[mover]));
     const text = h('p', { class: 'text' }, q.q);
     const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
     const answer = given => {
@@ -905,7 +947,7 @@ if (typeof document !== 'undefined') (function () {
       store.set('xq.history', history);
       if (!ok) addError({ id: G.id + '-' + Date.now().toString(36), m: q.m, q: q.q, gab: !!q.g, y: q.y ? 1 : 0, given: !!given, c: q.c || '', k: kind, p: who, g: G.id, gs: G.subject || '', ts: Date.now() });
       let conseq;
-      if (def) conseq = !ok ? 'O computador captura ' + yours + '.' : checked ? 'A captura foi anulada e fica proibida neste turno. O computador está em xeque e precisa sair dele com outro lance.' : 'A captura foi anulada e o computador perde a vez.';
+      if (def) conseq = !ok ? 'O computador captura ' + yours + '.' : tryN < DEF_TRIES ? 'A captura foi anulada, mas o computador joga de novo e pode insistir. Se insistir, a próxima questão será de outra matéria (' + (DEF_TRIES - tryN === 1 ? 'resta 1 tentativa' : 'restam ' + (DEF_TRIES - tryN) + ' tentativas') + ').' : checked ? 'Terceira captura anulada. O computador está em xeque e precisa sair dele sem capturar.' : 'Terceira captura anulada: o computador perde a vez.';
       else conseq = ok ? 'A captura está confirmada.' : checked ? 'O lance foi anulado e esta captura fica proibida neste turno. Seu rei está em xeque: escolha outro lance.' : 'O lance foi anulado e a vez passa para as ' + SIDE[opp(mover)] + '.';
       const next = def ? (ok ? () => fail(m) : () => commit(m, 'lost')) : (ok ? () => commit(m, 'won') : () => fail(m));
       openVeil(head, stake, text,
@@ -917,7 +959,7 @@ if (typeof document !== 'undefined') (function () {
           ok ? null : h('p', { class: 'note' }, 'A questão e a justificativa ficaram guardadas na aba Erros.')),
         h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'));
     };
-    openVeil(head, stake, h('p', { class: 'cmd' }, (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, a captura é anulada. Se errar, você perde a peça.' : '')), text,
+    openVeil(head, stake, h('p', { class: 'cmd' }, why + (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, esta captura é anulada. Se errar, você perde a peça.' : '')), text,
       h('div', { class: 'answers' },
         h('button', { type: 'button', class: 'ans c', onclick: () => answer(true) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, YES[0]), YES),
         h('button', { type: 'button', class: 'ans e', onclick: () => answer(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, NO[0]), NO)));
@@ -1027,9 +1069,9 @@ if (typeof document !== 'undefined') (function () {
     $('set-level-wrap').hidden = !ai;
     note.textContent = !c ? 'As questões serão sorteadas de todas as matérias.'
       : !c.atk && !c.def ? ''
-      : !c.atk ? 'Não há questões de ataque nesta matéria: as suas capturas ficarão livres.'
-      : (ai && !c.def) ? 'Não há jurisprudência desta matéria: o computador vai capturar sem questão.'
-      : 'Só entram questões de ' + c.name + ', nas suas capturas e na defesa.';
+      : !c.atk ? 'Não há questões de ataque nesta matéria: nas suas capturas entram as matérias que você menos viu.'
+      : (ai && !c.def) ? 'Não há jurisprudência desta matéria: na defesa entram as matérias que você menos viu.'
+      : 'Entram questões de ' + c.name + ', nas suas capturas e na defesa. Se elas acabarem, entram as matérias que você menos viu.';
   }
   function openSetup() {
     setupOpen = true;
@@ -1122,7 +1164,7 @@ if (typeof document !== 'undefined') (function () {
     .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } if (setupOpen) fillSubjects(); });
   function start(data) {
     if (data && data.G && data.G.st) {
-      G = data.G; G.thinking = false; G.sel = -1; closeVeil();
+      G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; closeVeil();
       if (!G.over && G.mode === 'ai' && G.st.turn === 'b') afterTurn(legalMoves(G.st), inCheck(G.st)); else renderAll();
     } else { newGame(); openSetup(); }
     renderErrs(); initCloud();
