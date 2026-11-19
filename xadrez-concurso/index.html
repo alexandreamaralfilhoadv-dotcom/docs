@@ -215,7 +215,7 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
 .verdict .big { font-family: var(--f-display); font-weight: 700; font-size: 19px; }
 .verdict.ok .big { color: var(--ok); }
 .verdict.bad .big { color: var(--bad); }
-.verdict p { margin: 0; }
+.verdict p { margin: 0; overflow-wrap: anywhere; }
 .promo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .promo button { font-family: var(--f-piece); font-size: 40px; padding: 8px; border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px; line-height: 1.1; }
 @media (prefers-reduced-motion: no-preference) {
@@ -289,6 +289,7 @@ table.rank { width: 100%; border-collapse: collapse; font-size: 14px; }
           <h2>Listas carregadas</h2>
           <ul class="lists" id="lists"></ul>
           <p class="note" id="lists-empty" hidden>Nenhuma lista. Sem questões, as capturas ficam livres para os dois lados.</p>
+          <div class="row"><button class="btn small" id="btn-restore" type="button" hidden>Restaurar as listas originais</button></div>
         </div>
         <div class="block">
           <h2>Adicionar uma lista</h2>
@@ -627,35 +628,6 @@ function analyze(entries) {
   return rows;
 }
 
-const DEMO = [
-  ['Direito Constitucional', 'A República Federativa do Brasil tem como fundamentos a soberania, a cidadania, a dignidade da pessoa humana, os valores sociais do trabalho e da livre iniciativa e o pluralismo político.', true, 'Art. 1º, I a V, da Constituição Federal.'],
-  ['Direito Constitucional', 'É livre a manifestação do pensamento, sendo permitido o anonimato.', false, 'Art. 5º, IV, da CF: é vedado o anonimato.'],
-  ['Direito Constitucional', 'A casa é asilo inviolável do indivíduo, mas nela se pode penetrar, por determinação judicial, a qualquer hora do dia ou da noite.', false, 'Art. 5º, XI, da CF: por determinação judicial, somente durante o dia.'],
-  ['Direito Constitucional', 'São Poderes da União, independentes e harmônicos entre si, o Legislativo, o Executivo e o Judiciário.', true, 'Art. 2º da CF.'],
-  ['Direito Administrativo', 'A administração pública direta e indireta obedecerá aos princípios de legalidade, impessoalidade, moralidade, publicidade e eficiência.', true, 'Art. 37, caput, da CF.'],
-  ['Direito Administrativo', 'O prazo de validade do concurso público será de até dois anos, prorrogável uma vez, por igual período.', true, 'Art. 37, III, da CF.'],
-  ['Direito Administrativo', 'Pela autotutela, a Administração pode anular seus atos ilegais, mas não pode revogá-los por motivo de conveniência ou oportunidade.', false, 'Súmula 473 do STF: a Administração pode anular os atos ilegais e revogá-los por conveniência ou oportunidade, respeitados os direitos adquiridos.'],
-  ['Direito Administrativo', 'O servidor nomeado para cargo de provimento efetivo em virtude de concurso público adquire estabilidade após dois anos de efetivo exercício.', false, 'Art. 41 da CF: três anos de efetivo exercício.'],
-  ['Língua Portuguesa', 'Em "Fazem dois anos que ele partiu", a concordância verbal segue a norma-padrão.', false, 'O verbo fazer, indicando tempo decorrido, é impessoal: "Faz dois anos".'],
-  ['Língua Portuguesa', 'Em "Refiro-me àquela aluna", o acento indicativo de crase está corretamente empregado.', true, 'Preposição a (exigida por referir-se) + pronome aquela.'],
-  ['Língua Portuguesa', 'Na frase "Houveram muitos problemas na reunião", o verbo haver está flexionado de acordo com a norma-padrão.', false, 'Haver no sentido de existir é impessoal: "Houve muitos problemas".'],
-  ['Língua Portuguesa', 'As palavras "saúde" e "baú" são acentuadas pela mesma regra.', true, 'Acentua-se o "u" tônico que forma hiato com a vogal anterior.'],
-  ['Raciocínio Lógico', 'A negação de "Todo servidor é estável" é "Nenhum servidor é estável".', false, 'A negação correta é "Algum servidor não é estável".'],
-  ['Raciocínio Lógico', 'A proposição "Se chove, então a rua fica molhada" é equivalente a "Se a rua não fica molhada, então não chove".', true, 'Contrapositiva: P → Q equivale a ¬Q → ¬P.'],
-  ['Raciocínio Lógico', 'A negação de "P e Q" é "não P ou não Q".', true, 'Lei de De Morgan.'],
-  ['Raciocínio Lógico', 'A condicional P → Q é falsa somente quando P é verdadeira e Q é falsa.', true, 'Tabela-verdade da condicional.']
-].map(a => ({ m: a[0], q: a[1], g: a[2], c: a[3] }));
-const DEMO_JURIS = [
-  ['Jurisprudência – Penal e Processo Penal', 'Segundo súmula vinculante do STF, o uso de algemas só é lícito em casos de resistência, de fundado receio de fuga ou de perigo à integridade física própria ou alheia, devendo a excepcionalidade ser justificada por escrito.', true, 'Súmula Vinculante 11.'],
-  ['Jurisprudência – Penal e Processo Penal', 'É direito do defensor, no interesse do representado, ter acesso amplo aos elementos de prova que, já documentados em procedimento investigatório realizado por órgão com competência de polícia judiciária, digam respeito ao exercício do direito de defesa.', true, 'Súmula Vinculante 14.'],
-  ['Jurisprudência – Administrativo', 'A vedação ao nepotismo prevista na Súmula Vinculante 13 alcança parentes até o segundo grau, inclusive.', false, 'Súmula Vinculante 13: até o terceiro grau, inclusive.'],
-  ['Jurisprudência – Administrativo', 'Conforme o STF, a falta de defesa técnica por advogado no processo administrativo disciplinar ofende a Constituição.', false, 'Súmula Vinculante 5: não ofende a Constituição.'],
-  ['Jurisprudência – Administrativo', 'Não cabe ao Poder Judiciário, que não tem função legislativa, aumentar vencimentos de servidores públicos sob o fundamento de isonomia.', true, 'Súmula Vinculante 37.'],
-  ['Jurisprudência – Administrativo', 'É constitucional a exigência de depósito prévio de dinheiro ou bens como condição de admissibilidade de recurso administrativo.', false, 'Súmula Vinculante 21: a exigência é inconstitucional.'],
-  ['Jurisprudência – Civil e Processo Civil', 'É ilícita a prisão civil de depositário infiel, qualquer que seja a modalidade de depósito.', true, 'Súmula Vinculante 25.'],
-  ['Jurisprudência – Civil e Processo Civil', 'De acordo com o STJ, a pretensão de simples reexame de prova enseja recurso especial.', false, 'Súmula 7 do STJ: não enseja recurso especial.']
-].map(a => ({ m: a[0], q: a[1], g: a[2], c: a[3] }));
-
 if (typeof module !== 'undefined') module.exports = { startState, legalMoves, make, passTurn, inCheck, bestMove, parseList, analyze, wilsonLower, notate, attacked, kingSq, pseudoMoves };
 
 /* ============ Interface ============ */
@@ -678,11 +650,25 @@ if (typeof document !== 'undefined') (function () {
     return el;
   }
 
-  let lists = store.get('xq.lists', null);
-  const demoLists = () => [{ id: 'demo', name: 'Questões de exemplo', demo: true, items: DEMO }, { id: 'demo-juris', name: 'Jurisprudência de exemplo', demo: true, juris: true, items: DEMO_JURIS }];
-  if (!Array.isArray(lists)) lists = demoLists();
-  else if (!store.get('xq.jurisSeeded', false) && !lists.some(l => l.juris)) { lists.push(demoLists()[1]); store.set('xq.lists', lists); }
-  store.set('xq.jurisSeeded', true);
+  // Listas embutidas vêm de questoes.json; as importadas pelo usuário ficam no navegador.
+  let builtin = [], lists = [], bank = 'loading';
+  let userLists = store.get('xq.userLists', []); if (!Array.isArray(userLists)) userLists = [];
+  let off = store.get('xq.off', []); if (!Array.isArray(off)) off = [];
+  let jurOv = store.get('xq.jur', {}) || {};
+  try { localStorage.removeItem('xq.lists'); localStorage.removeItem('xq.jurisSeeded'); } catch (e) { /* sem armazenamento */ }
+  function rebuildLists() {
+    lists = builtin.filter(l => !off.includes(l.id)).map(l => Object.assign({}, l, { builtin: true, juris: l.id in jurOv ? !!jurOv[l.id] : !!l.juris })).concat(userLists);
+  }
+  function toggleJuris(l) {
+    if (l.builtin) { jurOv[l.id] = !l.juris; store.set('xq.jur', jurOv); }
+    else { l.juris = !l.juris; store.set('xq.userLists', userLists); }
+    rebuildLists(); renderLists(); renderStatus();
+  }
+  function removeList(l) {
+    if (l.builtin) { off.push(l.id); store.set('xq.off', off); }
+    else { userLists = userLists.filter(x => x !== l); store.set('xq.userLists', userLists); }
+    rebuildLists(); renderLists(); renderStatus();
+  }
   let history = store.get('xq.history', []);
   if (!Array.isArray(history)) history = [];
   const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false }, store.get('xq.prefs', {}));
@@ -744,9 +730,10 @@ if (typeof document !== 'undefined') (function () {
     }
     el.className = cls; el.textContent = text;
     const na = pool('atk').length, nd = pool('def').length, qs = n => n + (n === 1 ? ' questão' : ' questões');
+    if (bank === 'loading') { $('pool-note').textContent = 'Carregando o banco de questões…'; return; }
     let note = na ? qs(na) + ' para as suas capturas' : 'Sem questões de ataque: suas capturas estão livres';
     if (G.mode === 'ai') note += nd ? ' · ' + qs(nd) + ' de jurisprudência para a defesa' : ' · sem jurisprudência carregada: o computador captura sem questão';
-    $('pool-note').textContent = note + '.';
+    $('pool-note').textContent = (bank === 'fail' ? 'O banco de questões embutido não pôde ser carregado. ' : '') + note + '.';
   }
   function renderLog() {
     const ol = $('moves'); ol.textContent = '';
@@ -852,9 +839,10 @@ if (typeof document !== 'undefined') (function () {
     const stake = h('p', { class: 'stake', id: 'item-stake' }, def ? 'O computador quer capturar ' + yours + ' em ' + sqName(m.to) + ' com ' + ('QR'.includes(m.p.toUpperCase()) ? 'a ' : 'o ') + pN.toLowerCase() : pN + ' captura ' + cN + ' em ' + sqName(m.to));
     const head = h('div', { class: 'head' }, h('span', null, q.m), h('span', null, def ? 'Defesa' : 'Vez das ' + SIDE[mover]));
     const text = h('p', { class: 'text' }, q.q);
+    const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
     const answer = given => {
       const ok = given === q.g, checked = inCheck(G.st);
-      history.push({ m: q.m, ok, t: Date.now() - t0, p: who, k: kind, g: G.id, q: q.q, gab: q.g, c: q.c || '', ts: Date.now() });
+      history.push({ m: q.m, ok, t: Date.now() - t0, p: who, k: kind, g: G.id, q: q.q, gab: q.g, y: q.y ? 1 : 0, c: q.c || '', ts: Date.now() });
       if (history.length > 3000) history = history.slice(-3000);
       store.set('xq.history', history);
       let conseq;
@@ -864,15 +852,15 @@ if (typeof document !== 'undefined') (function () {
       openVeil(head, stake, text,
         h('div', { class: 'verdict ' + (ok ? 'ok' : 'bad') },
           h('span', { class: 'big' }, ok ? 'Resposta certa' : 'Resposta errada'),
-          h('p', null, 'Gabarito: ', h('b', null, q.g ? 'Certo' : 'Errado'), '. Você marcou ' + (given ? 'Certo' : 'Errado') + '.'),
+          h('p', null, 'Gabarito: ', h('b', null, q.g ? YES : NO), '. Você marcou ' + (given ? YES : NO) + '.'),
           q.c ? h('p', null, q.c) : null,
           h('p', null, conseq)),
         h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'));
     };
-    openVeil(head, stake, h('p', { class: 'cmd' }, def ? 'Julgue o item de jurisprudência. Se acertar, a captura é anulada. Se errar, você perde a peça.' : 'Julgue o item a seguir.'), text,
+    openVeil(head, stake, h('p', { class: 'cmd' }, (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, a captura é anulada. Se errar, você perde a peça.' : '')), text,
       h('div', { class: 'answers' },
-        h('button', { type: 'button', class: 'ans c', onclick: () => answer(true) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, 'C'), 'Certo'),
-        h('button', { type: 'button', class: 'ans e', onclick: () => answer(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, 'E'), 'Errado')));
+        h('button', { type: 'button', class: 'ans c', onclick: () => answer(true) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, YES[0]), YES),
+        h('button', { type: 'button', class: 'ans e', onclick: () => answer(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, NO[0]), NO)));
   }
 
   /* ---- Listas ---- */
@@ -881,22 +869,23 @@ if (typeof document !== 'undefined') (function () {
     for (const l of lists) {
       const subjects = new Set(l.items.map(q => q.m)).size;
       ul.append(h('li', null,
-        h('span', { class: 'nm' }, l.name), l.demo ? h('span', { class: 'tag' }, 'Exemplo') : null,
+        h('span', { class: 'nm' }, l.name),
         h('span', { class: 'tag ' + (l.juris ? 'bad' : 'dim') }, l.juris ? 'Jurisprudência · defesa' : 'Ataque'),
         h('span', { class: 'ct' }, l.items.length + ' q · ' + subjects + (subjects === 1 ? ' matéria' : ' matérias')),
-        h('button', { type: 'button', class: 'btn small', 'aria-label': (l.juris ? 'Usar no ataque a lista ' : 'Usar na defesa a lista ') + l.name, onclick: () => { l.juris = !l.juris; store.set('xq.lists', lists); renderLists(); renderStatus(); } }, l.juris ? 'Usar no ataque' : 'Usar na defesa'),
-        h('button', { type: 'button', class: 'btn small', 'aria-label': 'Remover a lista ' + l.name, onclick: () => { lists = lists.filter(x => x !== l); store.set('xq.lists', lists); renderLists(); renderStatus(); } }, 'Remover')));
+        h('button', { type: 'button', class: 'btn small', 'aria-label': (l.juris ? 'Usar no ataque a lista ' : 'Usar na defesa a lista ') + l.name, onclick: () => toggleJuris(l) }, l.juris ? 'Usar no ataque' : 'Usar na defesa'),
+        h('button', { type: 'button', class: 'btn small', 'aria-label': 'Remover a lista ' + l.name, onclick: () => removeList(l) }, 'Remover')));
     }
-    $('lists-empty').hidden = lists.length > 0;
+    $('lists-empty').hidden = lists.length > 0 || bank === 'loading';
+    $('btn-restore').hidden = !off.length;
   }
   function importText(text, name) {
-    const msg = $('import-msg'), nm = (name || $('in-name').value || '').trim() || 'Lista ' + (lists.filter(l => !l.demo).length + 1);
+    const msg = $('import-msg'), nm = (name || $('in-name').value || '').trim() || 'Lista ' + (userLists.length + 1);
     const { items, errors } = parseList(text, nm);
     msg.hidden = false;
     if (!items.length) { msg.className = 'msg bad'; msg.textContent = 'Nenhuma questão importada. ' + errors.slice(0, 3).join(' '); return; }
     const juris = $('in-juris').checked || items.every(q => /jurisprud|s[úu]mula/i.test(q.m));
-    lists.push({ id: 'l' + Date.now().toString(36), name: nm, juris, items });
-    store.set('xq.lists', lists);
+    userLists.push({ id: 'l' + Date.now().toString(36), name: nm, juris, items });
+    store.set('xq.userLists', userLists); rebuildLists();
     msg.className = 'msg ' + (errors.length ? '' : 'ok');
     msg.textContent = items.length + (items.length === 1 ? ' questão adicionada' : ' questões adicionadas') + ' em "' + nm + '"' + (juris ? ', como jurisprudência (defesa).' : ', para as suas capturas.') + (errors.length ? ' ' + errors.length + (errors.length === 1 ? ' linha ignorada: ' : ' linhas ignoradas: ') + errors.slice(0, 3).join(' ') : '');
     $('in-text').value = ''; $('in-name').value = ''; $('in-juris').checked = false;
@@ -941,7 +930,7 @@ if (typeof document !== 'undefined') (function () {
     box.append(h('p', { class: 'note' }, 'As matérias aparecem da mais difícil para a mais fácil. A ordem usa a taxa de erro ajustada pela quantidade de respostas (limite inferior de Wilson, 90%), para que uma matéria com poucas questões não passe na frente de outra com erro consistente.'));
     const wrong = entries.filter(e => !e.ok).slice(-8).reverse();
     if (wrong.length) box.append(h('h3', null, 'Itens para revisar'), h('ul', { class: 'review' }, wrong.map(e => h('li', null,
-      h('div', { class: 'meta' }, e.m + ' · gabarito: ' + (e.gab ? 'Certo' : 'Errado')),
+      h('div', { class: 'meta' }, e.m + ' · gabarito: ' + (e.gab ? (e.y ? 'Sim' : 'Certo') : (e.y ? 'Não' : 'Errado'))),
       h('p', { class: 'q' }, e.q), e.c ? h('div', { class: 'meta' }, e.c) : null))));
   }
   $('scope-game').addEventListener('click', () => { view.scope = 'game'; renderPerf(); });
@@ -967,6 +956,12 @@ if (typeof document !== 'undefined') (function () {
   $('btn-new').addEventListener('click', newGame);
   syncLevel();
 
+  $('btn-restore').addEventListener('click', () => { off = []; jurOv = {}; store.set('xq.off', off); store.set('xq.jur', jurOv); rebuildLists(); renderLists(); renderStatus(); });
+  rebuildLists();
+  fetch('questoes.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => { builtin = Array.isArray(d.lists) ? d.lists : []; bank = 'ok'; })
+    .catch(() => { bank = 'fail'; })
+    .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } });
   function start(data) {
     if (data && data.G && data.G.st) {
       G = data.G; G.thinking = false; G.sel = -1; closeVeil();
