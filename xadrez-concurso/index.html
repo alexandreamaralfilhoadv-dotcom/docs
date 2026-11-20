@@ -105,7 +105,8 @@ button { cursor: pointer; }
 /* No palco o avatar é grande e sem moldura: o busto encosta na borda do tabuleiro. */
 .stage > .portrait[data-mood] { aspect-ratio: 1 / 1.04; align-self: end; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .stage > .portrait svg { inset: 0 0 auto auto; width: 26%; height: auto; aspect-ratio: 1; }
-.stage > .portrait img { width: 124%; max-width: none; height: auto; margin-left: -12%; object-fit: fill; }
+.stage > .portrait img { width: 124%; max-width: none; height: auto; margin-left: -12%; object-fit: fill; filter: drop-shadow(0 0 1.5px rgba(245, 242, 255, .7)); }
+.stage > .portrait[data-mood="sad"] img { filter: saturate(.45) brightness(.8) drop-shadow(0 0 1.5px rgba(245, 242, 255, .7)); }
 .talk { display: flex; flex-direction: column; min-width: 0; align-self: center; padding-bottom: 14px; }
 .stage.solo .talk { padding-bottom: 0; }
 .speech {
@@ -833,7 +834,10 @@ if (typeof document !== 'undefined') (function () {
     { id: 'edward', name: 'Edward', role: 'Examinador', f: false, img: 'personagens/edward.webp', body: 'personagens/edward-corpo.webp', gif: 'personagens/edward-desafio.webp', gif2: 'personagens/edward-final.webp',
       hype2: ['Quinze capturas. Final de jogo: minha especialidade.', 'Já calculei as próximas dez jogadas. Nenhuma é boa para você.', 'Poucas peças, poucas saídas. Vamos ver a sua técnica.'],
       hype: ['Oito capturas! A partir daqui, cada erro é fatal!', 'Pelos meus cálculos, você cai antes do fim!', 'Impugno a sua estratégia! Prove que eu estou errado!'],
-      start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] }
+      start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] },
+    { id: 'pedro', name: 'Pedro', role: 'Examinador', f: false, img: 'personagens/pedro.webp', body: 'personagens/pedro-corpo.webp', gif: 'personagens/pedro-desafio.webp',
+      hype: ['Oito capturas. Agora eu paro de pegar leve!', 'Aí está o seu erro! Eu estava esperando por ele.', 'Chega. Daqui em diante, nenhuma peça sua está segura!'],
+      start: ['Pedro. Falo pouco. As minhas questões falam por mim.', 'Sem pressa. Eu costumo ganhar no final.', 'Estude o tabuleiro. Eu já estudei você.'] }
   ];
   const rival = () => CAST.find(c => c.id === (G && G.rivalId)) || CAST[0];
   // Marcas de expressão sobre o retrato (o avatar é uma imagem única por personagem).
@@ -1088,7 +1092,7 @@ if (typeof document !== 'undefined') (function () {
     const replies = legalMoves(G.st), chk = inCheck(G.st);
     G.log.push({ text: text + (chk ? (replies.length ? '+' : '#') : ''), kind: kind || 'move' });
     if (m.cap && G.mode === 'ai') {
-      const total = G.capW.length + G.capB.length, level = total >= HYPE_AT[1] ? 2 : total >= HYPE_AT[0] ? 1 : 0;
+      const total = G.capW.length + G.capB.length, level = total >= HYPE_AT[1] && rival().gif2 ? 2 : total >= HYPE_AT[0] ? 1 : 0;   // sem imagem da 2ª cena, o personagem só tem a 1ª
       if (level > (Number(G.hyped) || 0)) { G.hyped = level; startHype(level); }
     }
     afterTurn(replies, chk);
