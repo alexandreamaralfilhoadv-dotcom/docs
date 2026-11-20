@@ -105,6 +105,10 @@ button { cursor: pointer; }
 /* No palco o avatar é grande e sem moldura: o busto encosta na borda do tabuleiro. */
 .stage > .portrait[data-mood] { aspect-ratio: 1 / 1.04; align-self: end; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .stage > .portrait svg { inset: 0 0 auto auto; width: 26%; height: auto; aspect-ratio: 1; }
+.stage > .portrait.framed[data-mood] { border: 3px solid var(--on-bg); border-radius: 6px; box-shadow: 4px 4px 0 var(--accent); margin-bottom: 10px; }
+.stage > .portrait.framed img, .stage > .portrait.framed[data-mood="sad"] img { width: 100%; height: 100%; margin-left: 0; object-fit: cover; }
+.stage > .portrait.framed img { filter: none; }
+.stage > .portrait.framed[data-mood="sad"] img { filter: saturate(.45) brightness(.8); }
 .stage > .portrait img { width: 124%; max-width: none; height: auto; margin-left: -12%; object-fit: fill; filter: drop-shadow(0 0 1.5px rgba(245, 242, 255, .7)); }
 .stage > .portrait[data-mood="sad"] img { filter: saturate(.45) brightness(.8) drop-shadow(0 0 1.5px rgba(245, 242, 255, .7)); }
 .talk { display: flex; flex-direction: column; min-width: 0; align-self: center; padding-bottom: 14px; }
@@ -842,7 +846,12 @@ if (typeof document !== 'undefined') (function () {
       start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] },
     { id: 'pedro', name: 'Pedro', role: 'Examinador', f: false, img: 'personagens/pedro.webp', body: 'personagens/pedro-corpo.webp', gif: 'personagens/pedro-desafio.webp',
       hype: ['Quatro capturas. Agora eu paro de pegar leve!', 'Aí está o seu erro! Eu estava esperando por ele.', 'Chega. Daqui em diante, nenhuma peça sua está segura!'],
-      start: ['Pedro. Falo pouco. As minhas questões falam por mim.', 'Sem pressa. Eu costumo ganhar no final.', 'Estude o tabuleiro. Eu já estudei você.'] }
+      start: ['Pedro. Falo pouco. As minhas questões falam por mim.', 'Sem pressa. Eu costumo ganhar no final.', 'Estude o tabuleiro. Eu já estudei você.'] },
+    // Tai: o avatar é o recorte da ilustração (com moldura), e muda de olhar quando ela pensa.
+    { id: 'tai', name: 'Tai', role: 'Examinadora', f: true, framed: true, img: 'personagens/tai.webp', body: 'personagens/tai-corpo.webp', bodyThink: 'personagens/tai-corpo-pensa.webp', gif: 'personagens/tai-desafio.webp',
+      hype: ['Quatro capturas. Agora o jogo ficou interessante.'],
+      start: ['Sou a Tai. Vamos ver como você pensa.'],
+      say: {} }   // falas próprias por situação (filosofia); enquanto vazio, usa as falas comuns
   ];
   const rival = () => CAST.find(c => c.id === (G && G.rivalId)) || CAST[0];
   // Marcas de expressão sobre o retrato (o avatar é uma imagem única por personagem).
@@ -875,7 +884,9 @@ if (typeof document !== 'undefined') (function () {
   let typeTimer = null;
   function paintRival(animate) {
     const r = (G && G.rival) || { mood: 'neutral', text: '' }, el = $('rival-line'), pt = $('rival-portrait'), c = rival();
-    if (pt.dataset.who !== c.id) { pt.dataset.who = c.id; pt.innerHTML = portraitHTML(c, true); }
+    if (pt.dataset.who !== c.id) { pt.dataset.who = c.id; pt.innerHTML = portraitHTML(c, true); pt.classList.toggle('framed', !!c.framed); if (c.bodyThink) new Image().src = c.bodyThink; }
+    const face = pt.querySelector('img'), want = r.mood === 'think' && c.bodyThink ? c.bodyThink : c.body;
+    if (face && face.getAttribute('src') !== want) face.src = want;
     pt.dataset.mood = r.mood; $('rival-sr').textContent = r.text;
     clearInterval(typeTimer);
     const still = !animate || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -890,7 +901,8 @@ if (typeof document !== 'undefined') (function () {
   function unlockLine() { clearTimeout(hypeTimer); hypeTimer = null; $('stage').classList.remove('lockline'); }
   function say(mood, key) {
     if (!G || G.mode !== 'ai') return '';
-    const c = rival(), text = pick(key === 'start' ? c.start : key === 'hype' ? c.hype : key === 'hype2' ? c.hype2 : SAY[key]);
+    const c = rival(), own = c.say && c.say[key];
+    const text = pick(key === 'start' ? c.start : key === 'hype' ? c.hype : key === 'hype2' ? c.hype2 : (own && own.length ? own : SAY[key]));
     const ending = key === 'lose' || key === 'win' || key === 'draw';
     if (hypeTimer && key !== 'hype' && key !== 'hype2') { if (!ending) return text; unlockLine(); }   // a frase de desafio fica fixa por alguns segundos
     G.rival = { mood, text }; paintRival(true); return text;
