@@ -105,6 +105,7 @@ button { cursor: pointer; }
 /* No palco o avatar é grande e sem moldura: o busto encosta na borda do tabuleiro. */
 .stage > .portrait[data-mood] { aspect-ratio: 1 / 1.04; align-self: end; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .stage > .portrait svg { inset: 0 0 auto auto; width: 26%; height: auto; aspect-ratio: 1; }
+.stage > .portrait.em-left svg { inset: 0 auto auto 0; transform: scaleX(-1); }
 .stage > .portrait.framed[data-mood] { border: 3px solid var(--on-bg); border-radius: 6px; box-shadow: 4px 4px 0 var(--accent); margin-bottom: 10px; }
 .stage > .portrait.framed img, .stage > .portrait.framed[data-mood="sad"] img { width: 100%; height: 100%; margin-left: 0; object-fit: cover; }
 .stage > .portrait.framed img { filter: none; }
@@ -836,11 +837,11 @@ if (typeof document !== 'undefined') (function () {
   /* ---- A rival: retrato vetorial com expressões e falas ---- */
   // Elenco: um adversário é sorteado a cada partida. As imagens ficam em personagens/.
   const CAST = [
-    { id: 'lucy', name: 'Lucy', role: 'Examinadora', f: true, img: 'personagens/lucy.webp', body: 'personagens/lucy-corpo.webp', gif: 'personagens/lucy-desafio.webp', gif2: 'personagens/lucy-final.webp',
+    { id: 'lucy', name: 'Lucy', role: 'Examinadora', f: true, framed: true, emoteLeft: true, img: 'personagens/lucy-retrato.webp', body: 'personagens/lucy-busto.webp', gif: 'personagens/lucy-desafio.webp', gif2: 'personagens/lucy-final.webp',
       hype2: ['Quinze peças a menos… e eu já enxergo o final desta partida.', 'O tabuleiro esvaziou. Agora não há onde esconder um erro.', 'Fim de jogo é comigo. Tem certeza de que quer continuar?'],
       hype: ['Quatro peças fora do tabuleiro. Agora a prova começa de verdade!', 'Protesto! Daqui você não passa!', 'Chega de aquecimento. Mostre o que estudou!'],
       start: ['Sou a Lucy. Hoje quem corrige a sua prova sou eu.', 'Sente-se. A prova de hoje é no tabuleiro.', 'Eu elaboro as questões. Você só precisa acertar.'] },
-    { id: 'edward', name: 'Edward', role: 'Examinador', f: false, img: 'personagens/edward.webp', body: 'personagens/edward-corpo.webp', gif: 'personagens/edward-desafio.webp', gif2: 'personagens/edward-final.webp',
+    { id: 'edward', name: 'Edward', role: 'Examinador', f: false, framed: true, img: 'personagens/edward-retrato.webp', body: 'personagens/edward-busto.webp', gif: 'personagens/edward-desafio.webp', gif2: 'personagens/edward-final.webp',
       hype2: ['Quinze capturas. Final de jogo: minha especialidade.', 'Já calculei as próximas dez jogadas. Nenhuma é boa para você.', 'Poucas peças, poucas saídas. Vamos ver a sua técnica.'],
       hype: ['Quatro capturas! A partir daqui, cada erro é fatal!', 'Pelos meus cálculos, você cai antes do fim!', 'Impugno a sua estratégia! Prove que eu estou errado!'],
       start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] },
@@ -866,8 +867,8 @@ if (typeof document !== 'undefined') (function () {
         lose: ["Falhei em tudo. Como não fiz propósito nenhum, talvez tudo fosse nada. GG.", "Xeque-mate. A luz apagou, o rei caiu, e eu nem me chamo Raimundo.", "Xeque-mate. Ao final de tudo, constato que o tabuleiro ganhou de mim. De novo.", "Perdi. Eis o meu necrológio às avessas: jogava mal, mas escrevia bonito."],
         win: ["Xeque-mate. Deus quer, o homem sonha, o Pedro ganha.", "Xeque-mate. Estive duas vezes enganado: achei que ia perder e que ia ser difícil."],
         draw: ["Empate. Se eu me chamasse Raimundo, seria uma rima, não uma vitória.", "Empate. Nem vingança, nem purgação: só impareável descompasso.", "Empate. Duas epopeias de bairro que não deram em nada."] } },
-    // Tai: o avatar é o recorte da ilustração (com moldura), e muda de olhar quando ela pensa.
-    { id: 'tai', name: 'Tai', role: 'Examinadora', f: true, framed: true, img: 'personagens/tai.webp', body: 'personagens/tai-corpo.webp', bodyThink: 'personagens/tai-corpo-pensa.webp', gif: 'personagens/tai-desafio.webp',
+    // Tai: o avatar é o recorte da ilustração de frente (com moldura); as marcas de reação ficam à esquerda, longe do rosto.
+    { id: 'tai', name: 'Tai', role: 'Examinadora', f: true, framed: true, emoteLeft: true, img: 'personagens/tai-retrato.webp', body: 'personagens/tai-busto.webp', gif: 'personagens/tai-desafio.webp',
       // Falas da Tai: Kant, Bergson e Rainer Forst em trocadilhos com o xadrez.
       hype: ["Chega de fenômenos. Agora você enfrenta a coisa em si!", "Quatro capturas. O élan vital acordou!", "Agora eu exijo razões que ninguém possa rejeitar!", "Quatro peças fora. Evolução criadora: eu evoluo, você cria desculpas."],
       start: ["Sapere aude! Ouse saber… a resposta. As brancas começam.", "O relógio mede o tempo. Eu jogo na duração. Comece.", "Aqui todo lance deve uma justificação. Pode começar a dever.", "Kant nunca saiu de Königsberg. Você não vai sair nem da abertura."],
@@ -919,7 +920,7 @@ if (typeof document !== 'undefined') (function () {
   let typeTimer = null;
   function paintRival(animate) {
     const r = (G && G.rival) || { mood: 'neutral', text: '' }, el = $('rival-line'), pt = $('rival-portrait'), c = rival();
-    if (pt.dataset.who !== c.id) { pt.dataset.who = c.id; pt.innerHTML = portraitHTML(c, true); pt.classList.toggle('framed', !!c.framed); if (c.bodyThink) new Image().src = c.bodyThink; }
+    if (pt.dataset.who !== c.id) { pt.dataset.who = c.id; pt.innerHTML = portraitHTML(c, true); pt.classList.toggle('framed', !!c.framed); pt.classList.toggle('em-left', !!c.emoteLeft); if (c.bodyThink) new Image().src = c.bodyThink; }
     const face = pt.querySelector('img'), want = r.mood === 'think' && c.bodyThink ? c.bodyThink : c.body;
     if (face && face.getAttribute('src') !== want) face.src = want;
     pt.dataset.mood = r.mood; $('rival-sr').textContent = r.text;
