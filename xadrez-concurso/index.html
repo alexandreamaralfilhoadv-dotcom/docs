@@ -70,12 +70,13 @@ body {
   display: flex; flex-direction: column; gap: 18px;
   position: relative; z-index: 1;
 }
-/* Faixa da biblioteca no topo: some no fundo da página; a imagem muda com o horário (manhã, dia, noite). */
+/* Faixa da biblioteca no topo (as janelas com a vista da cidade): some no fundo da página e muda com o horário. */
 .hero {
   position: absolute; inset: 0 0 auto 0; height: clamp(190px, 34vw, 330px); pointer-events: none; overflow: hidden;
   -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent);
 }
-.hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+.hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 34%; }
+.hero.rain img { image-rendering: pixelated; }
 .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16, 12, 36, .5), rgba(16, 12, 36, .2) 50%, rgba(16, 12, 36, .08)); }
 .hero.night::after { background: linear-gradient(90deg, rgba(8, 9, 20, .42), rgba(8, 9, 20, .15) 50%, rgba(8, 9, 20, .04)); }
 button, select, textarea, input { font: inherit; color: inherit; }
@@ -878,6 +879,7 @@ if (typeof document !== 'undefined') (function () {
   const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false, length: 'normal', scheme: 'padrao', tema: 'auto' }, store.get('xq.prefs', {}));
   const view = { scope: 'game', player: 'w' };
   let G = null, aiTimer = null;
+  let raining = false;   // sorteado a cada partida; só vale à tarde, no tema automático
 
   /* ---- A rival: retrato vetorial com expressões e falas ---- */
   // Elenco: um adversário é sorteado a cada partida. As imagens ficam em personagens/.
@@ -1026,6 +1028,7 @@ if (typeof document !== 'undefined') (function () {
     const rivalId = pick(CAST).id;
     G = { rivalId, short: prefs.length === 'curta', st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [], capTries: {} };
     G.reps[posKey(G.st)] = 1;
+    raining = Math.random() < RAIN_CHANCE; applyScheme();
     closeVeil(); renderAll();
     const opening = say('neutral', 'start');
     if (G.mode === 'ai' && opening && quiet !== true) openCut(opening);
@@ -1476,26 +1479,29 @@ if (typeof document !== 'undefined') (function () {
   $('opt-reforco').checked = !!prefs.reforco;
   $('opt-reforco').addEventListener('change', ev => { prefs.reforco = ev.target.checked; store.set('xq.prefs', prefs); });
   $('btn-new').addEventListener('click', openSetup);
-  // Tema: 'auto' segue o relógio do aparelho; 'escuro' e 'claro' fixam a escolha.
-  // A faixa da biblioteca muda com o horário: manhã (5h–9h), dia (9h–18h) e noite (18h–5h).
-  // À noite entra também o esquema escuro.
-  const SCENES = { morning: 'cenario/biblioteca-manha.webp', day: 'cenario/biblioteca-dia.webp', night: 'cenario/biblioteca-noite.webp' };
-  const MORNING_FROM = 5, DAY_FROM = 9, NIGHT_FROM = 18;
+  // Tema: 'auto' segue o relógio do aparelho; 'escuro', 'claro' e 'chuva' fixam a escolha.
+  // A faixa mostra as janelas da biblioteca, e a vista muda com o horário: manhã (5h–9h), dia (9h–18h) e noite (18h–5h).
+  // À noite entra também o esquema escuro. No automático, chove à tarde (12h–18h) em três de cada quatro partidas.
+  const SCENES = { morning: 'cenario/janelas-manha.webp', day: 'cenario/janelas-dia.webp', night: 'cenario/janelas-noite.webp', rain: 'cenario/janelas-chuva.webp' };
+  const MORNING_FROM = 5, DAY_FROM = 9, AFTERNOON_FROM = 12, NIGHT_FROM = 18, RAIN_CHANCE = .75;
+  const isAfternoon = () => { const h = new Date().getHours(); return h >= AFTERNOON_FROM && h < NIGHT_FROM; };
   const periodNow = () => { const h = new Date().getHours(); return h >= NIGHT_FROM || h < MORNING_FROM ? 'night' : h < DAY_FROM ? 'morning' : 'day'; };
-  const TEMA_LABEL = { auto: 'Tema: automático', escuro: 'Tema: escuro', claro: 'Tema: claro' };
+  const TEMA_LABEL = { auto: 'Tema: automático', escuro: 'Tema: escuro', claro: 'Tema: claro', chuva: 'Tema: chuva' };
+  const TEMA_NEXT = { auto: 'escuro', escuro: 'claro', claro: 'chuva', chuva: 'auto' };
   function applyScheme() {
+    if (!TEMA_LABEL[prefs.tema]) prefs.tema = 'auto';
     const clock = periodNow();
-    // Tema fixo: o escuro sempre mostra a biblioteca à noite; o claro nunca mostra a noite.
+    // Tema fixo: o escuro sempre mostra a noite; o claro nunca mostra a noite; a chuva só troca a vista.
     const period = prefs.tema === 'escuro' ? 'night' : prefs.tema === 'claro' ? (clock === 'night' ? 'day' : clock) : clock;
-    const night = period === 'night';
+    const night = period === 'night', rain = prefs.tema === 'chuva' || (prefs.tema === 'auto' && raining && isAfternoon());
     if (night) document.documentElement.dataset.scheme = 'noite'; else delete document.documentElement.dataset.scheme;
-    const hero = $('hero'), src = SCENES[period];
-    hero.classList.toggle('night', night);
+    const hero = $('hero'), src = rain ? SCENES.rain : SCENES[period];
+    hero.classList.toggle('night', night || rain); hero.classList.toggle('rain', rain);
     if ($('hero-img').getAttribute('src') !== src) $('hero-img').src = src;
-    $('btn-scheme').textContent = TEMA_LABEL[prefs.tema] || TEMA_LABEL.auto;
-    $('btn-scheme').title = TEMA_LABEL[prefs.tema] && prefs.tema !== 'auto' ? 'Toque para mudar o tema.' : 'Manhã das ' + MORNING_FROM + 'h às ' + DAY_FROM + 'h, dia até as ' + NIGHT_FROM + 'h, noite depois, pelo relógio do aparelho. Toque para fixar.';
+    $('btn-scheme').textContent = TEMA_LABEL[prefs.tema];
+    $('btn-scheme').title = prefs.tema === 'auto' ? 'Manhã das ' + MORNING_FROM + 'h às ' + DAY_FROM + 'h, dia até as ' + NIGHT_FROM + 'h, noite depois, pelo relógio do aparelho; à tarde costuma chover. Toque para fixar.' : 'Toque para mudar o tema.';
   }
-  $('btn-scheme').addEventListener('click', () => { prefs.tema = prefs.tema === 'auto' ? 'escuro' : prefs.tema === 'escuro' ? 'claro' : 'auto'; store.set('xq.prefs', prefs); applyScheme(); });
+  $('btn-scheme').addEventListener('click', () => { prefs.tema = TEMA_NEXT[prefs.tema] || 'auto'; store.set('xq.prefs', prefs); applyScheme(); });
   applyScheme();
   setInterval(applyScheme, 5 * 60 * 1000);   // acompanha a virada do horário com o jogo aberto
   $('btn-errs').addEventListener('click', () => { errView.game = G.id; showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); });
