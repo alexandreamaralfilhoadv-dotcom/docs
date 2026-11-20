@@ -77,6 +77,15 @@ body {
 }
 .hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 34%; }
 .hero.rain img { image-rendering: pixelated; }
+/* Modo cenário: o caderno some e a biblioteca ocupa a página inteira, atrás do tabuleiro. */
+.hero.full { position: fixed; inset: 0; height: auto; -webkit-mask-image: none; mask-image: none; }
+.hero.full img { object-position: 24% 50%; }
+.hero.full::after, .hero.full.night::after { background: linear-gradient(180deg, rgba(12, 9, 28, .6), rgba(12, 9, 28, .1) 26%, rgba(12, 9, 28, .1) 74%, rgba(12, 9, 28, .5)); }
+body.scenic .book, body.scenic .top p, body.scenic .table > .note { display: none; }
+@media (min-width: 881px) {
+  body.scenic .main { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); }
+  body.scenic .table { grid-column: 2; }   /* tabuleiro à direita: as janelas com a vista ficam livres à esquerda */
+}
 .hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16, 12, 36, .5), rgba(16, 12, 36, .2) 50%, rgba(16, 12, 36, .08)); }
 .hero.night::after { background: linear-gradient(90deg, rgba(8, 9, 20, .42), rgba(8, 9, 20, .15) 50%, rgba(8, 9, 20, .04)); }
 button, select, textarea, input { font: inherit; color: inherit; }
@@ -406,6 +415,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
     </div>
     <div class="controls">
       <span class="chip" id="chip-subject">Todas as matérias</span>
+      <button class="btn" id="btn-menu" type="button" aria-pressed="false">Ocultar menu</button>
       <button class="btn" id="btn-scheme" type="button">Tema: automático</button>
       <button class="btn primary" id="btn-new" type="button">Nova partida</button>
     </div>
@@ -876,7 +886,7 @@ if (typeof document !== 'undefined') (function () {
   }
   let history = store.get('xq.history', []);
   if (!Array.isArray(history)) history = [];
-  const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false, length: 'normal', scheme: 'padrao', tema: 'auto' }, store.get('xq.prefs', {}));
+  const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false, length: 'normal', scheme: 'padrao', tema: 'auto', cenario: false }, store.get('xq.prefs', {}));
   const view = { scope: 'game', player: 'w' };
   let G = null, aiTimer = null;
   let raining = false;   // sorteado a cada partida; só vale à tarde, no tema automático
@@ -1503,6 +1513,14 @@ if (typeof document !== 'undefined') (function () {
   }
   $('btn-scheme').addEventListener('click', () => { prefs.tema = TEMA_NEXT[prefs.tema] || 'auto'; store.set('xq.prefs', prefs); applyScheme(); });
   applyScheme();
+  // Modo cenário: esconde o caderno (partida, questões, desempenho, erros) para a biblioteca aparecer inteira.
+  function applyScenic() {
+    const on = !!prefs.cenario;
+    document.body.classList.toggle('scenic', on); $('hero').classList.toggle('full', on);
+    $('btn-menu').textContent = on ? 'Mostrar menu' : 'Ocultar menu'; $('btn-menu').setAttribute('aria-pressed', on);
+  }
+  $('btn-menu').addEventListener('click', () => { prefs.cenario = !prefs.cenario; store.set('xq.prefs', prefs); applyScenic(); });
+  applyScenic();
   setInterval(applyScheme, 5 * 60 * 1000);   // acompanha a virada do horário com o jogo aberto
   $('btn-errs').addEventListener('click', () => { errView.game = G.id; showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); });
 
