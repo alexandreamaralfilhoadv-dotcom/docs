@@ -76,10 +76,10 @@ body {
   -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent);
 }
 .hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 34%; }
-.hero.rain img { image-rendering: pixelated; }
+.hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 34%; }
 /* Modo cenário: o caderno some e a biblioteca ocupa a página inteira, atrás do tabuleiro. */
 .hero.full { position: fixed; inset: 0; height: auto; -webkit-mask-image: none; mask-image: none; }
-.hero.full img { object-position: 24% 50%; }
+.hero.full img, .hero.full video { object-position: 24% 50%; }
 .hero.full::after, .hero.full.night::after { background: linear-gradient(180deg, rgba(12, 9, 28, .6), rgba(12, 9, 28, .1) 26%, rgba(12, 9, 28, .1) 74%, rgba(12, 9, 28, .5)); }
 body.scenic .book, body.scenic .top p, body.scenic .table > .note { display: none; }
 @media (min-width: 881px) {
@@ -445,7 +445,7 @@ details.err.due { border-left-color: var(--gold); }
 }
 </style>
 
-<div class="hero" id="hero" aria-hidden="true"><img id="hero-img" alt=""></div>
+<div class="hero" id="hero" aria-hidden="true"><img id="hero-img" alt=""><video id="hero-vid" muted loop playsinline preload="none" hidden></video></div>
 <div class="page">
   <header class="top">
     <div>
@@ -1575,6 +1575,7 @@ if (typeof document !== 'undefined') (function () {
   // A faixa mostra as janelas da biblioteca, e a vista muda com o horário: manhã (5h–9h), dia (9h–18h) e noite (18h–5h).
   // À noite entra também o esquema escuro. No automático, chove à tarde (12h–18h) em três de cada quatro partidas.
   const SCENES = { morning: 'cenario/janelas-manha.webp', day: 'cenario/janelas-dia.webp', night: 'cenario/janelas-noite.webp', rain: 'cenario/janelas-chuva.webp' };
+  const RAIN_VIDEO = 'cenario/janelas-chuva.mp4';   // a chuva é um vídeo em laço; a imagem acima é o quadro parado de reserva
   const MORNING_FROM = 5, DAY_FROM = 9, AFTERNOON_FROM = 12, NIGHT_FROM = 18, RAIN_CHANCE = .75;
   const isAfternoon = () => { const h = new Date().getHours(); return h >= AFTERNOON_FROM && h < NIGHT_FROM; };
   const periodNow = () => { const h = new Date().getHours(); return h >= NIGHT_FROM || h < MORNING_FROM ? 'night' : h < DAY_FROM ? 'morning' : 'day'; };
@@ -1590,10 +1591,17 @@ if (typeof document !== 'undefined') (function () {
     const hero = $('hero'), src = rain ? SCENES.rain : SCENES[period];
     hero.classList.toggle('night', night || rain); hero.classList.toggle('rain', rain);
     if ($('hero-img').getAttribute('src') !== src) $('hero-img').src = src;
+    // Chuva animada: toca o vídeo por cima do quadro parado. Se o aparelho não tocar (ou pedir menos movimento), fica o quadro.
+    const vid = $('hero-vid'), calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (rain && !calm && !vid.dataset.failed) {
+      if (vid.getAttribute('src') !== RAIN_VIDEO) vid.src = RAIN_VIDEO;
+      if (vid.paused) { const pl = vid.play(); if (pl && pl.then) pl.then(() => { if ($('hero').classList.contains('rain')) vid.hidden = false; }).catch(() => { vid.hidden = true; }); }
+    } else { vid.pause(); vid.hidden = true; }
     $('btn-scheme').textContent = TEMA_LABEL[prefs.tema];
     $('btn-scheme').title = prefs.tema === 'auto' ? 'Manhã das ' + MORNING_FROM + 'h às ' + DAY_FROM + 'h, dia até as ' + NIGHT_FROM + 'h, noite depois, pelo relógio do aparelho; à tarde costuma chover. Toque para fixar.' : 'Toque para mudar o tema.';
   }
   $('btn-scheme').addEventListener('click', () => { prefs.tema = TEMA_NEXT[prefs.tema] || 'auto'; store.set('xq.prefs', prefs); applyScheme(); });
+  $('hero-vid').addEventListener('error', () => { $('hero-vid').dataset.failed = '1'; $('hero-vid').hidden = true; });
   applyScheme();
   // Modo cenário: esconde o caderno (partida, questões, desempenho, erros) para a biblioteca aparecer inteira.
   function applyScenic() {
