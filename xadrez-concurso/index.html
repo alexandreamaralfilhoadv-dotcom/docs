@@ -989,14 +989,15 @@ if (typeof document !== 'undefined') (function () {
   $('cut').addEventListener('click', closeCut);
   document.addEventListener('keydown', e => { if (!$('cut').hidden && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); closeCut(); } });
 
-  function newGame() {
+  // quiet: prepara o tabuleiro sem a cena de abertura (usado ao abrir o jogo, antes da tela de escolha).
+  function newGame(quiet) {
     clearTimeout(aiTimer); clearHype(); closeCut();
     const rivalId = pick(CAST).id;
     G = { rivalId, st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [] };
     G.reps[posKey(G.st)] = 1;
     closeVeil(); renderAll();
     const opening = say('neutral', 'start');
-    if (G.mode === 'ai' && opening) openCut(opening);
+    if (G.mode === 'ai' && opening && quiet !== true) openCut(opening);
   }
   /* ---- Matérias ---- */
   const subjCache = new Map();
@@ -1548,7 +1549,7 @@ if (typeof document !== 'undefined') (function () {
     if (data && data.G && data.G.st) {
       G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; closeVeil(); paintRival(false); clearHype(); if (G.mode === 'ai' && G.hyped) showScene(Number(G.hyped));
       if (!G.over && G.mode === 'ai' && G.st.turn === 'b') afterTurn(legalMoves(G.st), inCheck(G.st)); else renderAll();
-    } else { newGame(); openSetup(); }
+    } else { newGame(true); openSetup(); }
     renderErrs(); initCloud();
   }
   const hot = window.claude && window.claude.hot;
