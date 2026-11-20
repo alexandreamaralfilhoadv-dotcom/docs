@@ -844,7 +844,10 @@ if (typeof document !== 'undefined') (function () {
       hype2: ['Quinze capturas. Final de jogo: minha especialidade.', 'Já calculei as próximas dez jogadas. Nenhuma é boa para você.', 'Poucas peças, poucas saídas. Vamos ver a sua técnica.'],
       hype: ['Quatro capturas! A partir daqui, cada erro é fatal!', 'Pelos meus cálculos, você cai antes do fim!', 'Impugno a sua estratégia! Prove que eu estou errado!'],
       start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] },
-    { id: 'pedro', name: 'Pedro', role: 'Examinador', f: false, img: 'personagens/pedro.webp', body: 'personagens/pedro-corpo.webp', gif: 'personagens/pedro-desafio.webp',
+    // Pedro: avatar recortado da ilustração na biblioteca (com moldura); a ilustração inteira é a cena da 15ª captura.
+    { id: 'pedro', name: 'Pedro', role: 'Examinador', f: false, framed: true, img: 'personagens/pedro.webp', body: 'personagens/pedro-corpo.webp', gif: 'personagens/pedro-desafio.webp', gif2: 'personagens/pedro-final.webp',
+      hype2: ['Quinze capturas. Agora é final de jogo, e eu gosto de finais.'],
+      say: {},   // falas próprias por situação; enquanto vazio, usa as falas comuns
       hype: ['Quatro capturas. Agora eu paro de pegar leve!', 'Aí está o seu erro! Eu estava esperando por ele.', 'Chega. Daqui em diante, nenhuma peça sua está segura!'],
       start: ['Pedro. Falo pouco. As minhas questões falam por mim.', 'Sem pressa. Eu costumo ganhar no final.', 'Estude o tabuleiro. Eu já estudei você.'] },
     // Tai: o avatar é o recorte da ilustração (com moldura), e muda de olhar quando ela pensa.
