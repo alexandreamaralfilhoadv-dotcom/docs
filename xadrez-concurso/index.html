@@ -121,10 +121,12 @@ button { cursor: pointer; }
 .nameplate { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; color: var(--gold); }
 .nameplate b { font-family: var(--f-display); font-weight: 400; font-size: 14px; }
 .nameplate span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--on-bg-muted); }
-.speech .line { margin: 0; font-weight: 500; font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; min-height: 2.8em; }
+.speech .line { margin: 0; font-weight: 500; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; min-height: 2.8em; }
+@media (max-width: 560px) { .stage:not(.hype):not(.solo) .line { min-height: 5.6em; } }   /* reserva 4 linhas: o tabuleiro não se mexe quando a fala muda */
 .speech .caps, .side-strip .caps { font-family: var(--f-piece); font-size: 18px; letter-spacing: 1px; overflow-wrap: anywhere; }
 .speech .caps { color: var(--on-bg); }
-.speech .caps:empty { display: none; }
+.speech .caps { min-height: 24px; }   /* sempre reserva a linha das peças capturadas */
+.stage.hype .caps:empty { display: none; }
 
 /* Desafio: a animação ocupa o lugar do avatar por alguns segundos */
 .hypegif { display: none; border: 3px solid var(--on-bg); border-radius: 6px; box-shadow: 4px 4px 0 var(--accent); }
@@ -132,9 +134,12 @@ button { cursor: pointer; }
 .stage.hype > .portrait { display: none; }
 .stage.hype > .hypegif { display: block; height: 100%; width: auto; max-width: 64%; object-fit: cover; object-position: 25% 50%; }
 .stage.hype .talk { position: absolute; right: 0; bottom: 8px; width: min(46%, 300px); padding: 0; }
-.stage.hype .speech { border-color: var(--gold); background: rgba(12, 9, 30, .94); padding: 10px 12px; gap: 4px; }
-.stage.hype .speech::before, .stage.hype .caps, .stage.hype #rival-role { display: none; }
-.stage.hype .line { font-family: var(--f-display); font-size: 13px; line-height: 1.35; min-height: 0; }
+.stage.hype .speech { border-color: var(--on-bg-muted); background: rgba(12, 9, 30, .94); padding: 10px 12px; gap: 4px; }
+.stage.hype .speech::before, .stage.hype #rival-role { display: none; }
+.stage.hype .caps { font-size: 14px; min-height: 0; }
+.stage.hype.lockline .speech { border-color: var(--gold); }
+.stage.hype .line { font-size: 14px; line-height: 1.35; min-height: 0; }
+.stage.hype.lockline .line { font-family: var(--f-display); font-size: 13px; }
 /* Cena de abertura */
 .cut {
   position: fixed; inset: 0; z-index: 60; background: var(--shade); display: grid; place-items: center; cursor: pointer;
@@ -829,14 +834,14 @@ if (typeof document !== 'undefined') (function () {
   const CAST = [
     { id: 'lucy', name: 'Lucy', role: 'Examinadora', f: true, img: 'personagens/lucy.webp', body: 'personagens/lucy-corpo.webp', gif: 'personagens/lucy-desafio.webp', gif2: 'personagens/lucy-final.webp',
       hype2: ['Quinze peças a menos… e eu já enxergo o final desta partida.', 'O tabuleiro esvaziou. Agora não há onde esconder um erro.', 'Fim de jogo é comigo. Tem certeza de que quer continuar?'],
-      hype: ['Oito peças fora do tabuleiro. Agora a prova começa de verdade!', 'Protesto! Daqui você não passa!', 'Chega de aquecimento. Mostre o que estudou!'],
+      hype: ['Quatro peças fora do tabuleiro. Agora a prova começa de verdade!', 'Protesto! Daqui você não passa!', 'Chega de aquecimento. Mostre o que estudou!'],
       start: ['Sou a Lucy. Hoje quem corrige a sua prova sou eu.', 'Sente-se. A prova de hoje é no tabuleiro.', 'Eu elaboro as questões. Você só precisa acertar.'] },
     { id: 'edward', name: 'Edward', role: 'Examinador', f: false, img: 'personagens/edward.webp', body: 'personagens/edward-corpo.webp', gif: 'personagens/edward-desafio.webp', gif2: 'personagens/edward-final.webp',
       hype2: ['Quinze capturas. Final de jogo: minha especialidade.', 'Já calculei as próximas dez jogadas. Nenhuma é boa para você.', 'Poucas peças, poucas saídas. Vamos ver a sua técnica.'],
-      hype: ['Oito capturas! A partir daqui, cada erro é fatal!', 'Pelos meus cálculos, você cai antes do fim!', 'Impugno a sua estratégia! Prove que eu estou errado!'],
+      hype: ['Quatro capturas! A partir daqui, cada erro é fatal!', 'Pelos meus cálculos, você cai antes do fim!', 'Impugno a sua estratégia! Prove que eu estou errado!'],
       start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] },
     { id: 'pedro', name: 'Pedro', role: 'Examinador', f: false, img: 'personagens/pedro.webp', body: 'personagens/pedro-corpo.webp', gif: 'personagens/pedro-desafio.webp',
-      hype: ['Oito capturas. Agora eu paro de pegar leve!', 'Aí está o seu erro! Eu estava esperando por ele.', 'Chega. Daqui em diante, nenhuma peça sua está segura!'],
+      hype: ['Quatro capturas. Agora eu paro de pegar leve!', 'Aí está o seu erro! Eu estava esperando por ele.', 'Chega. Daqui em diante, nenhuma peça sua está segura!'],
       start: ['Pedro. Falo pouco. As minhas questões falam por mim.', 'Sem pressa. Eu costumo ganhar no final.', 'Estude o tabuleiro. Eu já estudei você.'] }
   ];
   const rival = () => CAST.find(c => c.id === (G && G.rivalId)) || CAST[0];
@@ -878,24 +883,33 @@ if (typeof document !== 'undefined') (function () {
     let i = 0; el.textContent = '';
     typeTimer = setInterval(() => { i += 2; el.textContent = r.text.slice(0, i); if (i >= r.text.length) clearInterval(typeTimer); }, 22);
   }
-  const HYPE_AT = [8, 15], HYPE_MS = 10000;   // capturas somadas que disparam o 1º e o 2º desafio
+  // Cenas da partida: na 4ª captura somada a animação do adversário assume o lugar do avatar
+  // e fica até o fim da partida, ou até ser trocada pela cena seguinte (15ª captura).
+  const HYPE_AT = [4, 15], LOCK_MS = 8000;   // LOCK_MS: tempo em que a frase de desafio fica fixa no balão
   let hypeTimer = null, cutTimer = null, cutType = null;
+  function unlockLine() { clearTimeout(hypeTimer); hypeTimer = null; $('stage').classList.remove('lockline'); }
   function say(mood, key) {
     if (!G || G.mode !== 'ai') return '';
     const c = rival(), text = pick(key === 'start' ? c.start : key === 'hype' ? c.hype : key === 'hype2' ? c.hype2 : SAY[key]);
     const ending = key === 'lose' || key === 'win' || key === 'draw';
-    if (hypeTimer && key !== 'hype' && key !== 'hype2') { if (!ending) return text; endHype(); }   // durante o desafio a frase fica fixa
+    if (hypeTimer && key !== 'hype' && key !== 'hype2') { if (!ending) return text; unlockLine(); }   // a frase de desafio fica fixa por alguns segundos
     G.rival = { mood, text }; paintRival(true); return text;
   }
-  // Desafio: ao chegar a 8 capturas somadas, a animação fica 10 s acima do tabuleiro.
-  function endHype() { clearTimeout(hypeTimer); hypeTimer = null; const st = $('stage'); st.classList.remove('hype'); st.style.height = ''; }
-  function startHype(level) {
-    const st = $('stage'), c = rival();
-    if (hypeTimer) { clearTimeout(hypeTimer); hypeTimer = null; } else st.style.height = st.offsetHeight + 'px';
-    $('rival-gif').src = level === 2 ? c.gif2 : c.gif; st.classList.add('hype');
-    say('smug', level === 2 ? 'hype2' : 'hype');
-    hypeTimer = setTimeout(() => { endHype(); if (G && G.rival) { G.rival.mood = 'smug'; paintRival(false); } }, HYPE_MS);
+  function clearHype() { unlockLine(); const st = $('stage'); st.classList.remove('hype'); st.style.height = ''; }
+  // Mostra a cena no lugar do avatar, mantendo a altura do palco para o tabuleiro não se mexer.
+  function showScene(level) {
+    const st = $('stage'), c = rival(), src = level === 2 && c.gif2 ? c.gif2 : c.gif;
+    st.classList.remove('hype'); st.style.height = ''; st.style.height = (st.offsetHeight - 10) + 'px';   // -10: compensa a margem negativa do palco normal
+    if ($('rival-gif').getAttribute('src') !== src) $('rival-gif').src = src;
+    st.classList.add('hype');
   }
+  function startHype(level) {
+    unlockLine(); showScene(level);
+    say('smug', level === 2 ? 'hype2' : 'hype');
+    $('stage').classList.add('lockline');
+    hypeTimer = setTimeout(unlockLine, LOCK_MS);
+  }
+  window.addEventListener('resize', () => { if (G && G.mode === 'ai' && G.hyped) showScene(Number(G.hyped)); });
   // Cena de abertura: animação em tela cheia com a frase inicial; fecha no toque ou sozinha.
   function closeCut() { clearTimeout(cutTimer); clearInterval(cutType); $('cut').hidden = true; }
   function openCut(text) {
@@ -910,7 +924,7 @@ if (typeof document !== 'undefined') (function () {
   document.addEventListener('keydown', e => { if (!$('cut').hidden && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); closeCut(); } });
 
   function newGame() {
-    clearTimeout(aiTimer); if (hypeTimer) endHype(); closeCut();
+    clearTimeout(aiTimer); clearHype(); closeCut();
     const rivalId = pick(CAST).id;
     G = { rivalId, st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [] };
     G.reps[posKey(G.st)] = 1;
@@ -1445,7 +1459,7 @@ if (typeof document !== 'undefined') (function () {
     .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } if (setupOpen) fillSubjects(); });
   function start(data) {
     if (data && data.G && data.G.st) {
-      G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; closeVeil(); paintRival(false);
+      G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; closeVeil(); paintRival(false); clearHype(); if (G.mode === 'ai' && G.hyped) showScene(Number(G.hyped));
       if (!G.over && G.mode === 'ai' && G.st.turn === 'b') afterTurn(legalMoves(G.st), inCheck(G.st)); else renderAll();
     } else { newGame(); openSetup(); }
     renderErrs(); initCloud();
