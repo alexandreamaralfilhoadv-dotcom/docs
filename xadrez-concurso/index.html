@@ -314,8 +314,11 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
 .item .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 0 20px; }
 /* Minitabuleiro da questão: mostra a posição e o lance em disputa */
 .scene { display: grid; grid-template-columns: clamp(132px, 46%, 220px) minmax(0, 1fr); gap: 12px; align-items: center; padding: 0 20px; }
-.scene .head { padding: 0; flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 6px; }
-.scene .stake { font-size: 15px; }
+.scene .stake { font-size: 16px; }
+.stake-row { padding: 0 20px; }
+.stake-row .stake { font-size: 17px; }
+.scene.duo { grid-template-columns: 1fr 1fr; max-width: 500px; align-items: start; }
+.scene.duo .portrait { width: 100%; aspect-ratio: 1; border: 2px solid var(--ink); border-radius: 4px; box-shadow: 3px 3px 0 var(--accent); }
 .mini { position: relative; container-type: inline-size; border: 2px solid var(--ink); border-radius: 4px; overflow: hidden; box-shadow: 3px 3px 0 var(--ink); }
 .mini .grid { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; }
 .msq { display: grid; place-items: center; aspect-ratio: 1; background: var(--sq-light); font-family: var(--f-piece); font-size: 9.4cqw; line-height: 1; }
@@ -325,10 +328,9 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
 .msq .w { color: var(--piece-w); text-shadow: 0 0 1px var(--piece-w-edge), .6px 0 0 var(--piece-w-edge), -.6px 0 0 var(--piece-w-edge), 0 .6px 0 var(--piece-w-edge), 0 -.6px 0 var(--piece-w-edge); }
 .msq .b { color: var(--piece-b); text-shadow: 0 0 1px var(--piece-b-edge); }
 .mini svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.taunt { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; align-items: center; padding: 0 20px; }
-.taunt .portrait { border-color: var(--ink); border-width: 2px; box-shadow: 2px 2px 0 var(--accent); }
-.taunt p { margin: 0; background: var(--ink); color: var(--on-bg); padding: 8px 12px; border-radius: 4px; font-weight: 500; font-size: 14px; position: relative; }
-.taunt p::before { content: ""; position: absolute; left: -7px; top: 50%; margin-top: -7px; border: 7px solid transparent; border-left: 0; border-right-color: var(--ink); }
+.taunt { padding: 0 20px; max-width: 500px; }
+.taunt p { margin: 0; background: var(--ink); color: var(--on-bg); padding: 10px 14px; border-radius: 10px; font-weight: 500; font-size: 15px; line-height: 1.4; position: relative; overflow-wrap: anywhere; }
+.taunt p::before { content: ""; position: absolute; right: 22%; top: -8px; border: 8px solid transparent; border-top: 0; border-bottom-color: var(--ink); }
 .item .stake { font-family: var(--f-display); font-size: 19px; font-weight: 400; margin: 0; text-wrap: balance; line-height: 1.3; }
 .item .cmd { font-size: 13px; color: var(--muted); margin: 0; font-weight: 500; }
 .item .text { font-family: var(--f-item); font-size: 17px; line-height: 1.6; margin: 0; max-width: 65ch; overflow-wrap: anywhere; font-weight: 500; }
@@ -1301,7 +1303,7 @@ if (typeof document !== 'undefined') (function () {
     G.used.push(q.id);
     const pN = NAME[m.p.toUpperCase()], cN = NAME[m.cap.toUpperCase()].toLowerCase();
     const yours = ('QR'.includes(m.cap.toUpperCase()) ? 'sua ' : 'seu ') + cN;
-    const stake = h('p', { class: 'stake', id: 'item-stake' }, def ? rival().name + ' quer capturar ' + yours + ' em ' + sqName(m.to) + ' com ' + ('QR'.includes(m.p.toUpperCase()) ? 'a ' : 'o ') + pN.toLowerCase() : pN + ' captura ' + cN + ' em ' + sqName(m.to));
+    const stake = h('p', { class: 'stake', id: 'item-stake' }, def ? rival().name + ' quer capturar ' + yours : pN + ' captura ' + cN);   // a casa e a peça que captura já estão no minitabuleiro
     const ai = G.mode === 'ai';
     const tauntText = def ? say('smug', tryN === 1 ? 'def1' : 'def2') : '';
     const mini = mood => { const d = h('div', { class: 'portrait', 'data-mood': mood, 'aria-hidden': 'true' }); d.innerHTML = portraitHTML(rival()); return d; };
@@ -1309,9 +1311,12 @@ if (typeof document !== 'undefined') (function () {
       h('div', { class: 'duel ' + (def ? 'def' : 'atk') },
         h('span', { class: 'side' }, def ? 'DEFESA!' : 'ATAQUE!'),
         h('span', { class: 'vs' }, def ? ['Tentativa ' + tryN + ' de ' + DEF_TRIES, h('span', { class: 'pips', 'aria-hidden': 'true' }, Array.from({ length: DEF_TRIES }, (_, k) => k + 1).map(n => h('i', { class: n <= tryN ? 'on' : '' })))] : (ai ? 'Você × ' + rival().name : 'Vez das ' + SIDE[mover]))),
-      h('div', { class: 'scene' }, miniBoard(m),
-        h('div', null, h('div', { class: 'head' }, h('span', null, q.m), h('span', null, def ? 'Jurisprudência' : 'Sua captura')), stake)),
-      def && tauntText ? h('div', { class: 'taunt' }, mini('smug'), h('p', null, tauntText)) : null);
+      // Defesa: título, minitabuleiro ao lado do retrato grande do adversário e, embaixo, o balão com a fala dele.
+      // Ataque: minitabuleiro com a descrição do lance ao lado.
+      def ? [h('div', { class: 'stake-row' }, stake),
+             h('div', { class: 'scene duo' }, miniBoard(m), mini('smug')),
+             tauntText ? h('div', { class: 'taunt' }, h('p', null, tauntText)) : null]
+          : h('div', { class: 'scene' }, miniBoard(m), h('div', null, stake)));
     const text = h('p', { class: 'text' }, q.q);
     const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
     const answer = given => {
