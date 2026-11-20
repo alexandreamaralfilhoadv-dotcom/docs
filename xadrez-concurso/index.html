@@ -312,6 +312,19 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
 .pips i { width: 12px; height: 12px; transform: rotate(45deg); border: 2px solid #fff; }
 .pips i.on { background: var(--gold); border-color: var(--gold); }
 .item .head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 0 20px; }
+/* Minitabuleiro da questão: mostra a posição e o lance em disputa */
+.scene { display: grid; grid-template-columns: clamp(132px, 46%, 220px) minmax(0, 1fr); gap: 12px; align-items: center; padding: 0 20px; }
+.scene .head { padding: 0; flex-direction: column; align-items: flex-start; gap: 2px; margin-bottom: 6px; }
+.scene .stake { font-size: 15px; }
+.mini { position: relative; container-type: inline-size; border: 2px solid var(--ink); border-radius: 4px; overflow: hidden; box-shadow: 3px 3px 0 var(--ink); }
+.mini .grid { display: grid; grid-template-columns: repeat(8, 1fr); aspect-ratio: 1; }
+.msq { display: grid; place-items: center; aspect-ratio: 1; background: var(--sq-light); font-family: var(--f-piece); font-size: 9.4cqw; line-height: 1; }
+.msq.dark { background: var(--sq-dark); }
+.msq.from { background: var(--sq-mark); }
+.msq.to { box-shadow: inset 0 0 0 1.5cqw var(--accent); }
+.msq .w { color: var(--piece-w); text-shadow: 0 0 1px var(--piece-w-edge), .6px 0 0 var(--piece-w-edge), -.6px 0 0 var(--piece-w-edge), 0 .6px 0 var(--piece-w-edge), 0 -.6px 0 var(--piece-w-edge); }
+.msq .b { color: var(--piece-b); text-shadow: 0 0 1px var(--piece-b-edge); }
+.mini svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .taunt { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 10px; align-items: center; padding: 0 20px; }
 .taunt .portrait { border-color: var(--ink); border-width: 2px; box-shadow: 2px 2px 0 var(--accent); }
 .taunt p { margin: 0; background: var(--ink); color: var(--on-bg); padding: 8px 12px; border-radius: 4px; font-weight: 500; font-size: 14px; position: relative; }
@@ -1260,6 +1273,23 @@ if (typeof document !== 'undefined') (function () {
       h('div', { class: 'promo' }, cands.map(m => h('button', { type: 'button', 'aria-label': NAME[m.promo.toUpperCase()], onclick: () => { closeVeil(); attempt(m); } }, GLYPH[m.promo.toUpperCase()])))
     );
   }
+  // Miniatura do tabuleiro para a tela de questão: origem em amarelo, destino contornado, seta do lance.
+  function miniBoard(m) {
+    const grid = h('div', { class: 'grid' });
+    for (let i = 0; i < 64; i++) {
+      const p = G.st.b[i], r = i >> 3, c = i & 7;
+      grid.append(h('div', { class: 'msq' + ((r + c) % 2 ? ' dark' : '') + (i === m.from ? ' from' : '') + (i === m.to ? ' to' : '') },
+        p ? h('span', { class: colorOf(p) }, GLYPH[p.toUpperCase()]) : null));
+    }
+    const x1 = (m.from & 7) + .5, y1 = (m.from >> 3) + .5, x2 = (m.to & 7) + .5, y2 = (m.to >> 3) + .5;
+    const d = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / d, uy = (y2 - y1) / d;
+    const ex = x2 - ux * .42, ey = y2 - uy * .42, bx = ex - ux * .34, by = ey - uy * .34;   // ponta antes do centro da casa de destino
+    const wrap = h('div', { class: 'mini', role: 'img', 'aria-label': 'Tabuleiro: lance de ' + sqName(m.from) + ' para ' + sqName(m.to) }, grid);
+    wrap.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 8 8" aria-hidden="true"><g fill="#e3344b" stroke="#1b1530" stroke-width=".05" opacity=".92">' +
+      '<path d="M' + (x1 - uy * .09) + ' ' + (y1 + ux * .09) + ' L' + (bx - uy * .09) + ' ' + (by + ux * .09) + ' L' + (bx - uy * .24) + ' ' + (by + ux * .24) + ' L' + ex + ' ' + ey +
+      ' L' + (bx + uy * .24) + ' ' + (by - ux * .24) + ' L' + (bx + uy * .09) + ' ' + (by - ux * .09) + ' L' + (x1 + uy * .09) + ' ' + (y1 - ux * .09) + ' Z"/></g></svg>');
+    return wrap;
+  }
   function askQuestion(m, kind) {
     const mover = G.st.turn, def = kind === 'def', who = def ? opp(mover) : mover;
     const tryN = def ? (G.defTries || 0) + 1 : 1;
@@ -1279,7 +1309,8 @@ if (typeof document !== 'undefined') (function () {
       h('div', { class: 'duel ' + (def ? 'def' : 'atk') },
         h('span', { class: 'side' }, def ? 'DEFESA!' : 'ATAQUE!'),
         h('span', { class: 'vs' }, def ? ['Tentativa ' + tryN + ' de ' + DEF_TRIES, h('span', { class: 'pips', 'aria-hidden': 'true' }, Array.from({ length: DEF_TRIES }, (_, k) => k + 1).map(n => h('i', { class: n <= tryN ? 'on' : '' })))] : (ai ? 'Você × ' + rival().name : 'Vez das ' + SIDE[mover]))),
-      h('div', { class: 'head' }, h('span', null, q.m), h('span', null, def ? 'Jurisprudência' : 'Sua captura')),
+      h('div', { class: 'scene' }, miniBoard(m),
+        h('div', null, h('div', { class: 'head' }, h('span', null, q.m), h('span', null, def ? 'Jurisprudência' : 'Sua captura')), stake)),
       def && tauntText ? h('div', { class: 'taunt' }, mini('smug'), h('p', null, tauntText)) : null);
     const text = h('p', { class: 'text' }, q.q);
     const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
@@ -1295,7 +1326,7 @@ if (typeof document !== 'undefined') (function () {
       if (def) say(ok ? (tryN < DEF_TRIES ? 'angry' : 'shock') : 'happy', ok ? (tryN < DEF_TRIES ? 'annul' : 'annulLast') : 'taken');
       else say(ok ? 'shock' : 'smug', ok ? 'youRight' : 'youWrong');
       const next = def ? (ok ? () => fail(m) : () => commit(m, 'lost')) : (ok ? () => commit(m, 'won') : () => fail(m));
-      openVeil(head, stake, text,
+      openVeil(head, text,
         h('div', { class: 'verdict ' + (ok ? 'ok' : 'bad') },
           h('span', { class: 'impact ' + (ok ? 'ok' : 'bad') }, ok ? 'ACERTOU!' : 'ERROU!'),
           h('p', null, 'Gabarito: ', h('b', null, q.g ? YES : NO), '. Você marcou ' + (given ? YES : NO) + '.'),
@@ -1305,7 +1336,7 @@ if (typeof document !== 'undefined') (function () {
         h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'));
       if (!ok) $('item').classList.add('shake');
     };
-    openVeil(head, stake, h('p', { class: 'cmd' }, why + (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, esta captura é anulada. Se errar, você perde a peça.' : '')), text,
+    openVeil(head, h('p', { class: 'cmd' }, why + (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, esta captura é anulada. Se errar, você perde a peça.' : '')), text,
       h('div', { class: 'answers' },
         h('button', { type: 'button', class: 'ans c', onclick: () => answer(true) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, YES[0]), YES),
         h('button', { type: 'button', class: 'ans e', onclick: () => answer(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, NO[0]), NO)));
