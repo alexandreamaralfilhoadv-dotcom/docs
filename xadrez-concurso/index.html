@@ -849,9 +849,25 @@ if (typeof document !== 'undefined') (function () {
       start: ['Pedro. Falo pouco. As minhas questões falam por mim.', 'Sem pressa. Eu costumo ganhar no final.', 'Estude o tabuleiro. Eu já estudei você.'] },
     // Tai: o avatar é o recorte da ilustração (com moldura), e muda de olhar quando ela pensa.
     { id: 'tai', name: 'Tai', role: 'Examinadora', f: true, framed: true, img: 'personagens/tai.webp', body: 'personagens/tai-corpo.webp', bodyThink: 'personagens/tai-corpo-pensa.webp', gif: 'personagens/tai-desafio.webp',
-      hype: ['Quatro capturas. Agora o jogo ficou interessante.'],
-      start: ['Sou a Tai. Vamos ver como você pensa.'],
-      say: {} }   // falas próprias por situação (filosofia); enquanto vazio, usa as falas comuns
+      // Falas da Tai: Kant, Bergson e Rainer Forst em trocadilhos com o xadrez.
+      hype: ["Chega de fenômenos. Agora você enfrenta a coisa em si!", "Quatro capturas. O élan vital acordou!", "Agora eu exijo razões que ninguém possa rejeitar!"],
+      start: ["Sapere aude! Ouse saber… a resposta. As brancas começam.", "O relógio mede o tempo. Eu jogo na duração. Comece.", "Aqui todo lance deve uma justificação. Pode começar a dever."],
+      say: {
+        think: ["Um instante… ou melhor, uma duração.", "Vou submeter este lance ao tribunal da razão.", "Não estou calculando. Estou intuindo."],
+        move: ["Joguei por dever, não por inclinação. Sua vez.", "Lance justificado: recíproco e geral. Sua vez.", "Você vê lances soltos. Eu vejo o movimento."],
+        def1: ["Você tem direito à justificação. Use-o, ou a peça é minha.", "Vou capturar. O imperativo é categórico: responda!", "Sua peça é só um meio para mim. Prove que é um fim em si."],
+        def2: ["Sua razão não era geral o bastante. Outra matéria!", "Passou pela razão pura. Agora, a razão prática!", "O élan vital não desiste. De novo!"],
+        annul: ["Um juízo sintético a priori? Você me surpreende.", "Boa intuição. Mas a duração ainda corre.", "Justificação aceita. Por enquanto."],
+        annulLast: ["Revolução copernicana: hoje sou eu que giro em torno das suas respostas.", "Sem boas razões, não há poder. Passo a vez.", "Meu élan vital pediu um intervalo. Passo."],
+        taken: ["Sem justificação, sem peça. Não é tolerância: é justiça.", "Faltou razão pura. A peça é minha, a priori.", "Você decorou, não intuiu. A peça é minha."],
+        capture: ["Sem justificação, sem peça. Não é tolerância: é justiça.", "A peça é minha, a priori."],
+        youRight: ["Tenho objeções, mas nenhuma razão para rejeitar. Eu tolero: leve a peça.", "Estudou por dever, não por inclinação. Leve a peça.", "Isso sim foi evolução criadora. Leve."],
+        youWrong: ["Essa máxima não se universaliza. Lance anulado.", "Razão rejeitada: nem recíproca, nem geral. Minha vez.", "Mecânico demais. E o mecânico colado no vivo dá riso. Minha vez."],
+        checkMe: ["Xeque?! Isso é uma antinomia da razão pura!", "Um xeque também exige justificação. Vou contestar.", "Xeque… é a matéria resistindo ao meu impulso."],
+        checkYou: ["Xeque. Categórico, não hipotético.", "Xeque. Isso é poder noumenal: mexi no seu espaço de razões.", "Xeque. Sinta a duração apertar."],
+        lose: ["Duas coisas me enchem de admiração: o céu estrelado e o seu xeque-mate.", "Xeque-mate… A coisa em si era a sua vitória, e eu não pude conhecê-la.", "Derrota justificada. Não tenho como rejeitar as suas razões."],
+        win: ["Xeque-mate. Bem-vindo ao reino dos fins… de jogo.", "Xeque-mate. O possível só aparece depois do real.", "Xeque-mate. Venceu a melhor razão. Pode pedir a justificação."],
+        draw: ["Empate. Tese e antítese, sem solução: uma antinomia.", "Empate. Tolerância como respeito: ninguém cede, ninguém vence.", "Empate. Duas durações que não se deixam medir."] } }
   ];
   const rival = () => CAST.find(c => c.id === (G && G.rivalId)) || CAST[0];
   // Marcas de expressão sobre o retrato (o avatar é uma imagem única por personagem).
@@ -898,11 +914,14 @@ if (typeof document !== 'undefined') (function () {
   // e fica até o fim da partida, ou até ser trocada pela cena seguinte (15ª captura).
   const HYPE_AT = [4, 15], LOCK_MS = 8000;   // LOCK_MS: tempo em que a frase de desafio fica fixa no balão
   let hypeTimer = null, cutTimer = null, cutType = null;
+  const lastSaid = {};
   function unlockLine() { clearTimeout(hypeTimer); hypeTimer = null; $('stage').classList.remove('lockline'); }
   function say(mood, key) {
     if (!G || G.mode !== 'ai') return '';
     const c = rival(), own = c.say && c.say[key];
-    const text = pick(key === 'start' ? c.start : key === 'hype' ? c.hype : key === 'hype2' ? c.hype2 : (own && own.length ? own : SAY[key]));
+    const opts = key === 'start' ? c.start : key === 'hype' ? c.hype : key === 'hype2' ? c.hype2 : (own && own.length ? own : SAY[key]);
+    const fresh = opts.filter(t => t !== lastSaid[c.id + key]), text = pick(fresh.length ? fresh : opts);   // não repete a última fala da mesma situação
+    lastSaid[c.id + key] = text;
     const ending = key === 'lose' || key === 'win' || key === 'draw';
     if (hypeTimer && key !== 'hype' && key !== 'hype2') { if (!ending) return text; unlockLine(); }   // a frase de desafio fica fixa por alguns segundos
     G.rival = { mood, text }; paintRival(true); return text;
