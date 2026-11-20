@@ -272,7 +272,7 @@ button { cursor: pointer; }
 .book { background: var(--surface); border: 3px solid var(--frame); border-radius: 6px; min-width: 0; box-shadow: 6px 6px 0 var(--gold); }
 .tabs { display: flex; border-bottom: 3px solid var(--frame); background: var(--dark); border-radius: 2px 2px 0 0; }
 .tab {
-  flex: 1; border: 0; background: none; padding: 12px 4px; font-family: var(--f-display); font-size: 13px; min-width: 0;
+  flex: 1 1 auto; border: 0; background: none; padding: 12px 4px; font-family: var(--f-display); font-size: clamp(10.5px, 3.1vw, 13px); min-width: 0;
   color: var(--on-bg-muted);
 }
 .tab[aria-selected="true"] { color: var(--on-gold); background: var(--gold); }
@@ -393,6 +393,23 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
 .item .cmd { font-size: 13px; color: var(--muted); margin: 0; font-weight: 500; }
 .item .text { font-family: var(--f-item); font-size: 17px; line-height: 1.6; margin: 0; max-width: 65ch; overflow-wrap: anywhere; font-weight: 500; }
 .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ans.u { grid-column: 1 / -1; padding: 9px 10px; font-family: var(--f-body); font-weight: 700; font-size: 14px; color: var(--muted); border-width: 2px; box-shadow: 2px 2px 0 var(--frame); }
+.ans.u:hover, .ans.u:focus-visible { background: var(--surface-2); color: var(--ink); }
+.rate { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.rate .btn { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 8px; font-family: var(--f-display); font-weight: 400; font-size: 17px; }
+.rate .btn small { font-family: var(--f-body); font-weight: 500; font-size: 11.5px; line-height: 1.25; opacity: .9; text-align: center; }
+.rate .easy { background: var(--ok); color: #fff; }
+.rate .hard { background: var(--gold); color: var(--on-gold); }
+.hist { font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 8px; }
+.hist b { color: var(--ink); }
+.fila-sum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.fila-sum div { background: var(--surface-2); border-radius: 4px; padding: 6px 8px; border-left: 4px solid var(--frame); }
+.fila-sum b { display: block; font-family: var(--f-display); font-weight: 400; font-size: 19px; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.fila-sum span { font-size: 11px; color: var(--muted); }
+.prog { display: inline-flex; gap: 3px; vertical-align: middle; }
+.prog i { width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--frame); }
+.prog i.on { background: var(--ok); border-color: var(--ok); }
+details.err.due { border-left-color: var(--gold); }
 .ans {
   display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 10px; border-radius: 4px;
   border: 3px solid var(--frame); background: var(--field); font-family: var(--f-display); font-size: 18px; box-shadow: 4px 4px 0 var(--frame);
@@ -410,6 +427,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
   transform: rotate(-4deg) skewX(-8deg); border: 3px solid var(--frame); box-shadow: 5px 5px 0 var(--frame); margin: 2px 0 6px 4px;
 }
 .impact.ok { background: var(--ok); }
+.impact.long { font-size: clamp(24px, 7vw, 36px); white-space: nowrap; }
 .impact.bad { background: var(--accent); }
 .promo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .promo button { font-family: var(--f-piece); font-size: 40px; padding: 8px; border: 2px solid var(--frame); background: var(--field); border-radius: 4px; line-height: 1.1; box-shadow: 3px 3px 0 var(--frame); }
@@ -468,7 +486,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
         <button class="tab" role="tab" id="tab-partida" aria-controls="panel-partida" aria-selected="true" type="button">Partida</button>
         <button class="tab" role="tab" id="tab-questoes" aria-controls="panel-questoes" aria-selected="false" type="button">Questões</button>
         <button class="tab" role="tab" id="tab-desempenho" aria-controls="panel-desempenho" aria-selected="false" type="button">Desempenho</button>
-        <button class="tab" role="tab" id="tab-erros" aria-controls="panel-erros" aria-selected="false" type="button">Erros</button>
+        <button class="tab" role="tab" id="tab-erros" aria-controls="panel-erros" aria-selected="false" type="button">Revisão</button>
       </div>
 
       <div class="panel" id="panel-partida" role="tabpanel" aria-labelledby="tab-partida">
@@ -489,6 +507,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
             <li><b>Matéria da partida:</b> ao começar, você escolhe todas as matérias ou uma só. A escolha vale para as suas capturas e para a defesa.</li>
             <li><b>Para mover,</b> arraste a peça até a casa ou toque na peça e depois na casa de destino.</li>
             <li><b>Partida curta:</b> capturar peão não abre questão, para nenhum dos lados, e o adversário tem uma só tentativa por captura.</li>
+            <li><b>Fixação:</b> o que você erra, não sabe ou marca como difícil entra na fila e volta em 1, 3 e 7 dias. Três acertos seguidos fixam a questão. As marcadas como fáceis só voltam depois de um mês.</li>
             <li><b>Sua captura abre uma questão</b> sorteada das listas de ataque. Ao tocar na peça adversária, o lance está declarado.</li>
             <li><b>Você acertou:</b> a captura acontece. <b>Você errou:</b> o lance é anulado e a vez passa para o adversário.</li>
             <li><b>Captura do computador abre uma questão de jurisprudência</b>, sorteada das listas de defesa.</li>
@@ -540,15 +559,29 @@ Direito Penal;A tentativa é punida com a mesma pena do crime consumado.;E</pre>
       </div>
 
       <div class="panel" id="panel-erros" role="tabpanel" aria-labelledby="tab-erros" hidden>
-        <div class="block">
-          <h2>Caderno de erros</h2>
-          <p class="note" id="errs-where"></p>
-          <label class="field" for="err-filter">Mostrar
-            <select id="err-filter"><option value="">Todas as matérias</option></select>
-          </label>
+        <div class="seg" role="group" aria-label="O que mostrar">
+          <button type="button" id="rv-fila" aria-pressed="true">Fila de fixação</button>
+          <button type="button" id="rv-erros" aria-pressed="false">Erros por partida</button>
         </div>
-        <div id="errs" class="block"></div>
-        <div class="row"><button class="btn small" id="btn-clear-errs" type="button" hidden>Apagar todo o caderno</button></div>
+        <div id="view-fila" class="block">
+          <p class="note" id="fila-where"></p>
+          <div class="fila-sum" id="fila-sum"></div>
+          <label class="field" for="fila-filter">Mostrar
+            <select id="fila-filter"><option value="">Todas as matérias</option></select>
+          </label>
+          <div id="fila" class="block"></div>
+        </div>
+        <div id="view-erros" hidden>
+          <div class="block">
+            <h2>Caderno de erros</h2>
+            <p class="note" id="errs-where"></p>
+            <label class="field" for="err-filter">Mostrar
+              <select id="err-filter"><option value="">Todas as matérias</option></select>
+            </label>
+          </div>
+          <div id="errs" class="block"></div>
+          <div class="row"><button class="btn small" id="btn-clear-errs" type="button" hidden>Apagar todo o caderno</button></div>
+        </div>
       </div>
 
       <div class="panel" id="panel-desempenho" role="tabpanel" aria-labelledby="tab-desempenho" hidden>
@@ -1093,7 +1126,15 @@ if (typeof document !== 'undefined') (function () {
     }
     return [...c.entries()].map(([name, v]) => Object.assign({ name }, v)).sort((a, b) => (b.atk + b.def) - (a.atk + a.def) || a.name.localeCompare(b.name));
   }
-  const allQ = ls => ls.flatMap(l => l.items.map((q, i) => Object.assign({ id: l.id + ':' + i }, q)));
+  // Identidade estável de cada questão: um resumo do enunciado. O progresso de fixação fica preso a ela,
+  // e não à posição na lista, para sobreviver a mudanças no banco.
+  function qkey(q) {
+    if (q.k) return q.k;
+    const t = String(q.q).toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+    let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+    return (q.k = h.toString(16).padStart(8, '0') + t.length.toString(36));
+  }
+  const allQ = ls => ls.flatMap(l => l.items.map(q => Object.assign({ id: qkey(q) }, q)));
   // 'def': só jurisprudência. 'atk': listas comuns (ou jurisprudência, se for tudo o que há).
   // Com matéria escolhida na partida, só entram as questões dessa matéria.
   function basePool(kind) {
@@ -1326,10 +1367,20 @@ if (typeof document !== 'undefined') (function () {
       if (!all.length) { all = leastUsed(fresh(base.filter(q => !subjectsOf(q.m).includes(G.subject))), who); extra = 'falta'; }
     } else all = fresh(base);
     if (!all.length) { const ids = new Set(base.map(q => q.id)); G.used = G.used.filter(id => !ids.has(id)); all = base; extra = ''; }
+    // Fixação: até 60% das questões vêm da fila (as que já venceram o prazo); o resto é matéria nova.
+    // Questões agendadas para depois, ou adiadas por serem fáceis, só entram se não houver outra.
+    let review = false;
+    if (who === 'w') {
+      const t = today(), due = [], novel = [];
+      for (const q of all) { const r = srs[q.id]; if (r && r.s === 1) { if (r.d <= t) due.push(q); } else if (!r || r.s === 0 || r.d <= t) novel.push(q); }
+      if (due.length && (Math.random() < REVIEW_SHARE || !novel.length)) { all = due; review = true; }
+      else if (novel.length) all = novel;
+      else if (due.length) { all = due; review = true; }
+    }
     // Sorteia primeiro o gabarito (meio a meio), para o banco não favorecer "Certo".
     const want = Math.random() < .5, side = all.filter(q => q.g === want);
     const cands = side.length ? side : all;
-    const done = q => Object.assign({}, q, { extra });
+    const done = q => Object.assign({}, q, { extra, review });
     let weights = cands.map(() => 1);
     if (prefs.reforco) {
       const idx = new Map(analyze(history.filter(e => e.p === who)).map(r => [r.subject, r.index]));
@@ -1393,12 +1444,16 @@ if (typeof document !== 'undefined') (function () {
           : h('div', { class: 'scene' }, miniBoard(m), h('div', null, stake)));
     const text = h('p', { class: 'text' }, q.q);
     const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
+    const track = who === 'w';   // a fixação acompanha o jogador das brancas (você)
+    // given: true, false ou null ("não sei", que vale como erro no tabuleiro)
     const answer = given => {
-      const ok = given === q.g, checked = inCheck(G.st);
-      history.push({ m: q.m, ok, t: Date.now() - t0, p: who, k: kind, g: G.id, ts: Date.now() });
+      const unknown = given === null, ok = !unknown && given === q.g, checked = inCheck(G.st);
+      const before = track ? srs[q.id] : null;
+      history.push(Object.assign({ m: q.m, ok, t: Date.now() - t0, p: who, k: kind, g: G.id, ts: Date.now() }, unknown ? { u: 1 } : {}));
       if (history.length > 5000) history = history.slice(-5000);
       store.set('xq.history', history);
-      if (!ok) addError({ id: G.id + '-' + Date.now().toString(36), m: q.m, q: q.q, gab: !!q.g, y: q.y ? 1 : 0, given: !!given, c: q.c || '', k: kind, p: who, g: G.id, gs: G.subject || '', ts: Date.now() });
+      if (!ok) addError({ id: G.id + '-' + Date.now().toString(36), m: q.m, q: q.q, gab: !!q.g, y: q.y ? 1 : 0, given: !!given, ns: unknown ? 1 : 0, c: q.c || '', k: kind, p: who, g: G.id, gs: G.subject || '', ts: Date.now() });
+      if (!ok && track) srsAnswer(q.id, unknown ? 'unknown' : 'wrong');
       let conseq;
       const noExit = def && ok && checked && tryN >= maxTries() && !currentLegal().some(x => x.from * 64 + x.to !== capKey);
       if (def) conseq = !ok ? rival().name + ' captura ' + yours + '.' : tryN < maxTries() ? 'A captura foi anulada, mas ' + (rival().f ? 'ela' : 'ele') + ' joga de novo e pode insistir. Se insistir, a próxima questão será de outra matéria (' + (maxTries() - tryN === 1 ? 'resta 1 tentativa' : 'restam ' + (maxTries() - tryN) + ' tentativas') + ').'
@@ -1411,18 +1466,24 @@ if (typeof document !== 'undefined') (function () {
       const next = def ? (ok ? () => fail(m) : () => commit(m, 'lost')) : (ok ? () => commit(m, 'won') : () => fail(m));
       openVeil(head, text,
         h('div', { class: 'verdict ' + (ok ? 'ok' : 'bad') },
-          h('span', { class: 'impact ' + (ok ? 'ok' : 'bad') }, ok ? 'ACERTOU!' : 'ERROU!'),
-          h('p', null, 'Gabarito: ', h('b', null, q.g ? YES : NO), '. Você marcou ' + (given ? YES : NO) + '.'),
+          h('span', { class: 'impact ' + (ok ? 'ok' : 'bad') + (unknown ? ' long' : '') }, ok ? 'ACERTOU!' : unknown ? 'NÃO SABIA' : 'ERROU!'),
+          h('p', null, 'Gabarito: ', h('b', null, q.g ? YES : NO), '. Você marcou ' + (unknown ? 'Não sei' : given ? YES : NO) + '.'),
           h('p', null, q.c || 'Este item não tem justificativa no material.'),
           h('p', null, conseq),
-          ok ? null : h('p', { class: 'note' }, 'A questão e a justificativa ficaram guardadas na aba Erros.')),
-        h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'));
+          track ? h('p', { class: 'hist' }, histLine(before, ok, unknown)) : null,
+          ok || track ? null : h('p', { class: 'note' }, 'A questão e a justificativa ficaram guardadas na aba Revisão.')),
+        // Depois de um acerto, a avaliação substitui o "Continuar": os dois botões seguem o jogo.
+        ok && track ? h('div', { class: 'rate' },
+          h('button', { type: 'button', class: 'btn easy', onclick: () => { closeVeil(); srsAnswer(q.id, 'easy'); next(); } }, 'Fácil', h('small', null, before && before.s === 1 ? 'Eu sabia: conta para a fixação' : 'Eu sabia: só volta em um mês')),
+          h('button', { type: 'button', class: 'btn hard', onclick: () => { closeVeil(); srsAnswer(q.id, 'hard'); next(); } }, 'Difícil', h('small', null, 'Chutei ou hesitei: volta amanhã')))
+          : h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'));
       if (!ok) $('item').classList.add('shake');
     };
-    openVeil(head, h('p', { class: 'cmd' }, why + (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, esta captura é anulada. Se errar, você perde a peça.' : '')), text,
+    openVeil(head, h('p', { class: 'cmd' }, (q.review ? 'Revisão: esta questão está na sua fila de fixação. ' : '') + why + (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, esta captura é anulada. Se errar, você perde a peça.' : '')), text,
       h('div', { class: 'answers' },
         h('button', { type: 'button', class: 'ans c', onclick: () => answer(true) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, YES[0]), YES),
-        h('button', { type: 'button', class: 'ans e', onclick: () => answer(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, NO[0]), NO)));
+        h('button', { type: 'button', class: 'ans e', onclick: () => answer(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, NO[0]), NO),
+        h('button', { type: 'button', class: 'ans u', onclick: () => answer(null) }, 'Não sei')));
   }
 
   /* ---- Listas ---- */
@@ -1505,7 +1566,7 @@ if (typeof document !== 'undefined') (function () {
 
   /* ---- Abas e controles ---- */
   const TABS = ['partida', 'questoes', 'desempenho', 'erros'];
-  function showTab(name) { for (const t of TABS) { $('tab-' + t).setAttribute('aria-selected', t === name); $('panel-' + t).hidden = t !== name; } if (name === 'desempenho') renderPerf(); if (name === 'erros') renderErrs(); }
+  function showTab(name) { for (const t of TABS) { $('tab-' + t).setAttribute('aria-selected', t === name); $('panel-' + t).hidden = t !== name; } if (name === 'desempenho') renderPerf(); if (name === 'erros') showReview(rvView.fila); }
   TABS.forEach(t => $('tab-' + t).addEventListener('click', () => showTab(t)));
   $('opt-reforco').checked = !!prefs.reforco;
   $('opt-reforco').addEventListener('change', ev => { prefs.reforco = ev.target.checked; store.set('xq.prefs', prefs); });
@@ -1543,7 +1604,7 @@ if (typeof document !== 'undefined') (function () {
   $('btn-menu').addEventListener('click', () => { prefs.cenario = !prefs.cenario; store.set('xq.prefs', prefs); applyScenic(); });
   applyScenic();
   setInterval(applyScheme, 5 * 60 * 1000);   // acompanha a virada do horário com o jogo aberto
-  $('btn-errs').addEventListener('click', () => { errView.game = G.id; showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); });
+  $('btn-errs').addEventListener('click', () => { errView.game = G.id; rvView.fila = false; showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); });
 
   /* ---- Início de partida: matéria, adversário, nível ---- */
   let setupOpen = false;
@@ -1585,6 +1646,113 @@ if (typeof document !== 'undefined') (function () {
     fillSubjects(); $('set-subject').focus();
   }
 
+  /* ---- Fixação (repetição espaçada) ----
+     Cada questão respondida guarda: n (vezes vista), r (acertos), w (erros e "não sei"), k (acertos seguidos na fila),
+     d (dia em que volta), l (último dia visto) e s (0 = comum, 1 = na fila, 2 = adiada: fácil ou já fixada).
+     Entra na fila quem foi errada, respondida com "não sei" ou marcada como difícil. Na fila, a questão volta
+     em 1, 3 e 7 dias; três acertos seguidos a fixam. Fáceis e fixadas só voltam depois de um mês. */
+  const STEPS = [1, 3, 7], EASY_DAYS = 30, REVIEW_SHARE = .6;
+  const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+  let srs = store.get('xq.srs', {}); if (!srs || typeof srs !== 'object' || Array.isArray(srs)) srs = {};
+  let srsCol = null; const srsDirty = new Set(); let srsTimer = null, srsBusy = false;
+  function srsAnswer(key, outcome) {   // outcome: 'wrong' | 'unknown' | 'hard' | 'easy'
+    const r = srs[key] || (srs[key] = { n: 0, r: 0, w: 0, k: 0, d: 0, l: 0, s: 0 }), t = today(), inQueue = r.s === 1;
+    r.n++; r.l = t;
+    if (outcome === 'wrong' || outcome === 'unknown') { r.w++; r.s = 1; r.k = 0; r.d = t + STEPS[0]; }
+    else {
+      r.r++;
+      if (outcome === 'hard') { r.s = 1; r.k = 0; r.d = t + STEPS[0]; }                       // acerto duvidoso: mesma regra do erro
+      else if (inQueue) { r.k++; if (r.k >= STEPS.length) { r.s = 2; r.fx = 1; r.d = t + EASY_DAYS; } else r.d = t + STEPS[r.k]; }
+      else { r.s = 2; r.d = t + EASY_DAYS; }                                                  // nova e fácil: adiada por um mês
+    }
+    saveSrs(key);
+    if (!$('panel-erros').hidden) renderFila();
+  }
+  function srsDrop(key) { const r = srs[key]; if (!r) return; r.s = 2; r.fx = 1; r.k = STEPS.length; r.d = today() + EASY_DAYS; saveSrs(key); renderFila(); }
+  function saveSrs(key) {
+    store.set('xq.srs', srs);
+    if (key) { srsDirty.add(key[0]); clearTimeout(srsTimer); srsTimer = setTimeout(flushSrs, 1500); }
+  }
+  // Na conta, o progresso fica em 16 documentos (pela primeira letra da chave), gravados um de cada vez.
+  async function flushSrs() {
+    if (!srsCol || srsBusy) return;
+    srsBusy = true;
+    try {
+      while (srsDirty.size) {
+        const sh = srsDirty.values().next().value; srsDirty.delete(sh);
+        const m = {}; for (const k in srs) if (k[0] === sh) m[k] = srs[k];
+        await srsCol.doc(sh).set({ m, ts: Date.now() });
+      }
+    } catch (e) { /* fica só no navegador até a próxima tentativa */ }
+    srsBusy = false;
+  }
+  async function loadSrsCloud() {
+    try {
+      const snap = await srsCol.get(); let changed = false;
+      for (const d of snap.docs) {
+        const m = (d.data() || {}).m || {};
+        for (const k in m) { const a = srs[k], b = m[k]; if (b && typeof b === 'object' && (!a || (b.n || 0) > (a.n || 0))) { srs[k] = b; changed = true; } }
+      }
+      for (const k in srs) srsDirty.add(k[0]);   // devolve à conta o que só existia neste navegador
+      if (changed) { store.set('xq.srs', srs); renderFila(); }
+      flushSrs();
+    } catch (e) { /* segue com o que há no navegador */ }
+  }
+  const days = n => n <= 0 ? 'hoje' : n === 1 ? 'amanhã' : 'em ' + n + ' dias';
+  const ago = n => n <= 0 ? 'hoje' : n === 1 ? 'ontem' : 'há ' + n + ' dias';
+  // Texto do histórico mostrado depois da resposta. `before` é o registro anterior a esta resposta.
+  function histLine(before, ok, unknown) {
+    const out = [];
+    if (!before || !before.n) out.push(h('b', null, 'Questão nova para você.'));
+    else out.push(h('b', null, (before.n + 1) + 'ª vez que você vê esta questão.'), ' Antes: ' + before.r + (before.r === 1 ? ' acerto' : ' acertos') + ' e ' + before.w + (before.w === 1 ? ' erro' : ' erros') + ', a última ' + ago(today() - before.l) + '.');
+    if (!ok) out.push(' Ela ' + (before && before.s === 1 ? 'volta ao começo da fila de fixação' : 'entrou na fila de fixação') + ' e reaparece amanhã.');
+    else if (before && before.s === 1) out.push(' Na fila de fixação: ' + before.k + ' de ' + STEPS.length + ' acertos até aqui.');
+    return out;
+  }
+  let bankIndex = new Map();
+  function renderFila() {
+    const box = $('fila'); if (!box) return;
+    bankIndex = new Map(); for (const l of lists) for (const q of l.items) { const k = qkey(q); if (!bankIndex.has(k)) bankIndex.set(k, Object.assign({ juris: !!l.juris }, q)); }
+    const t = today(), rows = [], cnt = { fila: 0, hoje: 0, fix: 0, facil: 0 };
+    for (const k in srs) {
+      const r = srs[k];
+      if (r.s === 1) { cnt.fila++; if (r.d <= t) cnt.hoje++; const q = bankIndex.get(k); if (q) rows.push({ k, r, q }); }
+      else if (r.s === 2) { if (r.fx) cnt.fix++; else cnt.facil++; }
+    }
+    $('fila-where').textContent = 'Entram aqui as questões que você errou, não soube ou marcou como difíceis. Cada uma volta em 1, 3 e 7 dias; com três acertos seguidos, está fixada. ' + (cloudState === 'conta' ? 'O progresso fica salvo na sua conta.' : 'O progresso fica salvo neste navegador.');
+    const sum = $('fila-sum'); sum.textContent = '';
+    for (const [n, lab] of [[cnt.hoje, 'para hoje'], [cnt.fila, 'na fila'], [cnt.fix, 'fixadas'], [cnt.facil, 'fáceis']]) sum.append(h('div', null, h('b', null, String(n)), h('span', null, lab)));
+    const fsel = $('fila-filter'), cur = fsel.value, subs = [...new Set(rows.flatMap(x => subjectsOf(x.q.m)))].sort((a, b) => a.localeCompare(b));
+    fsel.textContent = ''; fsel.append(h('option', { value: '' }, 'Todas as matérias (' + rows.length + ')'));
+    for (const sName of subs) fsel.append(h('option', { value: sName }, sName + ' (' + rows.filter(x => subjectsOf(x.q.m).includes(sName)).length + ')'));
+    fsel.value = subs.includes(cur) ? cur : '';
+    const shown = rows.filter(x => !fsel.value || subjectsOf(x.q.m).includes(fsel.value)).sort((a, b) => a.r.d - b.r.d || b.r.w - a.r.w);
+    box.textContent = '';
+    if (!shown.length) { box.append(h('p', { class: 'note' }, rows.length ? 'Nenhuma questão desta matéria na fila.' : 'A fila está vazia. Ela se enche sozinha quando você erra, responde "não sei" ou marca um acerto como difícil.')); return; }
+    const card = x => h('details', { class: 'err' + (x.r.d <= t ? ' due' : '') },
+      h('summary', null,
+        h('span', { class: 'meta' }, h('span', null, x.q.m), h('span', { class: 'tag ' + (x.q.juris ? 'bad' : 'dim') }, x.q.juris ? 'Defesa' : 'Ataque'),
+          h('span', { class: 'prog', role: 'img', 'aria-label': x.r.k + ' de ' + STEPS.length + ' acertos' }, STEPS.map((_, i) => h('i', { class: i < x.r.k ? 'on' : '' }))),
+          h('span', null, x.r.d <= t ? 'pronta para revisar' : 'volta ' + days(x.r.d - t))),
+        h('span', { class: 'q' }, x.q.q), h('span', { class: 'more' }, 'Ver gabarito e justificativa')),
+      h('div', { class: 'ans-box' },
+        h('p', null, 'Gabarito: ', h('b', null, lbl(x.q.g, x.q.y)), '. Vista ' + x.r.n + (x.r.n === 1 ? ' vez: ' : ' vezes: ') + x.r.r + (x.r.r === 1 ? ' acerto' : ' acertos') + ' e ' + x.r.w + (x.r.w === 1 ? ' erro.' : ' erros.')),
+        h('p', { class: 'just' }, x.q.c || 'Este item não tem justificativa no material.'),
+        h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn small', onclick: () => srsDrop(x.k) }, 'Já fixei: tirar da fila'))));
+    const dueNow = shown.filter(x => x.r.d <= t), later = shown.filter(x => x.r.d > t);
+    if (dueNow.length) box.append(h('div', { class: 'errgroup' }, h('h3', null, 'Prontas para revisar · ' + dueNow.length), dueNow.slice(0, 80).map(card)));
+    if (later.length) box.append(h('div', { class: 'errgroup' }, h('h3', null, 'Agendadas · ' + later.length), later.slice(0, 80).map(card)));
+    if (dueNow.length > 80 || later.length > 80) box.append(h('p', { class: 'note' }, 'A lista mostra as 80 primeiras de cada grupo. Use o filtro por matéria para ver as demais.'));
+  }
+  const rvView = { fila: true };
+  function showReview(fila) {
+    rvView.fila = fila; $('rv-fila').setAttribute('aria-pressed', fila); $('rv-erros').setAttribute('aria-pressed', !fila);
+    $('view-fila').hidden = !fila; $('view-erros').hidden = fila; if (fila) renderFila(); else renderErrs();
+  }
+  $('rv-fila').addEventListener('click', () => showReview(true));
+  $('rv-erros').addEventListener('click', () => showReview(false));
+  $('fila-filter').addEventListener('change', renderFila);
+
   /* ---- Caderno de erros: guardado na conta (db) e, como reserva, no navegador ---- */
   let errors = store.get('xq.errors', []); if (!Array.isArray(errors)) errors = [];
   if (!errors.length) errors = history.filter(e => e && e.ok === false && e.q).map((e, i) => ({ id: (e.g || 'x') + '-' + (e.ts || i).toString(36), m: e.m, q: e.q, gab: !!e.gab, y: e.y ? 1 : 0, given: !e.gab, c: e.c || '', k: e.k || 'atk', p: e.p || 'w', g: e.g || 'x', gs: '', ts: e.ts || 0 }));
@@ -1602,6 +1770,7 @@ if (typeof document !== 'undefined') (function () {
       if (!db || !user) return;
       const uid = await user.id(); if (!uid) return;
       cloudCol = db.doc('data/users/' + uid + '/caderno').collection('erros');
+      srsCol = db.doc('data/users/' + uid + '/caderno').collection('srs'); loadSrsCloud();
       const snap = await cloudCol.orderBy('ts', 'desc').limit(1000).get();
       const have = new Set(errors.map(e => e.id)), remote = new Set();
       for (const d of snap.docs) { remote.add(d.id); const v = d.data(); if (!have.has(d.id) && v && typeof v.q === 'string') errors.push(Object.assign({}, v, { id: d.id })); }
@@ -1635,7 +1804,7 @@ if (typeof document !== 'undefined') (function () {
           h('span', { class: 'meta' }, h('span', null, e.m), h('span', { class: 'tag ' + (e.k === 'def' ? 'bad' : 'dim') }, e.k === 'def' ? 'Defesa' : 'Ataque')),
           h('span', { class: 'q' }, e.q), h('span', { class: 'more' }, 'Ver gabarito e justificativa')),
         h('div', { class: 'ans-box' },
-          h('p', null, 'Você marcou ', h('b', null, lbl(e.given, e.y)), '. Gabarito: ', h('b', null, lbl(e.gab, e.y)), '.'),
+          h('p', null, 'Você marcou ', h('b', null, e.ns ? 'Não sei' : lbl(e.given, e.y)), '. Gabarito: ', h('b', null, lbl(e.gab, e.y)), '.'),
           h('p', { class: 'just' }, e.c || 'Este item não tem justificativa no material.'),
           h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn small', onclick: () => removeError(e) }, 'Já aprendi: remover do caderno')))))));
     }
@@ -1661,7 +1830,7 @@ if (typeof document !== 'undefined') (function () {
       G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; G.capTries = {}; closeVeil(); paintRival(false); clearHype(); if (G.mode === 'ai' && G.hyped) showScene(Number(G.hyped));
       if (!G.over && G.mode === 'ai' && G.st.turn === 'b') afterTurn(legalMoves(G.st), inCheck(G.st)); else renderAll();
     } else { newGame(true); openSetup(); }
-    renderErrs(); initCloud();
+    renderErrs(); renderFila(); initCloud();
   }
   const hot = window.claude && window.claude.hot;
   if (hot && hot.snapshot) hot.snapshot(() => ({ G }));
