@@ -463,7 +463,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
             <li><b>Você errou:</b> ele leva a sua peça. <b>Você acertou:</b> a captura é anulada, mas ele joga de novo e pode insistir em capturar.</li>
             <li><b>Se ele insistir,</b> a nova questão vem de uma matéria diferente da escolhida para a partida. Ele tem duas tentativas por jogada; se você acertar as duas, ele perde a vez.</li>
             <li><b>Quando faltam questões da matéria escolhida,</b> o jogo busca as matérias que você menos respondeu até agora.</li>
-            <li><b>Captura anulada com o rei em xeque:</b> aquela captura fica proibida no turno e é preciso sair do xeque com outro lance. Se não houver outro, a partida está perdida para quem estava em xeque.</li>
+            <li><b>Captura anulada com o rei em xeque:</b> só aquela captura fica proibida no turno. É preciso sair do xeque com outro lance, que pode ser outra captura, com questão nova. Se todas as saídas forem anuladas, a partida está perdida para quem estava em xeque.</li>
           </ul>
         </div>
       </div>
@@ -1024,7 +1024,7 @@ if (typeof document !== 'undefined') (function () {
   function newGame(quiet) {
     clearTimeout(aiTimer); clearHype(); closeCut();
     const rivalId = pick(CAST).id;
-    G = { rivalId, short: prefs.length === 'curta', st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [] };
+    G = { rivalId, short: prefs.length === 'curta', st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [], capTries: {} };
     G.reps[posKey(G.st)] = 1;
     closeVeil(); renderAll();
     const opening = say('neutral', 'start');
@@ -1199,7 +1199,7 @@ if (typeof document !== 'undefined') (function () {
   function commit(m, kind) {
     const legal = legalMoves(G.st), text = label(m, legal), mover = G.st.turn;
     if (m.cap) (mover === 'w' ? G.capW : G.capB).push(m.cap);
-    G.st = make(G.st, m); G.last = { from: m.from, to: m.to }; G.banned = []; G.sel = -1; G.defTries = 0; G.defSubj = [];
+    G.st = make(G.st, m); G.last = { from: m.from, to: m.to }; G.banned = []; G.sel = -1; G.defTries = 0; G.defSubj = []; G.capTries = {};
     const k = posKey(G.st); G.reps[k] = (G.reps[k] || 0) + 1;
     const replies = legalMoves(G.st), chk = inCheck(G.st);
     G.log.push({ text: text + (chk ? (replies.length ? '+' : '#') : ''), kind: kind || 'move' });
@@ -1216,15 +1216,19 @@ if (typeof document !== 'undefined') (function () {
     const legal = legalMoves(G.st), text = label(m, legal), mover = G.st.turn, ai = G.mode === 'ai' && mover === 'b';
     G.log.push({ text, kind: 'void' }); G.sel = -1;
     if (ai) {
-      // O computador não perde a vez de imediato: pode jogar de novo, até a segunda captura anulada.
+      // O computador não perde a vez de imediato: pode jogar de novo, até esgotar as tentativas.
       G.last = null; G.defTries = (G.defTries || 0) + 1;
-      if (G.defTries < maxTries()) { scheduleAI(); return; }
       if (inCheck(G.st)) {
-        for (const x of legalMoves(G.st)) if (x.cap) G.banned.push(x.from * 64 + x.to);
-        if (!currentLegal().length) { say('sad', 'lose'); G.over = 'As pretas tiveram ' + (G.short ? 'a captura anulada' : 'duas capturas anuladas') + ' e não têm outro lance para sair do xeque. Vitória das brancas.'; renderAll(); return; }
+        // Em xeque ele não pode passar a vez. Só a captura anulada fica proibida (depois das tentativas a que tem direito);
+        // qualquer outra captura que resolva o xeque pode ser tentada, com questão nova. Sem saída, perde a partida.
+        const key = m.from * 64 + m.to; G.capTries = G.capTries || {};
+        G.capTries[key] = (G.capTries[key] || 0) + 1;
+        if (G.capTries[key] >= maxTries()) G.banned.push(key);
+        if (!currentLegal().length) { say('sad', 'lose'); G.over = 'Você anulou todas as saídas do xeque das pretas. Vitória das brancas.'; renderAll(); return; }
         scheduleAI(); return;
       }
-      G.st = passTurn(G.st); G.banned = []; G.defTries = 0; G.defSubj = [];
+      if (G.defTries < maxTries()) { scheduleAI(); return; }
+      G.st = passTurn(G.st); G.banned = []; G.defTries = 0; G.defSubj = []; G.capTries = {};
       G.flash = (G.short ? 'Captura anulada: ' : 'Duas capturas anuladas: ') + rival().name + ' perdeu a vez.';
       afterTurn(legalMoves(G.st), false); return;
     }
@@ -1328,12 +1332,14 @@ if (typeof document !== 'undefined') (function () {
   }
   function askQuestion(m, kind) {
     const mover = G.st.turn, def = kind === 'def', who = def ? opp(mover) : mover;
-    const tryN = def ? (G.defTries || 0) + 1 : 1;
-    const avoid = def && tryN > 1 ? (G.subject ? [G.subject] : (G.defSubj || [])) : null;
+    // Em xeque, as tentativas contam por captura (cada captura diferente tem as suas); fora dele, por jogada.
+    const capKey = m.from * 64 + m.to, inChk = inCheck(G.st);
+    const tryN = def ? (inChk ? ((G.capTries || {})[capKey] || 0) : (G.defTries || 0)) + 1 : 1;
+    const avoid = def && (G.defTries || 0) > 0 ? (G.subject ? [G.subject] : (G.defSubj || [])) : null;
     const q = pickQuestion(kind, who, avoid), t0 = Date.now();
     if (def) G.defSubj = (G.defSubj || []).concat(subjectsOf(q.m));
     const why = q.extra === 'falta' ? 'Não há mais questões de ' + G.subject + ' para sortear: esta é de uma matéria que você viu pouco. '
-      : q.extra === 'outra' ? tryN + 'ª tentativa de ' + rival().name + ' nesta jogada: a questão é de outra matéria. ' : '';
+      : q.extra === 'outra' ? 'Nova tentativa de ' + rival().name + ' nesta jogada: a questão é de outra matéria. ' : '';
     G.used.push(q.id);
     const pN = NAME[m.p.toUpperCase()], cN = NAME[m.cap.toUpperCase()].toLowerCase();
     const yours = ('QR'.includes(m.cap.toUpperCase()) ? 'sua ' : 'seu ') + cN;
@@ -1360,7 +1366,11 @@ if (typeof document !== 'undefined') (function () {
       store.set('xq.history', history);
       if (!ok) addError({ id: G.id + '-' + Date.now().toString(36), m: q.m, q: q.q, gab: !!q.g, y: q.y ? 1 : 0, given: !!given, c: q.c || '', k: kind, p: who, g: G.id, gs: G.subject || '', ts: Date.now() });
       let conseq;
-      if (def) conseq = !ok ? rival().name + ' captura ' + yours + '.' : tryN < maxTries() ? 'A captura foi anulada, mas ' + (rival().f ? 'ela' : 'ele') + ' joga de novo e pode insistir. Se insistir, a próxima questão será de outra matéria (' + (maxTries() - tryN === 1 ? 'resta 1 tentativa' : 'restam ' + (maxTries() - tryN) + ' tentativas') + ').' : checked ? (G.short ? 'Captura anulada. ' : 'Segunda captura anulada. ') + rival().name + ' está em xeque e precisa sair dele sem capturar.' : (G.short ? 'Captura anulada: ' : 'Segunda captura anulada: ') + rival().name + ' perde a vez.';
+      const noExit = def && ok && checked && tryN >= maxTries() && !currentLegal().some(x => x.from * 64 + x.to !== capKey);
+      if (def) conseq = !ok ? rival().name + ' captura ' + yours + '.' : tryN < maxTries() ? 'A captura foi anulada, mas ' + (rival().f ? 'ela' : 'ele') + ' joga de novo e pode insistir. Se insistir, a próxima questão será de outra matéria (' + (maxTries() - tryN === 1 ? 'resta 1 tentativa' : 'restam ' + (maxTries() - tryN) + ' tentativas') + ').'
+        : noExit ? 'Era a última saída do xeque: com ela anulada, a partida é sua.'
+        : checked ? 'Esta captura fica proibida. ' + rival().name + ' continua em xeque e precisa sair dele de outro jeito; se tentar outra captura, vem outra questão.'
+        : (G.short ? 'Captura anulada: ' : 'Segunda captura anulada: ') + rival().name + ' perde a vez.';
       else conseq = ok ? 'A captura está confirmada.' : checked ? 'O lance foi anulado e esta captura fica proibida neste turno. Seu rei está em xeque: escolha outro lance.' : 'O lance foi anulado e a vez passa para as ' + SIDE[opp(mover)] + '.';
       if (def) say(ok ? (tryN < maxTries() ? 'angry' : 'shock') : 'happy', ok ? (tryN < maxTries() ? 'annul' : 'annulLast') : 'taken');
       else say(ok ? 'shock' : 'smug', ok ? 'youRight' : 'youWrong');
@@ -1603,7 +1613,7 @@ if (typeof document !== 'undefined') (function () {
     .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } if (setupOpen) fillSubjects(); });
   function start(data) {
     if (data && data.G && data.G.st) {
-      G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; closeVeil(); paintRival(false); clearHype(); if (G.mode === 'ai' && G.hyped) showScene(Number(G.hyped));
+      G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; G.capTries = {}; closeVeil(); paintRival(false); clearHype(); if (G.mode === 'ai' && G.hyped) showScene(Number(G.hyped));
       if (!G.over && G.mode === 'ai' && G.st.turn === 'b') afterTurn(legalMoves(G.st), inCheck(G.st)); else renderAll();
     } else { newGame(true); openSetup(); }
     renderErrs(); initCloud();
