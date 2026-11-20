@@ -84,14 +84,14 @@ button { cursor: pointer; }
 
 /* Palco da rival */
 .table { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.stage { display: grid; grid-template-columns: clamp(104px, 13vw, 136px) minmax(0, 1fr); gap: 12px; align-items: stretch; max-width: min(100%, 82vh); }
-.stage.solo { grid-template-columns: minmax(0, 1fr); }
+.stage { display: grid; grid-template-columns: clamp(128px, 38%, 200px) minmax(0, 1fr); gap: 14px; align-items: end; max-width: min(100%, 82vh); margin-bottom: -10px; }
+.stage.solo { grid-template-columns: minmax(0, 1fr); margin-bottom: 0; }
 .stage.solo .portrait, .stage.solo .line { display: none; }
 .portrait {
   position: relative; aspect-ratio: 1; width: 100%; align-self: start; border: 3px solid var(--on-bg); border-radius: 6px; overflow: hidden;
   background: var(--lines), linear-gradient(140deg, #4a3fa8 0 52%, #2b2466 52% 100%); box-shadow: 4px 4px 0 var(--accent);
 }
-.portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; image-rendering: auto; }
+.portrait img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; }
 .portrait svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .portrait[data-mood="sad"] img { filter: saturate(.45) brightness(.8); }
 .portrait .m { display: none; }
@@ -102,21 +102,28 @@ button { cursor: pointer; }
 .portrait[data-mood="shock"] { background: var(--lines), linear-gradient(140deg, #ffc83a 0 52%, #e08a12 52% 100%); }
 .portrait[data-mood="sad"] { background: linear-gradient(180deg, #3a4a7a, #1d2440); }
 .portrait[data-mood="happy"], .portrait[data-mood="smug"] { background: var(--lines), linear-gradient(140deg, #6a4fd0 0 52%, #3a2a8c 52% 100%); }
-.talk { display: flex; flex-direction: column; min-width: 0; }
-.nameplate {
-  align-self: flex-start; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; background: var(--accent); color: var(--accent-ink);
-  padding: 3px 14px 3px 10px; border: 2px solid var(--on-bg); border-bottom: 0; border-radius: 4px 4px 0 0; margin-left: 8px; max-width: calc(100% - 8px);
-}
-.nameplate b { font-family: var(--f-display); font-weight: 400; font-size: 14px; }
-.nameplate span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; opacity: .9; }
+/* No palco o avatar é grande e sem moldura: o busto encosta na borda do tabuleiro. */
+.stage > .portrait[data-mood] { aspect-ratio: 1 / 1.04; align-self: end; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.stage > .portrait svg { inset: 0 0 auto 0; height: auto; aspect-ratio: 1; }
+.stage > .portrait img { width: 124%; max-width: none; height: auto; margin-left: -12%; object-fit: fill; }
+.talk { display: flex; flex-direction: column; min-width: 0; align-self: center; padding-bottom: 14px; }
+.stage.solo .talk { padding-bottom: 0; }
 .speech {
-  flex: 1; background: rgba(12, 9, 30, .88); color: var(--on-bg); border: 2px solid var(--on-bg); border-radius: 6px;
-  padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; min-height: 76px;
+  position: relative; background: rgba(12, 9, 30, .72); color: var(--on-bg); border: 2px solid var(--on-bg-muted); border-radius: 18px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
 }
-.speech .line { margin: 0; font-weight: 500; font-size: 15px; overflow-wrap: anywhere; min-height: 2.9em; }
-.speech .line::after { content: "▼"; color: var(--gold); font-size: 10px; margin-left: 6px; }
-.speech .caps, .side-strip .caps { font-family: var(--f-piece); font-size: 18px; letter-spacing: 1px; overflow-wrap: anywhere; min-height: 22px; }
+.speech::before {
+  content: ""; position: absolute; left: -9px; top: 50%; width: 14px; height: 14px; margin-top: -7px; transform: rotate(45deg);
+  background: #130f2b; border-left: 2px solid var(--on-bg-muted); border-bottom: 2px solid var(--on-bg-muted);
+}
+.stage.solo .speech::before { display: none; }
+.nameplate { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; color: var(--gold); }
+.nameplate b { font-family: var(--f-display); font-weight: 400; font-size: 14px; }
+.nameplate span { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--on-bg-muted); }
+.speech .line { margin: 0; font-weight: 500; font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; min-height: 2.8em; }
+.speech .caps, .side-strip .caps { font-family: var(--f-piece); font-size: 18px; letter-spacing: 1px; overflow-wrap: anywhere; }
 .speech .caps { color: var(--on-bg); }
+.speech .caps:empty { display: none; }
 
 /* Tabuleiro */
 .board-wrap { container-type: inline-size; width: 100%; max-width: min(100%, 82vh); }
@@ -144,6 +151,16 @@ button { cursor: pointer; }
 .sq .coord.rank { top: 3%; left: 5%; }
 .sq .coord.file { bottom: 2%; right: 6%; }
 .sq:focus-visible { outline-offset: -3px; z-index: 1; }
+.board { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.sq.mine { cursor: grab; touch-action: none; }
+.sq.lifting .pc { opacity: .25; }
+.sq.over { box-shadow: inset 0 0 0 .9cqw var(--gold); }
+.ghost {
+  position: fixed; left: 0; top: 0; z-index: 40; pointer-events: none; font-family: var(--f-piece); line-height: 1; cursor: grabbing;
+  filter: drop-shadow(0 6px 4px rgba(0, 0, 0, .45));
+}
+.ghost.w { color: var(--piece-w); text-shadow: 0 0 1px var(--piece-w-edge), 1.2px 0 0 var(--piece-w-edge), -1.2px 0 0 var(--piece-w-edge), 0 1.2px 0 var(--piece-w-edge), 0 -1.2px 0 var(--piece-w-edge); }
+.ghost.b { color: var(--piece-b); text-shadow: 0 0 1px var(--piece-b-edge), .8px 0 0 var(--piece-b-edge), -.8px 0 0 var(--piece-b-edge); }
 .side-strip { display: flex; align-items: center; gap: 10px; min-height: 28px; color: var(--on-bg); font-size: 13px; }
 .side-strip .who { font-family: var(--f-display); font-size: 13px; background: var(--on-bg); color: var(--ink); padding: 1px 10px; border-radius: 3px; }
 .status {
@@ -303,7 +320,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
   <header class="top">
     <div>
       <h1>Xadrez de <em>Concurso</em></h1>
-      <p>Toda captura passa por um item de certo ou errado. Nas suas capturas, acertar garante a peça. Nas do adversário, um item de jurisprudência decide: se você acertar, a captura dele é anulada, e ele só perde a vez depois de três capturas anuladas na mesma jogada.</p>
+      <p>Toda captura passa por um item de certo ou errado. Nas suas capturas, acertar garante a peça. Nas do adversário, um item de jurisprudência decide: se você acertar, a captura dele é anulada, e ele só perde a vez depois de duas capturas anuladas na mesma jogada.</p>
     </div>
     <div class="controls">
       <span class="chip" id="chip-subject">Todas as matérias</span>
@@ -316,8 +333,8 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
       <div class="stage" id="stage">
         <div class="portrait" id="rival-portrait" data-mood="neutral" aria-hidden="true"></div>
         <div class="talk">
-          <div class="nameplate"><b id="who-top">Pretas</b><span id="rival-role"></span></div>
           <div class="speech">
+            <div class="nameplate"><b id="who-top">Pretas</b><span id="rival-role"></span></div>
             <p class="line" id="rival-line" aria-hidden="true"></p>
             <span class="sr" id="rival-sr" aria-live="polite"></span>
             <div class="caps" id="caps-top"></div>
@@ -355,11 +372,12 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
           <ul class="rules">
             <li>As peças e os movimentos são os do xadrez clássico, com roque, <i>en passant</i> e promoção.</li>
             <li><b>Matéria da partida:</b> ao começar, você escolhe todas as matérias ou uma só. A escolha vale para as suas capturas e para a defesa.</li>
+            <li><b>Para mover,</b> arraste a peça até a casa ou toque na peça e depois na casa de destino.</li>
             <li><b>Sua captura abre uma questão</b> sorteada das listas de ataque. Ao tocar na peça adversária, o lance está declarado.</li>
             <li><b>Você acertou:</b> a captura acontece. <b>Você errou:</b> o lance é anulado e a vez passa para o adversário.</li>
             <li><b>Captura do computador abre uma questão de jurisprudência</b>, sorteada das listas de defesa.</li>
             <li><b>Você errou:</b> ele leva a sua peça. <b>Você acertou:</b> a captura é anulada, mas ele joga de novo e pode insistir em capturar.</li>
-            <li><b>Se ele insistir,</b> a nova questão vem de uma matéria diferente da escolhida para a partida. Ele tem até três tentativas por jogada; se você acertar as três, ele perde a vez.</li>
+            <li><b>Se ele insistir,</b> a nova questão vem de uma matéria diferente da escolhida para a partida. Ele tem duas tentativas por jogada; se você acertar as duas, ele perde a vez.</li>
             <li><b>Quando faltam questões da matéria escolhida,</b> o jogo busca as matérias que você menos respondeu até agora.</li>
             <li><b>Captura anulada com o rei em xeque:</b> aquela captura fica proibida no turno e é preciso sair do xeque com outro lance. Se não houver outro, a partida está perdida para quem estava em xeque.</li>
           </ul>
@@ -786,17 +804,16 @@ if (typeof document !== 'undefined') (function () {
     '<g class="m m-happy" fill="#ffc83a" stroke="#1b1530" stroke-width="2"><path d="M84 6 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 Z"/><path d="M14 10 l2.5 6 l6 2.5 l-6 2.5 l-2.5 6 l-2.5 -6 l-6 -2.5 l6 -2.5 Z"/></g>' +
     '<g class="m m-smug" fill="#ffc83a" stroke="#1b1530" stroke-width="2"><path d="M84 8 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 Z"/></g>' +
     '<g class="m m-think" fill="#fff" stroke="#1b1530" stroke-width="2"><circle cx="66" cy="20" r="4"/><circle cx="77" cy="14" r="5"/><circle cx="90" cy="9" r="6.5"/></g></svg>';
-  const portraitHTML = c => '<img src="' + c.img + '" alt="">' + EMOTES;
+  const portraitHTML = (c, big) => '<img src="' + (big ? c.body : c.img) + '" alt="">' + EMOTES;
   const pick = a => a[Math.floor(Math.random() * a.length)];
   const SAY = {
     think: ['Hm… deixe-me ver.', 'Um momento. Estou consultando o edital.', 'Interessante. Mas previsível.'],
     move: ['Sua vez.', 'Vejamos como você responde a isto.', 'Nada de pressa. Pense bem.', 'O relógio está correndo.'],
     capture: ['Essa peça é minha.', 'Sem questão, sem defesa.'],
     def1: ['Essa peça é minha. A não ser que você conheça a jurisprudência.', 'Vou capturar. Tem algo a alegar?', 'Julgue o item, se for capaz.'],
-    def2: ['Eu insisto! Agora em outra matéria.', 'Sorte de principiante. Tente esta.'],
-    def3: ['Última tentativa. Esta você não sabe.', 'Não é possível… Mais uma, de outra matéria!'],
+    def2: ['Eu insisto! Agora em outra matéria.', 'Sorte de principiante. Esta você não sabe.', 'Última tentativa. Mudei de matéria.'],
     annul: ['Tsc. Anulada… mas eu não desisti.', 'Você estudou esse informativo? Que irritante.'],
-    annul3: ['Três seguidas?! Eu… passo a vez.', 'Impossível! Quem lhe deu o gabarito?'],
+    annulLast: ['Duas seguidas?! Eu… passo a vez.', 'Impossível! Quem lhe deu o gabarito?'],
     taken: ['Como eu suspeitava. A peça é minha.', 'Errou. Anote no caderno de erros.', 'Jurisprudência não se chuta.'],
     youRight: ['Você sabia essa?! Leve a peça, então.', 'Acertou… Não vai se repetir.'],
     youWrong: ['Errado! Lance anulado, e a vez é minha.', 'Reprovado nesse item. Minha vez.'],
@@ -809,7 +826,7 @@ if (typeof document !== 'undefined') (function () {
   let typeTimer = null;
   function paintRival(animate) {
     const r = (G && G.rival) || { mood: 'neutral', text: '' }, el = $('rival-line'), pt = $('rival-portrait'), c = rival();
-    if (pt.dataset.who !== c.id) { pt.dataset.who = c.id; pt.innerHTML = portraitHTML(c); }
+    if (pt.dataset.who !== c.id) { pt.dataset.who = c.id; pt.innerHTML = portraitHTML(c, true); }
     pt.dataset.mood = r.mood; $('rival-sr').textContent = r.text;
     clearInterval(typeTimer);
     const still = !animate || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -873,18 +890,19 @@ if (typeof document !== 'undefined') (function () {
   const boardEl = $('board'), sqEls = [];
   for (let i = 0; i < 64; i++) {
     const r = i >> 3, c = i & 7;
-    const el = h('button', { type: 'button', class: 'sq' + ((r + c) % 2 ? ' dark' : ''), onclick: () => onSquare(i) });
+    const el = h('button', { type: 'button', class: 'sq' + ((r + c) % 2 ? ' dark' : ''), onclick: () => { if (!dragSuppress) onSquare(i); }, onpointerdown: e => dragStart(e, i) });
     sqEls.push(el); boardEl.append(el);
   }
   function renderBoard() {
     const legal = (!G.over && humanTurn() && !G.thinking) ? currentLegal() : [];
+    const movable = new Set(legal.map(m => m.from));
     const targets = new Map();
     if (G.sel >= 0) for (const m of legal) if (m.from === G.sel) targets.set(m.to, m);
     const checkSq = inCheck(G.st) ? kingSq(G.st.b, G.st.turn) : -1;
     for (let i = 0; i < 64; i++) {
       const el = sqEls[i], p = G.st.b[i], r = i >> 3, c = i & 7;
       el.className = 'sq' + ((r + c) % 2 ? ' dark' : '') +
-        (i === G.sel ? ' sel' : '') + (G.last && (G.last.from === i || G.last.to === i) ? ' last' : '') +
+        (i === G.sel ? ' sel' : '') + (movable.has(i) ? ' mine' : '') + (G.last && (G.last.from === i || G.last.to === i) ? ' last' : '') +
         (i === checkSq ? ' check' : '') + (targets.has(i) ? ' target' + (targets.get(i).cap ? ' capture' : '') : '');
       el.textContent = '';
       if (c === 0) el.append(h('span', { class: 'coord rank', 'aria-hidden': 'true' }, String(8 - r)));
@@ -931,6 +949,48 @@ if (typeof document !== 'undefined') (function () {
   }
   function renderAll() { renderBoard(); renderStatus(); renderLog(); renderLists(); renderPerf(); }
 
+  /* ---- Arrastar e soltar (mouse e toque). O clique em duas etapas continua valendo. ---- */
+  let drag = null, dragSuppress = false;
+  const sqAt = (x, y) => { const el = document.elementFromPoint(x, y), q = el && el.closest ? el.closest('.sq') : null; return q ? sqEls.indexOf(q) : -1; };
+  function dragStart(e, i) {
+    if (e.button > 0 || G.over || G.thinking || !humanTurn() || !$('veil').hidden) return;
+    const p = G.st.b[i]; if (!p || colorOf(p) !== G.st.turn) return;
+    drag = { from: i, x: e.clientX, y: e.clientY, id: e.pointerId, on: false, over: -1, touch: e.pointerType === 'touch' };
+  }
+  function dragClear() { if (drag && drag.ghost) drag.ghost.remove(); for (const el of sqEls) el.classList.remove('lifting', 'over'); }
+  window.addEventListener('pointermove', e => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.on) {
+      if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 7) return;
+      drag.on = true; G.sel = drag.from; renderBoard();
+      const q = sqEls[drag.from], pc = q.querySelector('.pc'); if (!pc) { drag = null; return; }
+      const g = pc.cloneNode(true); g.className = 'ghost ' + colorOf(G.st.b[drag.from]);
+      drag.size = q.getBoundingClientRect().width; g.style.fontSize = (parseFloat(getComputedStyle(q).fontSize) * 1.18) + 'px';
+      document.body.append(g); drag.ghost = g; q.classList.add('lifting');
+    }
+    const y = e.clientY - (drag.touch ? drag.size * .75 : 0);
+    drag.ghost.style.transform = 'translate(' + e.clientX + 'px,' + y + 'px) translate(-50%,-50%)';
+    const over = sqAt(e.clientX, y);
+    if (over !== drag.over) {
+      if (drag.over >= 0) sqEls[drag.over].classList.remove('over');
+      if (over >= 0 && sqEls[over].classList.contains('target')) sqEls[over].classList.add('over');
+      drag.over = over;
+    }
+  }, { passive: true });
+  function dragEnd(e, cancel) {
+    if (!drag || e.pointerId !== drag.id) return;
+    const d = drag; dragClear(); drag = null;
+    if (!d.on) return;                       // foi só um clique: o onclick resolve
+    dragSuppress = true; setTimeout(() => { dragSuppress = false; }, 120);
+    const to = cancel ? -1 : sqAt(e.clientX, e.clientY - (d.touch ? d.size * .75 : 0));
+    const cands = to >= 0 ? currentLegal().filter(m => m.from === d.from && m.to === to) : [];
+    if (cands.length) { G.sel = -1; cands.length > 1 ? askPromotion(cands) : attempt(cands[0]); return; }
+    if (to === d.from || to < 0) G.sel = d.from; // soltou fora ou na origem: a peça continua selecionada
+    renderBoard();
+  }
+  window.addEventListener('pointerup', e => dragEnd(e, false));
+  window.addEventListener('pointercancel', e => dragEnd(e, true));
+
   /* ---- Fluxo do lance ---- */
   function onSquare(i) {
     if (G.over || G.thinking || !humanTurn() || !$('veil').hidden) return;
@@ -957,21 +1017,21 @@ if (typeof document !== 'undefined') (function () {
     G.log.push({ text: text + (chk ? (replies.length ? '+' : '#') : ''), kind: kind || 'move' });
     afterTurn(replies, chk);
   }
-  const DEF_TRIES = 3;
+  const DEF_TRIES = 2;
   function fail(m) {
     const legal = legalMoves(G.st), text = label(m, legal), mover = G.st.turn, ai = G.mode === 'ai' && mover === 'b';
     G.log.push({ text, kind: 'void' }); G.sel = -1;
     if (ai) {
-      // O computador não perde a vez de imediato: pode jogar de novo, até a terceira captura anulada.
+      // O computador não perde a vez de imediato: pode jogar de novo, até a segunda captura anulada.
       G.last = null; G.defTries = (G.defTries || 0) + 1;
       if (G.defTries < DEF_TRIES) { scheduleAI(); return; }
       if (inCheck(G.st)) {
         for (const x of legalMoves(G.st)) if (x.cap) G.banned.push(x.from * 64 + x.to);
-        if (!currentLegal().length) { say('sad', 'lose'); G.over = 'As pretas tiveram três capturas anuladas e não têm outro lance para sair do xeque. Vitória das brancas.'; renderAll(); return; }
+        if (!currentLegal().length) { say('sad', 'lose'); G.over = 'As pretas tiveram duas capturas anuladas e não têm outro lance para sair do xeque. Vitória das brancas.'; renderAll(); return; }
         scheduleAI(); return;
       }
       G.st = passTurn(G.st); G.banned = []; G.defTries = 0; G.defSubj = [];
-      G.flash = 'Três capturas anuladas: ' + rival().name + ' perdeu a vez.';
+      G.flash = 'Duas capturas anuladas: ' + rival().name + ' perdeu a vez.';
       afterTurn(legalMoves(G.st), false); return;
     }
     if (inCheck(G.st)) {
@@ -1068,12 +1128,12 @@ if (typeof document !== 'undefined') (function () {
     const yours = ('QR'.includes(m.cap.toUpperCase()) ? 'sua ' : 'seu ') + cN;
     const stake = h('p', { class: 'stake', id: 'item-stake' }, def ? rival().name + ' quer capturar ' + yours + ' em ' + sqName(m.to) + ' com ' + ('QR'.includes(m.p.toUpperCase()) ? 'a ' : 'o ') + pN.toLowerCase() : pN + ' captura ' + cN + ' em ' + sqName(m.to));
     const ai = G.mode === 'ai';
-    const tauntText = def ? say('smug', tryN === 1 ? 'def1' : tryN === 2 ? 'def2' : 'def3') : '';
+    const tauntText = def ? say('smug', tryN === 1 ? 'def1' : 'def2') : '';
     const mini = mood => { const d = h('div', { class: 'portrait', 'data-mood': mood, 'aria-hidden': 'true' }); d.innerHTML = portraitHTML(rival()); return d; };
     const head = h('div', { class: 'duelhead' },
       h('div', { class: 'duel ' + (def ? 'def' : 'atk') },
         h('span', { class: 'side' }, def ? 'DEFESA!' : 'ATAQUE!'),
-        h('span', { class: 'vs' }, def ? ['Tentativa ' + tryN + ' de ' + DEF_TRIES, h('span', { class: 'pips', 'aria-hidden': 'true' }, [1, 2, 3].map(n => h('i', { class: n <= tryN ? 'on' : '' })))] : (ai ? 'Você × ' + rival().name : 'Vez das ' + SIDE[mover]))),
+        h('span', { class: 'vs' }, def ? ['Tentativa ' + tryN + ' de ' + DEF_TRIES, h('span', { class: 'pips', 'aria-hidden': 'true' }, Array.from({ length: DEF_TRIES }, (_, k) => k + 1).map(n => h('i', { class: n <= tryN ? 'on' : '' })))] : (ai ? 'Você × ' + rival().name : 'Vez das ' + SIDE[mover]))),
       h('div', { class: 'head' }, h('span', null, q.m), h('span', null, def ? 'Jurisprudência' : 'Sua captura')),
       def && tauntText ? h('div', { class: 'taunt' }, mini('smug'), h('p', null, tauntText)) : null);
     const text = h('p', { class: 'text' }, q.q);
@@ -1085,9 +1145,9 @@ if (typeof document !== 'undefined') (function () {
       store.set('xq.history', history);
       if (!ok) addError({ id: G.id + '-' + Date.now().toString(36), m: q.m, q: q.q, gab: !!q.g, y: q.y ? 1 : 0, given: !!given, c: q.c || '', k: kind, p: who, g: G.id, gs: G.subject || '', ts: Date.now() });
       let conseq;
-      if (def) conseq = !ok ? rival().name + ' captura ' + yours + '.' : tryN < DEF_TRIES ? 'A captura foi anulada, mas ' + (rival().f ? 'ela' : 'ele') + ' joga de novo e pode insistir. Se insistir, a próxima questão será de outra matéria (' + (DEF_TRIES - tryN === 1 ? 'resta 1 tentativa' : 'restam ' + (DEF_TRIES - tryN) + ' tentativas') + ').' : checked ? 'Terceira captura anulada. ' + rival().name + ' está em xeque e precisa sair dele sem capturar.' : 'Terceira captura anulada: ' + rival().name + ' perde a vez.';
+      if (def) conseq = !ok ? rival().name + ' captura ' + yours + '.' : tryN < DEF_TRIES ? 'A captura foi anulada, mas ' + (rival().f ? 'ela' : 'ele') + ' joga de novo e pode insistir. Se insistir, a próxima questão será de outra matéria (' + (DEF_TRIES - tryN === 1 ? 'resta 1 tentativa' : 'restam ' + (DEF_TRIES - tryN) + ' tentativas') + ').' : checked ? 'Segunda captura anulada. ' + rival().name + ' está em xeque e precisa sair dele sem capturar.' : 'Segunda captura anulada: ' + rival().name + ' perde a vez.';
       else conseq = ok ? 'A captura está confirmada.' : checked ? 'O lance foi anulado e esta captura fica proibida neste turno. Seu rei está em xeque: escolha outro lance.' : 'O lance foi anulado e a vez passa para as ' + SIDE[opp(mover)] + '.';
-      if (def) say(ok ? (tryN < DEF_TRIES ? 'angry' : 'shock') : 'happy', ok ? (tryN < DEF_TRIES ? 'annul' : 'annul3') : 'taken');
+      if (def) say(ok ? (tryN < DEF_TRIES ? 'angry' : 'shock') : 'happy', ok ? (tryN < DEF_TRIES ? 'annul' : 'annulLast') : 'taken');
       else say(ok ? 'shock' : 'smug', ok ? 'youRight' : 'youWrong');
       const next = def ? (ok ? () => fail(m) : () => commit(m, 'lost')) : (ok ? () => commit(m, 'won') : () => fail(m));
       openVeil(head, stake, text,
