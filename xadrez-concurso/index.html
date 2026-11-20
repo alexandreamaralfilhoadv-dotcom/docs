@@ -129,7 +129,7 @@ button { cursor: pointer; }
 .hypegif { display: none; border: 3px solid var(--on-bg); border-radius: 6px; box-shadow: 4px 4px 0 var(--accent); }
 .stage.hype { display: block; position: relative; margin-bottom: 0; }
 .stage.hype > .portrait { display: none; }
-.stage.hype > .hypegif { display: block; height: 100%; width: auto; max-width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.stage.hype > .hypegif { display: block; height: 100%; width: auto; max-width: 100%; object-fit: cover; }
 .stage.hype .talk { position: absolute; right: 0; bottom: 8px; width: min(56%, 300px); padding: 0; }
 .stage.hype .speech { border-color: var(--gold); background: rgba(12, 9, 30, .94); padding: 10px 12px; gap: 4px; }
 .stage.hype .speech::before, .stage.hype .caps, .stage.hype #rival-role { display: none; }
@@ -826,10 +826,12 @@ if (typeof document !== 'undefined') (function () {
   /* ---- A rival: retrato vetorial com expressões e falas ---- */
   // Elenco: um adversário é sorteado a cada partida. As imagens ficam em personagens/.
   const CAST = [
-    { id: 'lucy', name: 'Lucy', role: 'Examinadora', f: true, img: 'personagens/lucy.webp', body: 'personagens/lucy-corpo.webp', gif: 'personagens/lucy-desafio.webp',
+    { id: 'lucy', name: 'Lucy', role: 'Examinadora', f: true, img: 'personagens/lucy.webp', body: 'personagens/lucy-corpo.webp', gif: 'personagens/lucy-desafio.webp', gif2: 'personagens/lucy-final.webp',
+      hype2: ['Quinze peças a menos… e eu já enxergo o final desta partida.', 'O tabuleiro esvaziou. Agora não há onde esconder um erro.', 'Fim de jogo é comigo. Tem certeza de que quer continuar?'],
       hype: ['Oito peças fora do tabuleiro. Agora a prova começa de verdade!', 'Protesto! Daqui você não passa!', 'Chega de aquecimento. Mostre o que estudou!'],
       start: ['Sou a Lucy. Hoje quem corrige a sua prova sou eu.', 'Sente-se. A prova de hoje é no tabuleiro.', 'Eu elaboro as questões. Você só precisa acertar.'] },
-    { id: 'edward', name: 'Edward', role: 'Examinador', f: false, img: 'personagens/edward.webp', body: 'personagens/edward-corpo.webp', gif: 'personagens/edward-desafio.webp',
+    { id: 'edward', name: 'Edward', role: 'Examinador', f: false, img: 'personagens/edward.webp', body: 'personagens/edward-corpo.webp', gif: 'personagens/edward-desafio.webp', gif2: 'personagens/edward-final.webp',
+      hype2: ['Quinze capturas. Final de jogo: minha especialidade.', 'Já calculei as próximas dez jogadas. Nenhuma é boa para você.', 'Poucas peças, poucas saídas. Vamos ver a sua técnica.'],
       hype: ['Oito capturas! A partir daqui, cada erro é fatal!', 'Pelos meus cálculos, você cai antes do fim!', 'Impugno a sua estratégia! Prove que eu estou errado!'],
       start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] }
   ];
@@ -872,22 +874,22 @@ if (typeof document !== 'undefined') (function () {
     let i = 0; el.textContent = '';
     typeTimer = setInterval(() => { i += 2; el.textContent = r.text.slice(0, i); if (i >= r.text.length) clearInterval(typeTimer); }, 22);
   }
-  const CAPTURES_FOR_HYPE = 8, HYPE_MS = 10000;
+  const HYPE_AT = [8, 15], HYPE_MS = 10000;   // capturas somadas que disparam o 1º e o 2º desafio
   let hypeTimer = null, cutTimer = null, cutType = null;
   function say(mood, key) {
     if (!G || G.mode !== 'ai') return '';
-    const c = rival(), text = pick(key === 'start' ? c.start : key === 'hype' ? c.hype : SAY[key]);
+    const c = rival(), text = pick(key === 'start' ? c.start : key === 'hype' ? c.hype : key === 'hype2' ? c.hype2 : SAY[key]);
     const ending = key === 'lose' || key === 'win' || key === 'draw';
-    if (hypeTimer && key !== 'hype') { if (!ending) return text; endHype(); }   // durante o desafio a frase fica fixa
+    if (hypeTimer && key !== 'hype' && key !== 'hype2') { if (!ending) return text; endHype(); }   // durante o desafio a frase fica fixa
     G.rival = { mood, text }; paintRival(true); return text;
   }
   // Desafio: ao chegar a 8 capturas somadas, a animação fica 10 s acima do tabuleiro.
   function endHype() { clearTimeout(hypeTimer); hypeTimer = null; const st = $('stage'); st.classList.remove('hype'); st.style.height = ''; }
-  function startHype() {
+  function startHype(level) {
     const st = $('stage'), c = rival();
-    st.style.height = st.offsetHeight + 'px';
-    $('rival-gif').src = c.gif; st.classList.add('hype');
-    say('smug', 'hype');
+    if (hypeTimer) { clearTimeout(hypeTimer); hypeTimer = null; } else st.style.height = st.offsetHeight + 'px';
+    $('rival-gif').src = level === 2 ? c.gif2 : c.gif; st.classList.add('hype');
+    say('smug', level === 2 ? 'hype2' : 'hype');
     hypeTimer = setTimeout(() => { endHype(); if (G && G.rival) { G.rival.mood = 'smug'; paintRival(false); } }, HYPE_MS);
   }
   // Cena de abertura: animação em tela cheia com a frase inicial; fecha no toque ou sozinha.
@@ -1085,7 +1087,10 @@ if (typeof document !== 'undefined') (function () {
     const k = posKey(G.st); G.reps[k] = (G.reps[k] || 0) + 1;
     const replies = legalMoves(G.st), chk = inCheck(G.st);
     G.log.push({ text: text + (chk ? (replies.length ? '+' : '#') : ''), kind: kind || 'move' });
-    if (m.cap && G.mode === 'ai' && !G.hyped && G.capW.length + G.capB.length >= CAPTURES_FOR_HYPE) { G.hyped = true; startHype(); }
+    if (m.cap && G.mode === 'ai') {
+      const total = G.capW.length + G.capB.length, level = total >= HYPE_AT[1] ? 2 : total >= HYPE_AT[0] ? 1 : 0;
+      if (level > (Number(G.hyped) || 0)) { G.hyped = level; startHype(level); }
+    }
     afterTurn(replies, chk);
   }
   const DEF_TRIES = 2;
