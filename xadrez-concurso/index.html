@@ -68,7 +68,17 @@ body {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   display: flex; flex-direction: column; gap: 18px;
+  position: relative; z-index: 1;
 }
+/* Faixa da biblioteca no topo: some no fundo da página; à noite recebe um banho azul-escuro (ou a imagem noturna, quando houver). */
+.hero {
+  position: absolute; inset: 0 0 auto 0; height: clamp(190px, 34vw, 330px); pointer-events: none; overflow: hidden;
+  -webkit-mask-image: linear-gradient(#000 40%, transparent); mask-image: linear-gradient(#000 40%, transparent);
+}
+.hero img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(16, 12, 36, .74), rgba(16, 12, 36, .34) 55%, rgba(16, 12, 36, .12)); }
+.hero.night.tinted img { filter: brightness(.5) saturate(.55) contrast(1.05); }
+.hero.night::after { background: linear-gradient(90deg, rgba(6, 9, 26, .9), rgba(8, 14, 44, .62) 55%, rgba(10, 18, 56, .48)); }
 button, select, textarea, input { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
@@ -387,6 +397,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
 }
 </style>
 
+<div class="hero" id="hero" aria-hidden="true"><img id="hero-img" alt=""></div>
 <div class="page">
   <header class="top">
     <div>
@@ -395,7 +406,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
     </div>
     <div class="controls">
       <span class="chip" id="chip-subject">Todas as matérias</span>
-      <button class="btn" id="btn-scheme" type="button" aria-pressed="false">Modo escuro</button>
+      <button class="btn" id="btn-scheme" type="button">Tema: automático</button>
       <button class="btn primary" id="btn-new" type="button">Nova partida</button>
     </div>
   </header>
@@ -865,7 +876,7 @@ if (typeof document !== 'undefined') (function () {
   }
   let history = store.get('xq.history', []);
   if (!Array.isArray(history)) history = [];
-  const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false, length: 'normal', scheme: 'padrao' }, store.get('xq.prefs', {}));
+  const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false, length: 'normal', scheme: 'padrao', tema: 'auto' }, store.get('xq.prefs', {}));
   const view = { scope: 'game', player: 'w' };
   let G = null, aiTimer = null;
 
@@ -1456,13 +1467,25 @@ if (typeof document !== 'undefined') (function () {
   $('opt-reforco').checked = !!prefs.reforco;
   $('opt-reforco').addEventListener('change', ev => { prefs.reforco = ev.target.checked; store.set('xq.prefs', prefs); });
   $('btn-new').addEventListener('click', openSetup);
+  // Tema: 'auto' segue o relógio do aparelho (noite das 18h às 6h); 'escuro' e 'claro' fixam a escolha.
+  // À noite entram o esquema escuro e a biblioteca noturna. Para usar uma ilustração própria da noite,
+  // basta publicar o arquivo e preencher SCENES.night; sem ela, a imagem do dia é escurecida.
+  const SCENES = { day: 'cenario/biblioteca-dia.webp', night: '' };
+  const NIGHT_FROM = 18, NIGHT_UNTIL = 6;
+  const isNightNow = () => { const h = new Date().getHours(); return h >= NIGHT_FROM || h < NIGHT_UNTIL; };
+  const TEMA_LABEL = { auto: 'Tema: automático', escuro: 'Tema: escuro', claro: 'Tema: claro' };
   function applyScheme() {
-    const night = prefs.scheme === 'noite';
+    const night = prefs.tema === 'escuro' || (prefs.tema !== 'claro' && isNightNow());
     if (night) document.documentElement.dataset.scheme = 'noite'; else delete document.documentElement.dataset.scheme;
-    $('btn-scheme').textContent = night ? 'Modo claro' : 'Modo escuro'; $('btn-scheme').setAttribute('aria-pressed', night);
+    const hero = $('hero'), src = night && SCENES.night ? SCENES.night : SCENES.day;
+    hero.classList.toggle('night', night); hero.classList.toggle('tinted', night && !SCENES.night);
+    if ($('hero-img').getAttribute('src') !== src) $('hero-img').src = src;
+    $('btn-scheme').textContent = TEMA_LABEL[prefs.tema] || TEMA_LABEL.auto;
+    $('btn-scheme').title = prefs.tema === 'auto' || !TEMA_LABEL[prefs.tema] ? 'Escuro das ' + NIGHT_FROM + 'h às ' + NIGHT_UNTIL + 'h, pelo relógio do aparelho. Toque para fixar.' : 'Toque para mudar o tema.';
   }
-  $('btn-scheme').addEventListener('click', () => { prefs.scheme = prefs.scheme === 'noite' ? 'padrao' : 'noite'; store.set('xq.prefs', prefs); applyScheme(); });
+  $('btn-scheme').addEventListener('click', () => { prefs.tema = prefs.tema === 'auto' ? 'escuro' : prefs.tema === 'escuro' ? 'claro' : 'auto'; store.set('xq.prefs', prefs); applyScheme(); });
   applyScheme();
+  setInterval(applyScheme, 5 * 60 * 1000);   // acompanha a virada do horário com o jogo aberto
   $('btn-errs').addEventListener('click', () => { errView.game = G.id; showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); });
 
   /* ---- Início de partida: matéria, adversário, nível ---- */
