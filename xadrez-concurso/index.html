@@ -125,6 +125,33 @@ button { cursor: pointer; }
 .speech .caps { color: var(--on-bg); }
 .speech .caps:empty { display: none; }
 
+/* Desafio: a animação ocupa o lugar do avatar por alguns segundos */
+.hypegif { display: none; border: 3px solid var(--on-bg); border-radius: 6px; box-shadow: 4px 4px 0 var(--accent); }
+.stage.hype { display: block; position: relative; margin-bottom: 0; }
+.stage.hype > .portrait { display: none; }
+.stage.hype > .hypegif { display: block; height: 100%; width: auto; max-width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.stage.hype .talk { position: absolute; right: 0; bottom: 8px; width: min(56%, 300px); padding: 0; }
+.stage.hype .speech { border-color: var(--gold); background: rgba(12, 9, 30, .94); padding: 10px 12px; gap: 4px; }
+.stage.hype .speech::before, .stage.hype .caps, .stage.hype #rival-role { display: none; }
+.stage.hype .line { font-family: var(--f-display); font-size: 13px; line-height: 1.35; min-height: 0; }
+/* Cena de abertura */
+.cut {
+  position: fixed; inset: 0; z-index: 60; background: var(--shade); display: grid; place-items: center; cursor: pointer;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.cut .frame { width: min(680px, 100%); display: flex; flex-direction: column; gap: 0; }
+.cut .shot { position: relative; border: 4px solid var(--on-bg); border-radius: 6px; overflow: hidden; box-shadow: 8px 8px 0 var(--accent); background: var(--bg-2); }
+.cut .shot img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.cut .vsname { position: absolute; left: 0; top: 14px; background: var(--accent); color: #fff; font-family: var(--f-display); font-size: clamp(18px, 5vw, 28px); padding: 4px 30px 6px 14px; clip-path: polygon(0 0, 100% 0, calc(100% - 22px) 100%, 0 100%); }
+.cut .vsname small { display: block; font-family: var(--f-body); font-weight: 700; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+.cut .say { position: relative; margin: -22px 14px 0; background: rgba(12, 9, 30, .94); color: var(--on-bg); border: 2px solid var(--gold); border-radius: 18px; padding: 14px 16px; font-size: 17px; font-weight: 500; line-height: 1.4; min-height: 4.2em; overflow-wrap: anywhere; }
+.cut .hint { margin: 12px 0 0; text-align: center; color: var(--on-bg-muted); font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) {
+  .cut .shot { animation: cutin .35s cubic-bezier(.2, 1.3, .4, 1); }
+  @keyframes cutin { from { transform: translateX(-40px) skewX(-6deg); opacity: 0; } to { transform: none; opacity: 1; } }
+  .stage.hype > .hypegif { animation: cutin .3s ease-out; }
+}
+
 /* Tabuleiro */
 .board-wrap { container-type: inline-size; width: 100%; max-width: min(100%, 82vh); }
 .board {
@@ -332,6 +359,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
     <section class="table" aria-label="Tabuleiro">
       <div class="stage" id="stage">
         <div class="portrait" id="rival-portrait" data-mood="neutral" aria-hidden="true"></div>
+        <img class="hypegif" id="rival-gif" alt="" aria-hidden="true">
         <div class="talk">
           <div class="speech">
             <div class="nameplate"><b id="who-top">Pretas</b><span id="rival-role"></span></div>
@@ -450,6 +478,14 @@ Direito Penal;A tentativa é punida com a mesma pena do crime consumado.;E</pre>
         <div id="perf"></div>
       </div>
     </section>
+  </div>
+</div>
+
+<div class="cut" id="cut" hidden>
+  <div class="frame">
+    <div class="shot"><img id="cut-img" alt=""><div class="vsname"><span id="cut-name"></span><small id="cut-role"></small></div></div>
+    <p class="say" id="cut-say"></p>
+    <p class="hint">Toque para começar</p>
   </div>
 </div>
 
@@ -790,9 +826,11 @@ if (typeof document !== 'undefined') (function () {
   /* ---- A rival: retrato vetorial com expressões e falas ---- */
   // Elenco: um adversário é sorteado a cada partida. As imagens ficam em personagens/.
   const CAST = [
-    { id: 'lucy', name: 'Lucy', role: 'Examinadora', f: true, img: 'personagens/lucy.webp', body: 'personagens/lucy-corpo.webp',
+    { id: 'lucy', name: 'Lucy', role: 'Examinadora', f: true, img: 'personagens/lucy.webp', body: 'personagens/lucy-corpo.webp', gif: 'personagens/lucy-desafio.webp',
+      hype: ['Oito peças fora do tabuleiro. Agora a prova começa de verdade!', 'Protesto! Daqui você não passa!', 'Chega de aquecimento. Mostre o que estudou!'],
       start: ['Sou a Lucy. Hoje quem corrige a sua prova sou eu.', 'Sente-se. A prova de hoje é no tabuleiro.', 'Eu elaboro as questões. Você só precisa acertar.'] },
-    { id: 'edward', name: 'Edward', role: 'Examinador', f: false, img: 'personagens/edward.webp', body: 'personagens/edward-corpo.webp',
+    { id: 'edward', name: 'Edward', role: 'Examinador', f: false, img: 'personagens/edward.webp', body: 'personagens/edward-corpo.webp', gif: 'personagens/edward-desafio.webp',
+      hype: ['Oito capturas! A partir daqui, cada erro é fatal!', 'Pelos meus cálculos, você cai antes do fim!', 'Impugno a sua estratégia! Prove que eu estou errado!'],
       start: ['Edward. Li o edital inteiro, inclusive os anexos. Podemos começar.', 'Calculei as suas chances. Não são boas.', 'Vamos ver se você estudou de verdade. As brancas começam.'] }
   ];
   const rival = () => CAST.find(c => c.id === (G && G.rivalId)) || CAST[0];
@@ -834,14 +872,45 @@ if (typeof document !== 'undefined') (function () {
     let i = 0; el.textContent = '';
     typeTimer = setInterval(() => { i += 2; el.textContent = r.text.slice(0, i); if (i >= r.text.length) clearInterval(typeTimer); }, 22);
   }
-  function say(mood, key) { if (!G || G.mode !== 'ai') return ''; G.rival = { mood, text: pick(key === 'start' ? rival().start : SAY[key]) }; paintRival(true); return G.rival.text; }
+  const CAPTURES_FOR_HYPE = 8, HYPE_MS = 10000;
+  let hypeTimer = null, cutTimer = null, cutType = null;
+  function say(mood, key) {
+    if (!G || G.mode !== 'ai') return '';
+    const c = rival(), text = pick(key === 'start' ? c.start : key === 'hype' ? c.hype : SAY[key]);
+    const ending = key === 'lose' || key === 'win' || key === 'draw';
+    if (hypeTimer && key !== 'hype') { if (!ending) return text; endHype(); }   // durante o desafio a frase fica fixa
+    G.rival = { mood, text }; paintRival(true); return text;
+  }
+  // Desafio: ao chegar a 8 capturas somadas, a animação fica 10 s acima do tabuleiro.
+  function endHype() { clearTimeout(hypeTimer); hypeTimer = null; const st = $('stage'); st.classList.remove('hype'); st.style.height = ''; }
+  function startHype() {
+    const st = $('stage'), c = rival();
+    st.style.height = st.offsetHeight + 'px';
+    $('rival-gif').src = c.gif; st.classList.add('hype');
+    say('smug', 'hype');
+    hypeTimer = setTimeout(() => { endHype(); if (G && G.rival) { G.rival.mood = 'smug'; paintRival(false); } }, HYPE_MS);
+  }
+  // Cena de abertura: animação em tela cheia com a frase inicial; fecha no toque ou sozinha.
+  function closeCut() { clearTimeout(cutTimer); clearInterval(cutType); $('cut').hidden = true; }
+  function openCut(text) {
+    const c = rival(), el = $('cut-say');
+    $('cut-img').src = c.gif; $('cut-name').textContent = c.name; $('cut-role').textContent = c.role + ' · seu adversário';
+    $('cut').hidden = false; clearInterval(cutType); clearTimeout(cutTimer);
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) el.textContent = text;
+    else { let i = 0; el.textContent = ''; cutType = setInterval(() => { i += 2; el.textContent = text.slice(0, i); if (i >= text.length) clearInterval(cutType); }, 26); }
+    cutTimer = setTimeout(closeCut, 6000);
+  }
+  $('cut').addEventListener('click', closeCut);
+  document.addEventListener('keydown', e => { if (!$('cut').hidden && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); closeCut(); } });
 
   function newGame() {
-    clearTimeout(aiTimer);
+    clearTimeout(aiTimer); if (hypeTimer) endHype(); closeCut();
     const rivalId = pick(CAST).id;
     G = { rivalId, st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [] };
     G.reps[posKey(G.st)] = 1;
-    closeVeil(); renderAll(); say('neutral', 'start');
+    closeVeil(); renderAll();
+    const opening = say('neutral', 'start');
+    if (G.mode === 'ai' && opening) openCut(opening);
   }
   /* ---- Matérias ---- */
   const subjCache = new Map();
@@ -955,6 +1024,7 @@ if (typeof document !== 'undefined') (function () {
   function dragStart(e, i) {
     if (e.button > 0 || G.over || G.thinking || !humanTurn() || !$('veil').hidden) return;
     const p = G.st.b[i]; if (!p || colorOf(p) !== G.st.turn) return;
+    if (!$('cut').hidden) return;
     drag = { from: i, x: e.clientX, y: e.clientY, id: e.pointerId, on: false, over: -1, touch: e.pointerType === 'touch' };
   }
   function dragClear() { if (drag && drag.ghost) drag.ghost.remove(); for (const el of sqEls) el.classList.remove('lifting', 'over'); }
@@ -1015,6 +1085,7 @@ if (typeof document !== 'undefined') (function () {
     const k = posKey(G.st); G.reps[k] = (G.reps[k] || 0) + 1;
     const replies = legalMoves(G.st), chk = inCheck(G.st);
     G.log.push({ text: text + (chk ? (replies.length ? '+' : '#') : ''), kind: kind || 'move' });
+    if (m.cap && G.mode === 'ai' && !G.hyped && G.capW.length + G.capB.length >= CAPTURES_FOR_HYPE) { G.hyped = true; startHype(); }
     afterTurn(replies, chk);
   }
   const DEF_TRIES = 2;
