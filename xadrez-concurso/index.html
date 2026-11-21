@@ -389,6 +389,61 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
 .taunt { padding: 0 20px; max-width: 500px; }
 .taunt p { margin: 0; background: var(--dark); color: var(--on-bg); padding: 10px 14px; border-radius: 10px; font-weight: 500; font-size: 15px; line-height: 1.4; position: relative; overflow-wrap: anywhere; }
 .taunt p::before { content: ""; position: absolute; right: 22%; top: -8px; border: 8px solid transparent; border-top: 0; border-bottom-color: var(--frame); }
+.rivalrow { display: contents; }
+.go { display: grid; }
+/* Questão ao lado do tabuleiro (computador e telefone deitado): o tabuleiro continua aceso e à vista,
+   com o lance marcado nele, e o resto da tela escurece. O JS (placeVeil) escolhe o lado e mede o espaço. */
+.veil-spot { display: none; position: fixed; border-radius: 4px; box-shadow: 0 0 0 200vmax var(--shade); pointer-events: none; }
+.veil.dock { background: transparent; overflow: hidden; }
+.veil.dock .veil-spot { display: block; }
+.veil.dock .item { position: relative; z-index: 1; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+.veil.dock .mini { display: none; }   /* o tabuleiro de verdade está ao lado */
+.veil.dock .scene:not(.duo) { display: block; }
+.veil.dock .rivalrow { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 16px; align-items: center; padding: 0 20px; }
+.veil.dock .scene.duo { display: block; padding: 0; max-width: none; }
+.veil.dock .taunt { padding: 0; max-width: none; }
+.veil.dock .taunt p::before { right: auto; left: -8px; top: 50%; transform: translateY(-50%); border: 8px solid transparent; border-left: 0; border-right-color: var(--dark); }
+.veil.dock .act { position: sticky; bottom: -20px; z-index: 2; margin: 0 -20px -20px; padding: 12px 20px 20px; background: var(--surface); border-top: 2px solid var(--line); }
+@media (max-height: 560px) {
+  .veil.dock { padding-block: 8px; }
+  .veil.dock .item { max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); padding: 14px; gap: 10px; box-shadow: 5px 5px 0 var(--accent); }
+  .veil.dock .duelhead { margin: -14px -14px 0; gap: 8px; }
+  .veil.dock .duel { min-height: 34px; }
+  .veil.dock .duel .side { font-size: 15px; padding: 4px 26px 4px 12px; }
+  .veil.dock .duel .vs { font-size: 11.5px; padding: 3px 10px; }
+  .veil.dock .pips i { width: 9px; height: 9px; }
+  .veil.dock .stake-row, .veil.dock .scene { padding: 0 14px; }
+  .veil.dock .rivalrow { grid-template-columns: 58px minmax(0, 1fr); gap: 12px; padding: 0 14px; }
+  .veil.dock .scene.duo { padding: 0; }
+  .veil.dock .taunt p { font-size: 13px; padding: 7px 10px; }
+  .veil.dock .item .stake { font-size: 15px; }
+  .veil.dock .item .cmd { font-size: 12px; }
+  .veil.dock .item .text { font-size: 15.5px; line-height: 1.5; }
+  .veil.dock .act { bottom: -14px; margin: 0 -14px -14px; padding: 8px 14px 12px; }
+  .veil.dock .item { container: qd / inline-size; }
+  @container qd (max-width: 340px) {   /* telefone pequeno deitado: o lance já está marcado no tabuleiro ao lado */
+    .veil.dock .stake-row { display: none; }
+    .veil.dock .ans .bubble { display: none; }
+    .veil.dock .ans { padding-inline: 4px; }
+    .veil.dock .ans.u { padding-inline: 8px; }
+    .veil.dock .rivalrow { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
+    .veil.dock .item .cmd { font-size: 11.5px; }
+  }
+  .veil.dock .answers { grid-template-columns: 1fr 1fr auto; gap: 8px; }
+  .veil.dock .ans { padding: 7px 8px; font-size: 15px; gap: 7px; box-shadow: 3px 3px 0 var(--frame); }
+  .veil.dock .ans .bubble { width: 22px; height: 22px; font-size: 12px; }
+  .veil.dock .ans.u { grid-column: auto; padding: 7px 12px; font-size: 13px; }
+  .veil.dock .verdict { padding: 10px; gap: 6px; font-size: 14px; }
+  .veil.dock .impact { font-size: 24px; padding: 4px 12px 5px; }
+  .veil.dock .rate { gap: 8px; }
+  .veil.dock .rate .btn { padding: 6px; font-size: 15px; }
+  .veil.dock .go .btn { min-height: 34px; padding-block: 5px; }
+}
+/* Lance em disputa, marcado no tabuleiro de verdade enquanto a questão está aberta */
+.board { position: relative; }
+.board > svg.duel-arrow { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.sq.duel-from::before { content: ""; position: absolute; inset: 0; background: var(--sq-mark); opacity: .85; }
+.sq.duel-to { box-shadow: inset 0 0 0 .9cqw var(--accent); }
 .item .stake { font-family: var(--f-display); font-size: 19px; font-weight: 400; margin: 0; text-wrap: balance; line-height: 1.3; }
 .item .cmd { font-size: 13px; color: var(--muted); margin: 0; font-weight: 500; }
 .item .text { font-family: var(--f-item); font-size: 17px; line-height: 1.6; margin: 0; max-width: 65ch; overflow-wrap: anywhere; font-weight: 500; }
@@ -611,6 +666,7 @@ Direito Penal;A tentativa é punida com a mesma pena do crime consumado.;E</pre>
 </div>
 
 <div class="veil" id="veil" hidden>
+  <div class="veil-spot" id="veil-spot" aria-hidden="true"></div>
   <div class="item" id="item" role="dialog" aria-modal="true" aria-labelledby="item-stake"></div>
 </div>
 
@@ -1155,6 +1211,22 @@ if (typeof document !== 'undefined') (function () {
     const el = h('button', { type: 'button', class: 'sq' + ((r + c) % 2 ? ' dark' : ''), onclick: () => { if (!dragSuppress) onSquare(i); }, onpointerdown: e => dragStart(e, i) });
     sqEls.push(el); boardEl.append(el);
   }
+  // Lance em disputa enquanto uma questão está aberta: fica marcado no tabuleiro (casas e seta).
+  let docked = null;
+  boardEl.insertAdjacentHTML('beforeend', '<svg class="duel-arrow" viewBox="0 0 8 8" aria-hidden="true"></svg>');
+  const arrowEl = boardEl.lastElementChild;
+  function arrowPath(m) {
+    const x1 = (m.from & 7) + .5, y1 = (m.from >> 3) + .5, x2 = (m.to & 7) + .5, y2 = (m.to >> 3) + .5;
+    const d = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / d, uy = (y2 - y1) / d;
+    const ex = x2 - ux * .42, ey = y2 - uy * .42, bx = ex - ux * .34, by = ey - uy * .34;   // ponta antes do centro da casa de destino
+    return '<g fill="#e3344b" stroke="#1b1530" stroke-width=".05" opacity=".92">' +
+      '<path d="M' + (x1 - uy * .09) + ' ' + (y1 + ux * .09) + ' L' + (bx - uy * .09) + ' ' + (by + ux * .09) + ' L' + (bx - uy * .24) + ' ' + (by + ux * .24) + ' L' + ex + ' ' + ey +
+      ' L' + (bx + uy * .24) + ' ' + (by - ux * .24) + ' L' + (bx + uy * .09) + ' ' + (by - ux * .09) + ' L' + (x1 + uy * .09) + ' ' + (y1 - ux * .09) + ' Z"/></g>';
+  }
+  function markDuel(m) {
+    docked = m || null; arrowEl.innerHTML = m ? arrowPath(m) : '';
+    sqEls.forEach((el, i) => { el.classList.toggle('duel-from', !!m && m.from === i); el.classList.toggle('duel-to', !!m && m.to === i); });
+  }
   function renderBoard() {
     const legal = (!G.over && humanTurn() && !G.thinking) ? currentLegal() : [];
     const movable = new Set(legal.map(m => m.from));
@@ -1165,7 +1237,8 @@ if (typeof document !== 'undefined') (function () {
       const el = sqEls[i], p = G.st.b[i], r = i >> 3, c = i & 7;
       el.className = 'sq' + ((r + c) % 2 ? ' dark' : '') +
         (i === G.sel ? ' sel' : '') + (movable.has(i) ? ' mine' : '') + (G.last && (G.last.from === i || G.last.to === i) ? ' last' : '') +
-        (i === checkSq ? ' check' : '') + (targets.has(i) ? ' target' + (targets.get(i).cap ? ' capture' : '') : '');
+        (i === checkSq ? ' check' : '') + (targets.has(i) ? ' target' + (targets.get(i).cap ? ' capture' : '') : '') +
+        (docked && docked.from === i ? ' duel-from' : '') + (docked && docked.to === i ? ' duel-to' : '');
       el.textContent = '';
       if (c === 0) el.append(h('span', { class: 'coord rank', 'aria-hidden': 'true' }, String(8 - r)));
       if (r === 7) el.append(h('span', { class: 'coord file', 'aria-hidden': 'true' }, 'abcdefgh'[c]));
@@ -1374,7 +1447,11 @@ if (typeof document !== 'undefined') (function () {
       const t = today(), due = [], novel = [];
       for (const q of all) { const r = srs[q.id]; if (r && r.s === 1) { if (r.d <= t) due.push(q); } else if (!r || r.s === 0 || r.d <= t) novel.push(q); }
       if (due.length && (Math.random() < REVIEW_SHARE || !novel.length)) { all = due; review = true; }
-      else if (novel.length) all = novel;
+      else if (novel.length) {
+        // Prioridade: cartões marcados no banco (p) e nunca respondidos passam à frente das outras questões novas.
+        const first = novel.filter(q => q.p && !srs[q.id]);
+        all = first.length && Math.random() < PRIORITY_SHARE ? first : novel;
+      }
       else if (due.length) { all = due; review = true; }
     }
     // Sorteia primeiro o gabarito (meio a meio), para o banco não favorecer "Certo".
@@ -1390,8 +1467,33 @@ if (typeof document !== 'undefined') (function () {
     for (let i = 0; i < cands.length; i++) { x -= weights[i]; if (x <= 0) return done(cands[i]); }
     return done(cands[cands.length - 1]);
   }
-  function openVeil(...kids) { const it = $('item'); it.className = 'item'; it.textContent = ''; it.append(...kids); $('veil').hidden = false; const f = it.querySelector('button'); if (f) f.focus(); }
-  function closeVeil() { $('veil').hidden = true; $('item').textContent = ''; }
+  function openVeil(...kids) { const it = $('item'); it.className = 'item'; it.textContent = ''; it.append(...kids); $('veil').hidden = false; placeVeil(); it.scrollTop = 0; const f = it.querySelector('button'); if (f) f.focus({ preventScroll: true }); }
+  function closeVeil() { $('veil').hidden = true; $('item').textContent = ''; if (docked) markDuel(null); placeVeil(); }
+  // Com uma questão aberta em tela larga (computador, telefone deitado), o quadro vai para o lado do tabuleiro
+  // que tiver mais espaço e o tabuleiro fica à vista. Sem espaço (telefone em pé), o quadro fica no centro, com o minitabuleiro.
+  function moveSpot() {
+    const b = boardEl.getBoundingClientRect(), sp = $('veil-spot').style;
+    sp.left = b.left + 'px'; sp.top = b.top + 'px'; sp.width = (b.width + 6) + 'px'; sp.height = (b.height + 6) + 'px';   // +6: a sombra dura do tabuleiro
+  }
+  function placeVeil() {
+    const veil = $('veil');
+    veil.classList.remove('dock'); veil.style.paddingLeft = veil.style.paddingRight = '';
+    if (!docked || veil.hidden) return;
+    const vw = veil.clientWidth, vh = window.innerHeight;
+    if (vw < 640 || vw < vh * 1.15) return;
+    let b = boardEl.getBoundingClientRect();
+    if (b.height + 18 > vh) return;
+    if (b.top < 6 || b.bottom + 12 > vh) { window.scrollBy(0, b.top < 6 ? b.top - 6 : b.bottom + 12 - vh); b = boardEl.getBoundingClientRect(); }
+    if (b.top < 0 || b.bottom > vh) return;
+    const cs = getComputedStyle(veil), gap = vh <= 560 ? 12 : 18;
+    const roomL = b.left - gap - parseFloat(cs.paddingLeft), roomR = vw - b.right - 6 - gap - parseFloat(cs.paddingRight) - 8;
+    if (Math.max(roomL, roomR) < (vh <= 560 ? 270 : 340)) return;
+    veil.classList.add('dock');
+    if (roomL >= roomR) veil.style.paddingRight = (vw - b.left + gap) + 'px'; else veil.style.paddingLeft = (b.right + 6 + gap) + 'px';
+    moveSpot();
+  }
+  window.addEventListener('resize', placeVeil);
+  window.addEventListener('scroll', () => { if (docked && !$('veil').hidden) moveSpot(); }, { passive: true });
   function askPromotion(cands) {
     openVeil(
       h('p', { class: 'stake', id: 'item-stake' }, 'Promover o peão para'),
@@ -1406,13 +1508,8 @@ if (typeof document !== 'undefined') (function () {
       grid.append(h('div', { class: 'msq' + ((r + c) % 2 ? ' dark' : '') + (i === m.from ? ' from' : '') + (i === m.to ? ' to' : '') },
         p ? h('span', { class: colorOf(p) }, GLYPH[p.toUpperCase()]) : null));
     }
-    const x1 = (m.from & 7) + .5, y1 = (m.from >> 3) + .5, x2 = (m.to & 7) + .5, y2 = (m.to >> 3) + .5;
-    const d = Math.hypot(x2 - x1, y2 - y1) || 1, ux = (x2 - x1) / d, uy = (y2 - y1) / d;
-    const ex = x2 - ux * .42, ey = y2 - uy * .42, bx = ex - ux * .34, by = ey - uy * .34;   // ponta antes do centro da casa de destino
     const wrap = h('div', { class: 'mini', role: 'img', 'aria-label': 'Tabuleiro: lance de ' + sqName(m.from) + ' para ' + sqName(m.to) }, grid);
-    wrap.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 8 8" aria-hidden="true"><g fill="#e3344b" stroke="#1b1530" stroke-width=".05" opacity=".92">' +
-      '<path d="M' + (x1 - uy * .09) + ' ' + (y1 + ux * .09) + ' L' + (bx - uy * .09) + ' ' + (by + ux * .09) + ' L' + (bx - uy * .24) + ' ' + (by + ux * .24) + ' L' + ex + ' ' + ey +
-      ' L' + (bx + uy * .24) + ' ' + (by - ux * .24) + ' L' + (bx + uy * .09) + ' ' + (by - ux * .09) + ' L' + (x1 + uy * .09) + ' ' + (y1 - ux * .09) + ' Z"/></g></svg>');
+    wrap.insertAdjacentHTML('beforeend', '<svg viewBox="0 0 8 8" aria-hidden="true">' + arrowPath(m) + '</svg>');
     return wrap;
   }
   function askQuestion(m, kind) {
@@ -1439,8 +1536,8 @@ if (typeof document !== 'undefined') (function () {
       // Defesa: título, minitabuleiro ao lado do retrato grande do adversário e, embaixo, o balão com a fala dele.
       // Ataque: minitabuleiro com a descrição do lance ao lado.
       def ? [h('div', { class: 'stake-row' }, stake),
-             h('div', { class: 'scene duo' }, miniBoard(m), mini('smug')),
-             tauntText ? h('div', { class: 'taunt' }, h('p', null, tauntText)) : null]
+             h('div', { class: 'rivalrow' }, h('div', { class: 'scene duo' }, miniBoard(m), mini('smug')),
+               tauntText ? h('div', { class: 'taunt' }, h('p', null, tauntText)) : null)]
           : h('div', { class: 'scene' }, miniBoard(m), h('div', null, stake)));
     const text = h('p', { class: 'text' }, q.q);
     const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
@@ -1473,14 +1570,15 @@ if (typeof document !== 'undefined') (function () {
           track ? h('p', { class: 'hist' }, histLine(before, ok, unknown)) : null,
           ok || track ? null : h('p', { class: 'note' }, 'A questão e a justificativa ficaram guardadas na aba Revisão.')),
         // Depois de um acerto, a avaliação substitui o "Continuar": os dois botões seguem o jogo.
-        ok && track ? h('div', { class: 'rate' },
+        ok && track ? h('div', { class: 'rate act' },
           h('button', { type: 'button', class: 'btn easy', onclick: () => { closeVeil(); srsAnswer(q.id, 'easy'); next(); } }, 'Fácil', h('small', null, before && before.s === 1 ? 'Eu sabia: conta para a fixação' : 'Eu sabia: só volta em um mês')),
           h('button', { type: 'button', class: 'btn hard', onclick: () => { closeVeil(); srsAnswer(q.id, 'hard'); next(); } }, 'Difícil', h('small', null, 'Chutei ou hesitei: volta amanhã')))
-          : h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'));
+          : h('div', { class: 'go act' }, h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar')));
       if (!ok) $('item').classList.add('shake');
     };
+    markDuel(m);
     openVeil(head, h('p', { class: 'cmd' }, (q.review ? 'Revisão: esta questão está na sua fila de fixação. ' : '') + why + (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.') + (def ? ' Se acertar, esta captura é anulada. Se errar, você perde a peça.' : '')), text,
-      h('div', { class: 'answers' },
+      h('div', { class: 'answers act' },
         h('button', { type: 'button', class: 'ans c', onclick: () => answer(true) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, YES[0]), YES),
         h('button', { type: 'button', class: 'ans e', onclick: () => answer(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, NO[0]), NO),
         h('button', { type: 'button', class: 'ans u', onclick: () => answer(null) }, 'Não sei')));
@@ -1494,6 +1592,7 @@ if (typeof document !== 'undefined') (function () {
       ul.append(h('li', null,
         h('span', { class: 'nm' }, l.name),
         h('span', { class: 'tag ' + (l.juris ? 'bad' : 'dim') }, l.juris ? 'Jurisprudência · defesa' : 'Ataque'),
+        l.items.some(q => q.p) ? h('span', { class: 'tag ok' }, 'Prioridade') : null,
         h('span', { class: 'ct' }, l.items.length + ' q · ' + subjects + (subjects === 1 ? ' matéria' : ' matérias')),
         h('button', { type: 'button', class: 'btn small', 'aria-label': (l.juris ? 'Usar no ataque a lista ' : 'Usar na defesa a lista ') + l.name, onclick: () => toggleJuris(l) }, l.juris ? 'Usar no ataque' : 'Usar na defesa'),
         h('button', { type: 'button', class: 'btn small', 'aria-label': 'Remover a lista ' + l.name, onclick: () => removeList(l) }, 'Remover')));
@@ -1659,7 +1758,7 @@ if (typeof document !== 'undefined') (function () {
      d (dia em que volta), l (último dia visto) e s (0 = comum, 1 = na fila, 2 = adiada: fácil ou já fixada).
      Entra na fila quem foi errada, respondida com "não sei" ou marcada como difícil. Na fila, a questão volta
      em 1, 3 e 7 dias; três acertos seguidos a fixam. Fáceis e fixadas só voltam depois de um mês. */
-  const STEPS = [1, 3, 7], EASY_DAYS = 30, REVIEW_SHARE = .6;
+  const STEPS = [1, 3, 7], EASY_DAYS = 30, REVIEW_SHARE = .6, PRIORITY_SHARE = .75;
   const today = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
   let srs = store.get('xq.srs', {}); if (!srs || typeof srs !== 'object' || Array.isArray(srs)) srs = {};
   let srsCol = null; const srsDirty = new Set(); let srsTimer = null, srsBusy = false;
