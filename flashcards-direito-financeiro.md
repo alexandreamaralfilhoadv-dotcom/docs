@@ -1,0 +1,390 @@
+# Flashcards: Direito Financeiro (Certo ou Errado)
+
+Base: apostilas de Receita Pública, Despesa Pública e Crédito Público do Drive, Lei 4.320/64, LRF (LC 101/2000) e CF/88.
+
+
+## Créditos adicionais
+
+### 1. A LOA de um município fixou R$ 200 mil para a merenda escolar, mas em agosto essa verba se mostrou insuficiente. Para reforçar essa mesma dotação, o município pode abrir um crédito suplementar.
+
+**Gabarito:** CERTO
+
+O crédito suplementar existe justamente para reforçar uma dotação que já consta do orçamento, mas ficou insuficiente. A Lei 4.320/64, art. 40, define os créditos adicionais como “as autorizações de despesa não computadas ou insuficientemente dotadas na Lei de Orçamento”, e o art. 41, I, os classifica: “Os créditos adicionais classificam-se em: I - suplementares, os destinados a reforço de dotação orçamentária”. Como a merenda escolar já tem dotação, só falta reforçá-la; o crédito especial seria o caminho se não existisse dotação específica.
+
+### 2. O prefeito deseja criar um programa de aluguel social, que não consta da LOA, e pretende financiá-lo por meio de crédito suplementar aberto por decreto.
+
+**Gabarito:** ERRADO
+
+Como o programa é novo e não há dotação orçamentária específica para ele, o crédito adequado é o especial, e não o suplementar. Segundo o art. 41 da Lei 4.320/64: “II - especiais, os destinados a despesas para as quais não haja dotação orçamentária específica”. O suplementar, por sua vez, só serve para reforçar dotação já existente (inciso I). Em ambos os casos vale o art. 42: “Os créditos suplementares e especiais serão autorizados por lei e abertos por decreto executivo”, de modo que a lei autorizativa continua indispensável.
+
+### 3. Uma enchente destruiu pontes do município e exigiu recursos imediatos para socorro e reconstrução. O prefeito abriu crédito extraordinário por decreto e deu imediato conhecimento do fato à Câmara Municipal.
+
+**Gabarito:** CERTO
+
+A situação é de calamidade pública, hipótese típica de crédito extraordinário. A Lei 4.320/64, art. 41, III, prevê “extraordinários, os destinados a despesas urgentes e imprevistas, em caso de guerra, comoção intestina ou calamidade pública”, e o art. 44 dispõe: “Os créditos extraordinários serão abertos por decreto do Poder Executivo, que deles dará imediato conhecimento ao Poder Legislativo”. Ou seja, a abertura dispensa lei prévia; a comunicação ao Legislativo é posterior e imediata. A CF, art. 167, § 3º, é a base constitucional dessa modalidade.
+
+### 4. O Estado precisa reformar o prédio da Secretaria de Obras, intervenção planejada há anos. Alegando urgência, o Governador abriu crédito extraordinário por decreto para custear a obra.
+
+**Gabarito:** ERRADO
+
+O crédito extraordinário exige despesa imprevisível e urgente, requisitos cumulativos. A CF, art. 167, § 3º, estabelece: “A abertura de crédito extraordinário somente será admitida para atender a despesas imprevisíveis e urgentes, como as decorrentes de guerra, comoção interna ou calamidade pública, observado o disposto no art. 62”. Uma reforma planejada há anos é previsível, ainda que agora se alegue urgência. A despesa deveria ter sido tratada por dotação própria, crédito especial ou suplementar, conforme o caso, sempre com autorização legislativa.
+
+### 5. No balanço patrimonial do exercício anterior, a prefeitura apurou ativo financeiro de R$ 10 milhões e passivo financeiro de R$ 7 milhões. A diferença, se não estiver comprometida, pode servir de fonte para abrir crédito suplementar no exercício atual.
+
+**Gabarito:** CERTO
+
+A diferença positiva entre ativo e passivo financeiros é o superávit financeiro, expressamente admitido como recurso para abertura de créditos. Lei 4.320/64, art. 43, § 1º: “Consideram-se recursos para o fim deste artigo, desde que não comprometidos: I - o superavit financeiro apurado em balanço patrimonial do exercício anterior”. E o § 2º define: “Entende-se por superavit financeiro a diferença positiva entre o ativo financeiro e o passivo financeiro conjugando-se ainda, os saldos dos créditos adicionais transferidos e as operações de crédito a eles vinculadas”. No caso, o superávit é de R$ 3 milhões.
+
+### 6. Em fevereiro, a arrecadação de ISS superou a previsão apenas naquele mês, e a projeção para o ano é de queda. Mesmo assim, o município abriu crédito suplementar tratando a diferença de fevereiro como excesso de arrecadação.
+
+**Gabarito:** ERRADO
+
+O excesso de arrecadação não se mede por um mês isolado: exige saldo acumulado e análise da tendência. Lei 4.320/64, art. 43, § 3º: “Entende-se por excesso de arrecadação, para os fins deste artigo, o saldo positivo das diferenças acumuladas mês a mês, entre a arrecadação prevista e a realizada, considerando-se ainda, a tendência do exercício”. Se a tendência é de queda, o município corre o risco de abrir crédito com base em receita que não se confirmará, o que a lei busca evitar.
+
+### 7. Lei promulgada em outubro autorizou um crédito especial de R$ 1 milhão, aberto por decreto em novembro. Em 31 de dezembro sobrou saldo de R$ 400 mil, que pode ser reaberto, nos limites do saldo, no exercício seguinte.
+
+**Gabarito:** CERTO
+
+A regra geral é que os créditos adicionais vigoram apenas no exercício em que foram abertos, mas os especiais e extraordinários têm exceção constitucional. CF, art. 167, § 2º: “Os créditos especiais e extraordinários terão vigência no exercício financeiro em que forem autorizados, salvo se o ato de autorização for promulgado nos últimos quatro meses daquele exercício, caso em que, reabertos nos limites de seus saldos, serão incorporados ao orçamento do exercício financeiro subsequente”. Como a lei foi promulgada em outubro, dentro dos últimos quatro meses, o saldo de R$ 400 mil pode ser reaberto.
+
+### 8. Em novembro, um município abriu crédito suplementar e sobrou saldo em 31 de dezembro. Em janeiro, o saldo foi reaberto no novo exercício, com base na regra de reabertura dos créditos adicionais.
+
+**Gabarito:** ERRADO
+
+A regra de reabertura do saldo não alcança os créditos suplementares. A CF, art. 167, § 2º, refere-se apenas a “créditos especiais e extraordinários”, e a Lei 4.320/64, art. 45, dispõe: “Os créditos adicionais terão vigência adstrita ao exercício financeiro em que forem abertos, salvo expressa disposição legal em contrário, quanto aos especiais e extraordinários”. Assim, o saldo do suplementar perde a vigência em 31 de dezembro, ainda que aberto nos últimos quatro meses do exercício.
+
+### 9. A LOA autorizou o Executivo a abrir créditos suplementares até 10% da despesa fixada. Com base nessa autorização genérica, o prefeito abriu um suplementar por decreto sem indicar a fonte de recursos.
+
+**Gabarito:** ERRADO
+
+A autorização legislativa, ainda que prevista na própria LOA, é só um dos requisitos; falta a indicação dos recursos. A CF, art. 167, V, veda “a abertura de crédito suplementar ou especial sem prévia autorização legislativa e sem indicação dos recursos correspondentes”. A Lei 4.320/64, art. 43, completa: “A abertura dos créditos suplementares e especiais depende da existência de recursos disponíveis para ocorrer a despesa e será precedida de exposição justificativa”. A autorização na LOA é admitida pelo art. 165, § 8º, da CF, mas não dispensa a indicação da fonte (superávit, excesso, anulação ou operação de crédito).
+
+### 10. Sem lei autorizativa, o Governador transferiu por decreto parte das dotações da Secretaria de Educação para a Secretaria de Saúde, para atender a uma necessidade urgente dessa área.
+
+**Gabarito:** ERRADO
+
+Remanejar recursos entre órgãos exige lei prévia, ainda que a finalidade seja relevante. A CF, art. 167, VI, veda “a transposição, o remanejamento ou a transferência de recursos de uma categoria de programação para outra ou de um órgão para outro, sem prévia autorização legislativa”. Se a necessidade fosse imprevisível e urgente, em caso de calamidade, o instrumento seria o crédito extraordinário; não sendo, o caminho é a lei autorizando o remanejamento ou um crédito adicional com a devida indicação de recursos.
+
+### 11. Para construir uma creche sem dotação na LOA, o município contratou empréstimo bancário. Como o dinheiro ingressou nos cofres, a prefeitura passou a considerar dispensável a abertura de crédito adicional.
+
+**Gabarito:** ERRADO
+
+Operação de crédito é fonte de recursos; o crédito adicional é a autorização de despesa. Os dois institutos não se confundem. A Lei 4.320/64, art. 40, define créditos adicionais como “as autorizações de despesa não computadas ou insuficientemente dotadas na Lei de Orçamento”, e o art. 43, § 1º, IV, lista como recurso “o produto de operações de crédito autorizadas, em forma que juridicamente possibilite ao Poder Executivo realizá-las”. Ter dinheiro em caixa, por empréstimo, não substitui a dotação: a creche, sem dotação, exigiria crédito especial, financiado pelo empréstimo.
+
+
+## Execução orçamentária e programação financeira
+
+### 12. A LOA de um Estado foi publicada em 20 de janeiro. Em 10 de fevereiro, o Poder Executivo estabeleceu a programação financeira e o cronograma de execução mensal de desembolso.
+
+**Gabarito:** CERTO
+
+O prazo de 30 dias foi respeitado. LRF (LC 101/2000), art. 8º: “Até trinta dias após a publicação dos orçamentos, nos termos em que dispuser a lei de diretrizes orçamentárias e observado o disposto na alínea c do inciso I do art. 4º, o Poder Executivo estabelecerá a programação financeira e o cronograma de execução mensal de desembolso”. De 20 de janeiro a 10 de fevereiro passaram 21 dias, dentro do limite. A programação financeira é o instrumento que compatibiliza a execução das despesas com o ritmo de ingresso das receitas.
+
+### 13. Um convênio com recursos vinculados à saúde ingressou nos cofres do município em dezembro, e o saldo não foi gasto até 31 de dezembro. Em fevereiro, o município aplicou esse saldo em ações de saúde.
+
+**Gabarito:** CERTO
+
+Recurso vinculado mantém a destinação mesmo que o ingresso e o gasto ocorram em exercícios diferentes. LRF, art. 8º, parágrafo único: “Os recursos legalmente vinculados a finalidade específica serão utilizados exclusivamente para atender ao objeto de sua vinculação, ainda que em exercício diferente daquele em que ocorrer o ingresso”. Assim, o saldo vinculado não se perde nem se livra da destinação com a virada do exercício: continua preso à saúde, e a aplicação em fevereiro foi correta.
+
+### 14. Ao fim de um bimestre, a arrecadação estadual ficou abaixo do necessário para cumprir as metas fiscais. O Governador editou decreto limitando o empenho do Tribunal de Justiça e da Assembleia Legislativa.
+
+**Gabarito:** ERRADO
+
+A limitação de empenho é feita por cada Poder, por ato próprio, e o Executivo não pode impor a limitação aos demais. LRF, art. 9º, caput: “(...) os Poderes e o Ministério Público promoverão, por ato próprio e nos montantes necessários, nos trinta dias subseqüentes, limitação de empenho e movimentação financeira, segundo os critérios fixados pela lei de diretrizes orçamentárias”. O § 3º, que autorizava o Executivo a limitar os valores dos outros Poderes em caso de omissão deles, foi declarado inconstitucional pelo STF (ADI 2.238), por ofensa à separação e à autonomia dos Poderes.
+
+### 15. Para cumprir a meta de resultado primário, o gestor limitou o empenho das despesas destinadas ao pagamento do serviço da dívida do ente.
+
+**Gabarito:** ERRADO
+
+O serviço da dívida está entre as despesas que a lei protege da limitação de empenho. LRF, art. 9º, § 2º: “Não serão objeto de limitação as despesas que constituam obrigações constitucionais e legais do ente, inclusive aquelas destinadas ao pagamento do serviço da dívida (...)”. A mesma proteção alcança, por exemplo, gastos que são obrigações constitucionais, como os mínimos de saúde e educação. A limitação deve recair sobre as despesas discricionárias.
+
+### 16. Depois de limitar empenhos em junho, o Estado viu a arrecadação se recuperar parcialmente. A recomposição das dotações limitadas foi feita de forma proporcional às reduções efetivadas.
+
+**Gabarito:** CERTO
+
+A recomposição proporcional é a regra legal. LRF, art. 9º, § 1º: “No caso de restabelecimento da receita prevista, ainda que parcial, a recomposição das dotações cujos empenhos foram limitados dar-se-á de forma proporcional às reduções efetivadas”. Isso impede que o gestor escolha livremente quais dotações recompor, preservando a proporcionalidade dos cortes entre as áreas atingidas, mesmo quando a recuperação da receita for apenas parcial.
+
+### 17. Durante a calamidade pública reconhecida pela Assembleia Legislativa, um Estado ficou dispensado de promover a limitação de empenho, ainda que a receita tenha ficado abaixo do previsto.
+
+**Gabarito:** CERTO
+
+A calamidade pública reconhecida suspende exigências fiscais enquanto durar. LRF, art. 65: “Na ocorrência de calamidade pública reconhecida pelo Congresso Nacional, no caso da União, e pelas Assembléias Legislativas, na hipótese dos Estados e Municípios, enquanto perdurar a situação: (...) II - serão dispensados o atingimento dos resultados fiscais previstos e a limitação de empenho prevista no art. 9º”. O inciso I ainda suspende a contagem de prazos de algumas regras, como as de recondução da dívida e da despesa com pessoal. A dispensa dura apenas enquanto perdurar a situação.
+
+
+## Receita pública
+
+### 18. Uma empresa depositou R$ 50 mil em dinheiro como caução para garantir contrato com o Estado. Segundo a doutrina, esse valor é receita pública do Estado.
+
+**Gabarito:** ERRADO
+
+Na concepção doutrinária, receita é a entrada definitiva. Para Aliomar Baleeiro, receita pública é “a entrada que, integrando-se ao patrimônio público sem quaisquer reservas, condições ou correspondência no passivo, vem acrescer o seu vulto, como elemento novo e positivo”. A caução é restituível: o Estado é mero depositário e registra uma obrigação no passivo. Trata-se de ingresso (entrada provisória), e não de receita em sentido estrito. Vale lembrar que a Lei 4.320/64 adota um conceito mais amplo de receita, mas o enunciado pede a visão da doutrina.
+
+### 19. O Detran aplicou multa de trânsito a um motorista, que a pagou. Essa arrecadação é receita originária, porque o pagamento foi efetivado pelo próprio particular.
+
+**Gabarito:** ERRADO
+
+A multa é receita derivada: decorre de constrangimento legal sobre o patrimônio do particular, e não de relação voluntária. As receitas originárias resultam da atuação do Estado sob regime de direito privado, como aluguéis, rendas patrimoniais, dividendos e preços públicos. Já a Lei 4.320/64, art. 9º, define o tributo como espécie de receita derivada: “Tributo é a receita derivada instituída pelas entidades de direito público, compreendendo os impostos, as taxas e contribuições (...)”. Multas, tributos e confiscos têm em comum o poder de império do Estado.
+
+### 20. O município vendeu um imóvel dominical que não era mais utilizado. O valor recebido na venda é classificado como receita de capital.
+
+**Gabarito:** CERTO
+
+A alienação de bens converte patrimônio em dinheiro e, por isso, é receita de capital. Lei 4.320/64, art. 11, § 2º: “São Receitas de Capital as provenientes da realização de recursos financeiros oriundos de constituição de dívidas; da conversão, em espécie, de bens e direitos; os recursos recebidos de outras pessoas de direito público ou privado, destinados a atender despesas classificáveis em Despesas de Capital e, ainda, o superavit do Orçamento Corrente”. Não é receita corrente, que é a que decorre das atividades próprias do Estado (tributária, patrimonial, de serviços etc.).
+
+### 21. O município vendeu um imóvel público por R$ 3 milhões e usou todo o valor para pagar a folha de pessoal do mês. Nenhuma lei havia destinado essa receita aos regimes de previdência.
+
+**Gabarito:** ERRADO
+
+A receita da alienação de patrimônio não pode custear despesa corrente. LRF, art. 44: “É vedada a aplicação da receita de capital derivada da alienação de bens e direitos que integram o patrimônio público para o financiamento de despesa corrente, salvo se destinada por lei aos regimes de previdência social, geral e próprio dos servidores públicos”. A lógica é evitar que o ente consuma seu patrimônio para pagar gastos de custeio. Como não havia lei destinando o valor à previdência, a utilização na folha foi irregular.
+
+### 22. Lei estadual vinculou 10% da arrecadação do ICMS ao fundo de aparelhamento da polícia, sem que a Constituição autorizasse essa vinculação.
+
+**Gabarito:** ERRADO
+
+A vinculação de impostos a fundo ou despesa é vedada como regra, com ressalvas taxativas. CF, art. 167, IV, veda “a vinculação de receita de impostos a órgão, fundo ou despesa, ressalvadas a repartição do produto da arrecadação dos impostos a que se referem os arts. 158 e 159, a destinação de recursos para as ações e serviços públicos de saúde, para manutenção e desenvolvimento do ensino e para realização de atividades da administração tributária (...)”. Não havendo ressalva para segurança pública, a lei estadual viola o princípio da não afetação da receita de impostos.
+
+### 23. Um município aplicou 25% da receita de impostos na manutenção e desenvolvimento do ensino. Essa destinação é uma vinculação de impostos admitida pela Constituição.
+
+**Gabarito:** CERTO
+
+A vedação à vinculação de impostos tem exceção expressa para o ensino. CF, art. 167, IV, ressalva “a destinação de recursos (...) para manutenção e desenvolvimento do ensino”, nos termos do art. 212: “A União aplicará, anualmente, nunca menos de dezoito, e os Estados, o Distrito Federal e os Municípios vinte e cinco por cento, no mínimo, da receita resultante de impostos, compreendida a proveniente de transferências, na manutenção e desenvolvimento do ensino”. Trata-se de aplicação mínima obrigatória, que é compatível com o princípio da não afetação.
+
+### 24. Um contribuinte pagou o IPTU em banco credenciado. O pagamento é a fase da arrecadação, e o posterior repasse do valor pelo banco ao caixa do Tesouro é a fase do recolhimento.
+
+**Gabarito:** CERTO
+
+As fases da receita são previsão, lançamento, arrecadação e recolhimento (mnemônico PLAR). A arrecadação é a fase em que o contribuinte liquida sua obrigação perante o ente, em geral pagando em agentes arrecadadores (bancos). O recolhimento é a entrega dos valores arrecadados aos cofres do ente. A Lei 4.320/64, art. 56, impõe que esse recolhimento ocorra “em estrita observância ao princípio de unidade de tesouraria”, ou seja, para a conta única do Tesouro, e a receita é contabilizada pelo regime de caixa (art. 35, I).
+
+### 25. A Secretaria de Fazenda criou conta própria para guardar o produto das multas arrecadadas, separada do caixa único do Tesouro, para uso exclusivo da própria pasta.
+
+**Gabarito:** ERRADO
+
+A criação de caixa próprio viola o princípio da unidade de tesouraria. Lei 4.320/64, art. 56: “O recolhimento de todas as receitas far-se-á em estrita observância ao princípio de unidade de tesouraria, vedada qualquer fragmentação para criação de caixas especiais”. O objetivo é o controle centralizado dos recursos e evitar “orçamentos paralelos”. A exceção citada na doutrina é a da própria LRF (art. 43, § 1º), que manda depositar separadamente as disponibilidades de caixa dos regimes de previdência social.
+
+### 26. O município deixou de instituir o ITBI, imposto de sua competência, mas continuou recebendo transferências voluntárias da União para obras de pavimentação.
+
+**Gabarito:** ERRADO
+
+A instituição, previsão e arrecadação dos tributos de competência do ente é requisito da responsabilidade fiscal. LRF, art. 11: “Constituem requisitos essenciais da responsabilidade na gestão fiscal a instituição, previsão e efetiva arrecadação de todos os tributos da competência constitucional do ente da Federação. Parágrafo único. É vedada a realização de transferências voluntárias para o ente que não observe o disposto no caput, no que se refere aos impostos”. Pela LRF, art. 25, § 3º, ficam excetuadas dessa sanção as transferências para ações de educação, saúde e assistência social, o que não é o caso da pavimentação.
+
+### 27. O município cancelou um débito de IPTU de R$ 90 cuja cobrança custaria R$ 200. Esse cancelamento dispensa as exigências da LRF para a renúncia de receita.
+
+**Gabarito:** CERTO
+
+O cancelamento de débito antieconômico está fora do regime de renúncia. LRF, art. 14, § 3º: “O disposto neste artigo não se aplica: (...) II - ao cancelamento de débito cujo montante seja inferior ao dos respectivos custos de cobrança”. A regra geral do caput exige, para a concessão de benefício de natureza tributária que gere renúncia, “estimativa do impacto orçamentário-financeiro no exercício em que deva iniciar sua vigência e nos dois seguintes”, além de compatibilidade com a LDO e de uma das condições de equilíbrio (previsão na LOA ou medidas de compensação). Aqui, o custo de cobrança supera o valor do débito, de modo que as exigências não se aplicam.
+
+
+## Despesa pública
+
+### 28. O município comprou um prédio já construído para instalar a sede da Secretaria de Saúde. Essa despesa é classificada como inversão financeira.
+
+**Gabarito:** CERTO
+
+Aquisição de imóvel já pronto é inversão financeira, pois não cria bem novo na economia. Lei 4.320/64, art. 12, § 5º: “Classificam-se como Inversões Financeiras as dotações destinadas a: I - aquisição de imóveis, ou de bens de capital já em utilização”. Os investimentos, de outro lado, são as dotações “para o planejamento e a execução de obras, inclusive as destinadas à aquisição de imóveis considerados necessários à realização destas últimas” (art. 12, § 4º). Ambos são despesas de capital, mas só o investimento amplia a capacidade produtiva (novo bem).
+
+### 29. O Estado repassou recursos a uma empresa pública estadual para cobrir seu déficit de manutenção e classificou o repasse como subvenção social.
+
+**Gabarito:** ERRADO
+
+A cobertura de déficit de manutenção de empresas públicas é subvenção econômica. Lei 4.320/64, art. 18: “A cobertura dos déficits de manutenção das empresas públicas, de natureza autárquica ou não, far-se-á mediante subvenções econômicas, expressamente incluídas nas despesas correntes do orçamento da União, dos Estados, dos Municípios ou do Distrito Federal”. Já a subvenção social destina-se, conforme o art. 12, § 3º, I, às “instituições públicas ou privadas de caráter assistencial ou cultural, sem finalidade lucrativa”. Ambas são transferências correntes.
+
+### 30. Contratado o serviço de manutenção dos elevadores, o secretário só emitiu o empenho depois que o serviço foi prestado, por se tratar de contrato de pequeno valor.
+
+**Gabarito:** ERRADO
+
+O empenho precisa ser prévio à realização da despesa. Lei 4.320/64, art. 60: “É vedada a realização de despesa sem prévio empenho”. O art. 58 define o empenho como “o ato emanado de autoridade competente que cria para o Estado obrigação de pagamento pendente ou não de implemento de condição”. O § 1º do art. 60 permite dispensar apenas a emissão da nota de empenho em casos especiais previstos em legislação específica; o empenho em si, que reserva o recurso, continua obrigatório. O valor reduzido do contrato não afasta a regra.
+
+### 31. A prefeitura contratou o fornecimento de água para suas repartições, cujo consumo mensal varia e não pode ser determinado com exatidão. O empenho foi feito por estimativa.
+
+**Gabarito:** CERTO
+
+A lei prevê o empenho por estimativa para despesas de valor indeterminável. Lei 4.320/64, art. 60, § 2º: “Será feito por estimativa o empenho da despesa cujo montante não se possa determinar”. É o caso de consumo de água, energia e telefone. Diferentemente, o empenho ordinário é feito de uma só vez, para despesa de valor certo e pagamento único, e o global é usado para despesas contratuais parceladas, cujo valor total é conhecido.
+
+### 32. Um contrato de locação com 12 parcelas mensais fixas, todas no mesmo exercício, foi empenhado de uma só vez, pelo valor total, e as parcelas foram pagas mês a mês.
+
+**Gabarito:** CERTO
+
+Trata-se do empenho global, previsto para despesas contratuais parceladas. Lei 4.320/64, art. 60, § 3º: “É permitido o empenho global de despesas contratuais e outras, sujeitas a parcelamento”. Como o valor total é conhecido e o pagamento se dá em prestações, reserva-se o total na dotação e quita-se aos poucos. O empenho fica adstrito aos créditos orçamentários do exercício, de modo que parcelas de outros exercícios dependem de dotação própria nesses exercícios.
+
+### 33. Uma secretaria tinha dotação de R$ 100 mil para material de consumo. Contando com um futuro crédito suplementar ainda não aberto, o ordenador de despesas empenhou R$ 120 mil.
+
+**Gabarito:** ERRADO
+
+O empenho está limitado ao crédito já concedido. Lei 4.320/64, art. 59: “O empenho da despesa não poderá exceder o limite dos créditos concedidos”. O ordenador não pode empenhar com base em expectativa de crédito futuro: a abertura do suplementar precisa ocorrer antes, com autorização legislativa e indicação de recursos. O excedente de R$ 20 mil não tem cobertura orçamentária, e o empenho nesse valor seria irregular.
+
+### 34. Ao receber 500 cadeiras, o fiscal conferiu a quantidade e a qualidade com o contrato e a nota fiscal e atestou a entrega. Esse ato integra a fase de liquidação da despesa.
+
+**Gabarito:** CERTO
+
+A liquidação é a verificação do direito do credor com base nos documentos que comprovam o crédito. Lei 4.320/64, art. 63: “A liquidação da despesa consiste na verificação do direito adquirido pelo credor tendo por base os títulos e documentos comprobatórios do respectivo crédito. § 1º Essa verificação tem por fim apurar: I - a origem e o objeto do que se deve pagar; II - a importância exata a pagar; III - a quem se deve pagar a importância, para extinguir a obrigação”. O atesto do fiscal, conferindo a entrega com o contrato e a nota, é exatamente esse ato. Só depois vem o pagamento (art. 62).
+
+### 35. Em 31 de dezembro, a prefeitura tinha empenho emitido para uma obra ainda em execução, sem que a etapa tivesse sido liquidada nem paga. Esse valor é resto a pagar não processado.
+
+**Gabarito:** CERTO
+
+Restos a pagar são despesas empenhadas e não pagas até 31 de dezembro. Lei 4.320/64, art. 36: “Consideram-se Restos a Pagar as despesas empenhadas mas não pagas até o dia 31 de dezembro distinguindo-se as processadas das não processadas”. As processadas são as empenhadas e liquidadas; as não processadas, as empenhadas e ainda não liquidadas. No caso, a etapa da obra não foi liquidada, logo o valor é resto a pagar não processado.
+
+### 36. Em março, o município reconheceu dívida por serviço prestado em dezembro do ano anterior. O orçamento daquele ano tinha crédito próprio com saldo suficiente, mas a despesa não foi processada na época. O pagamento pode ser feito à conta de dotação específica do orçamento atual.
+
+**Gabarito:** CERTO
+
+É a chamada despesa de exercícios anteriores. Lei 4.320/64, art. 37: “As despesas de exercícios encerrados, para as quais o orçamento respectivo consignava crédito próprio, com saldo suficiente para atendê-las, que não se tenham processado na época própria, bem como os Restos a Pagar com prescrição interrompida e os compromissos reconhecidos após o encerramento do exercício correspondente, poderão ser pagos à conta de dotação específica consignada no orçamento, discriminada por elemento, obedecida, sempre que possível, a ordem cronológica”. É exceção à regra de não onerar o novo exercício com despesas de exercícios anteriores.
+
+### 37. Uma despesa foi legalmente empenhada em 20 de dezembro e paga apenas em fevereiro. Ela pertence ao exercício financeiro em que foi empenhada.
+
+**Gabarito:** CERTO
+
+A despesa segue o regime de competência, e a receita, o de caixa. Lei 4.320/64, art. 35: “Pertencem ao exercício financeiro: I - as receitas nele arrecadadas; II - as despesas nele legalmente empenhadas”. Por isso, a despesa empenhada em dezembro pertence àquele exercício, ainda que paga em fevereiro, e o valor, se não pago até 31 de dezembro, é inscrito em restos a pagar (art. 36). Já a receita pertence ao exercício em que foi efetivamente arrecadada.
+
+### 38. No último ano de mandato, em outubro, o Governador contratou uma obra com parcelas a pagar no exercício seguinte, sem suficiente disponibilidade de caixa para cobri-las. A contratação respeitou a LRF.
+
+**Gabarito:** ERRADO
+
+A LRF veda o endividamento de fim de mandato sem lastro de caixa. LRF, art. 42: “É vedado ao titular de Poder ou órgão referido no art. 20, nos últimos dois quadrimestres do seu mandato, contrair obrigação de despesa que não possa ser cumprida integralmente dentro dele, ou que tenha parcelas a serem pagas no exercício seguinte sem que haja suficiente disponibilidade de caixa para este efeito”. O parágrafo único acrescenta que, para apurar a disponibilidade de caixa, “serão considerados os encargos e despesas compromissadas a pagar até o final do exercício”. Outubro está dentro dos dois últimos quadrimestres.
+
+### 39. O secretário criou um novo programa que aumentava a despesa, sem estimativa de impacto orçamentário-financeiro e sem declaração do ordenador de despesa sobre a adequação orçamentária. A despesa gerada é considerada não autorizada, irregular e lesiva ao patrimônio público.
+
+**Gabarito:** CERTO
+
+A LRF condiciona a geração de despesa à comprovação de adequação. Art. 16: “A criação, expansão ou aperfeiçoamento de ação governamental que acarrete aumento da despesa será acompanhado de: I - estimativa do impacto orçamentário-financeiro no exercício em que deva entrar em vigor e nos dois subseqüentes; II - declaração do ordenador da despesa de que o aumento tem adequação orçamentária e financeira com a lei orçamentária anual e compatibilidade com o plano plurianual e com a lei de diretrizes orçamentárias”. E o art. 15 prevê a consequência: “Serão consideradas não autorizadas, irregulares e lesivas ao patrimônio público a geração de despesa ou a assunção de obrigação que não atendam o disposto nos arts. 16 e 17”.
+
+
+## Fundos especiais
+
+### 40. Lei estadual vinculou o produto das taxas de fiscalização ambiental à melhoria dos serviços do órgão ambiental, prevendo normas peculiares de aplicação desses recursos. Há, nesse caso, um fundo especial.
+
+**Gabarito:** CERTO
+
+A descrição corresponde ao conceito legal. Lei 4.320/64, art. 71: “Constitui fundo especial o produto de receitas especificadas que por lei se vinculam à realização de determinados objetivos ou serviços, facultada a adoção de normas peculiares de aplicação”. Os elementos são: receitas especificadas, vinculação por lei e finalidade determinada, com possibilidade de regras próprias de aplicação. O fundo é, em essência, uma técnica de gestão financeira vinculada, e não uma pessoa jurídica.
+
+### 41. O prefeito instituiu por decreto um fundo municipal de apoio à cultura, sem lei anterior que o autorizasse.
+
+**Gabarito:** ERRADO
+
+A instituição de fundos depende de autorização legislativa prévia. CF, art. 167, IX, veda “a instituição de fundos de qualquer natureza, sem prévia autorização legislativa”. Além disso, o art. 165, § 9º, II, atribui à lei complementar “estabelecer normas de gestão financeira e patrimonial da administração direta e indireta bem como condições para a instituição e funcionamento de fundos”. Decreto isolado, sem lei, não pode criar fundo, e o ato é inválido.
+
+### 42. Ao fim do exercício, um fundo especial apresentou saldo positivo em balanço, e a lei que o instituiu é silente sobre o destino desse saldo. O saldo foi transferido para o exercício seguinte, a crédito do próprio fundo.
+
+**Gabarito:** CERTO
+
+É a regra supletiva da Lei 4.320/64, art. 73: “Salvo determinação em contrário da lei que o instituiu, o saldo positivo do fundo especial apurado em balanço será transferido para o exercício seguinte, a crédito do mesmo fundo”. Assim, o saldo não retorna ao caixa geral do Tesouro, a menos que a lei do fundo disponha diferente. Essa característica garante a continuidade da vinculação dos recursos aos fins do fundo.
+
+### 43. A lei que criou um fundo estadual previu que a prestação de contas seria feita apenas ao secretário responsável, dispensando o Tribunal de Contas.
+
+**Gabarito:** ERRADO
+
+A lei do fundo pode prever regras próprias de controle, mas não pode afastar o Tribunal de Contas. Lei 4.320/64, art. 74: “A lei que instituir fundo especial poderá determinar normas peculiares de controle, prestação e tomada de contas, sem de qualquer modo, elidir a competência específica do Tribunal de Contas ou órgão equivalente”. A fiscalização externa, a cargo do Legislativo com o auxílio do Tribunal de Contas, alcança todos os que utilizem recursos públicos (CF, art. 70, parágrafo único).
+
+
+## Gestão patrimonial
+
+### 44. Um prédio da prefeitura, cuja alienação depende de autorização legislativa, integra o ativo permanente no balanço patrimonial.
+
+**Gabarito:** CERTO
+
+O critério para distinguir ativo financeiro de permanente é a dependência de autorização. Lei 4.320/64, art. 105, § 2º: “O Ativo Permanente compreenderá os bens, créditos e valores, cuja mobilização ou alienação dependa de autorização legislativa”. O § 1º diz que o Ativo Financeiro compreende “os créditos e valores realizáveis independentemente de autorização orçamentária e os valores numerários”. Bem imóvel público, cuja venda exige lei, é típico ativo permanente.
+
+### 45. A LOA de um município incluiu novo projeto de construção de um ginásio, embora a obra em andamento do hospital municipal ainda estivesse sem recursos suficientes. Essa inclusão é compatível com a LRF.
+
+**Gabarito:** ERRADO
+
+A LRF impõe prioridade às obras em andamento e à conservação do patrimônio. Art. 45: “Observado o disposto no § 5º do art. 5º, a lei orçamentária e as de créditos adicionais só incluirão novos projetos após adequadamente atendidos os em andamento e contempladas as despesas de conservação do patrimônio público, nos termos em que dispuser a lei de diretrizes orçamentárias”. Como o hospital em andamento ainda não está adequadamente atendido, o novo projeto do ginásio não podia ser incluído na LOA.
+
+### 46. Um município depositou suas disponibilidades de caixa em banco privado, sem que houvesse lei autorizando essa medida.
+
+**Gabarito:** ERRADO
+
+A CF determina o local de depósito das disponibilidades de caixa. Art. 164, § 3º: “As disponibilidades de caixa da União serão depositadas no banco central; as dos Estados, do Distrito Federal, dos Municípios e dos órgãos ou entidades do Poder Público e das empresas por ele controladas, em instituições financeiras oficiais, ressalvados os casos previstos em lei”. Sem lei que excepcione, o município deve manter os recursos em instituição financeira oficial. O depósito em banco privado, sem lei que o autorize, viola a regra.
+
+### 47. Um particular doou um terreno ao município. A doação altera a situação líquida patrimonial, ainda que não haja execução orçamentária envolvida.
+
+**Gabarito:** CERTO
+
+A conta patrimonial registra variações que ocorrem independentemente do orçamento. Lei 4.320/64, art. 100: “As alterações da situação líquida patrimonial, que abrangem os resultados da execução orçamentária, bem como as variações independentes dessa execução e as superveniências e insubsistências ativas e passivas, constituirão elementos da conta patrimonial”. A doação aumenta o ativo sem passar pela receita orçamentária, sendo variação independente da execução orçamentária. É por isso que a contabilidade patrimonial vai além da orçamentária.
+
+
+## Crédito e dívida pública
+
+### 48. A Câmara de Vereadores aprovou lei fixando o limite global da dívida consolidada do município, no lugar do limite estabelecido pelo Senado Federal.
+
+**Gabarito:** ERRADO
+
+Os limites globais da dívida consolidada são fixados pelo Senado. CF, art. 52, VI: compete privativamente ao Senado “fixar, por proposta do Presidente da República, limites globais para o montante da dívida consolidada da União, dos Estados, do Distrito Federal e dos Municípios”. O art. 52, IX, completa, quanto à dívida mobiliária: “estabelecer limites globais e condições para o montante da dívida mobiliária dos Estados, do Distrito Federal e dos Municípios”. O objetivo é uniformizar o controle do endividamento federativo, de modo que lei municipal não pode substituir o limite.
+
+### 49. Um Estado celebrou empréstimo com organismo financeiro internacional, amparado em lei estadual autorizativa e na verificação de limites pelo Ministério da Fazenda, sem autorização do Senado Federal.
+
+**Gabarito:** ERRADO
+
+Operações externas de natureza financeira dependem de autorização do Senado. CF, art. 52, V: compete ao Senado “autorizar operações externas de natureza financeira, de interesse da União, dos Estados, do Distrito Federal, dos Territórios e dos Municípios”. A LRF repete a exigência entre as condições para contratar operações de crédito: art. 32, § 1º, IV, “autorização específica do Senado Federal, quando se tratar de operação de crédito externo”. A lei estadual e a verificação do Ministério da Fazenda, embora necessárias, não substituem a autorização do Senado.
+
+### 50. A proposta orçamentária de um Estado prevê R$ 800 milhões em receitas de operações de crédito e R$ 600 milhões em despesas de capital, sem créditos suplementares ou especiais com finalidade precisa aprovados por maioria absoluta. A proposta respeita a regra de ouro.
+
+**Gabarito:** ERRADO
+
+A regra de ouro proíbe que o endividamento supere as despesas de capital. CF, art. 167, III, veda “a realização de operações de crédito que excedam o montante das despesas de capital, ressalvadas as autorizadas mediante créditos suplementares ou especiais com finalidade precisa, aprovados pelo Poder Legislativo por maioria absoluta”. A LRF, art. 12, § 2º, repete: “O montante previsto para as receitas de operações de crédito não poderá ser superior ao das despesas de capital constantes do projeto de lei orçamentária”. Como R$ 800 milhões superam R$ 600 milhões e a ressalva não foi observada, a proposta viola a regra.
+
+### 51. No último ano de seu mandato, o Governador contratou operação de crédito por antecipação de receita orçamentária (ARO), que seria liquidada até 10 de dezembro, o que tornou a operação regular.
+
+**Gabarito:** ERRADO
+
+A ARO é proibida no último ano de mandato, ainda que o prazo de liquidação fosse cumprido. LRF, art. 38: “A operação de crédito por antecipação de receita destina-se a atender insuficiência de caixa durante o exercício financeiro e cumprirá as exigências mencionadas no art. 32 e mais as seguintes: I - realizar-se-á somente a partir do décimo dia do início do exercício; II - deverá ser liquidada, com juros e outros encargos incidentes, até o dia dez de dezembro de cada ano; (...) IV - estará proibida: a) enquanto existir operação anterior da mesma natureza não integralmente resgatada; b) no último ano de mandato do Presidente, Governador ou Prefeito Municipal”. O cumprimento do inciso II não afasta a proibição do inciso IV, “b”.
+
+### 52. Um município contratou ARO em março para cobrir insuficiência de caixa e a liquidou integralmente, com juros, em 9 de dezembro. A operação não é computada para efeito da regra de ouro.
+
+**Gabarito:** CERTO
+
+A ARO liquidada no prazo legal fica fora do cálculo da regra de ouro. LRF, art. 38, § 1º: “As operações de que trata este artigo não serão computadas para efeito do que dispõe o inciso III do art. 167 da Constituição, desde que liquidadas no prazo definido no inciso II do caput”, isto é, até 10 de dezembro. Como a liquidação ocorreu em 9 de dezembro, a condição foi atendida. A ARO é mera antecipação de receita já prevista, e não nova receita; por isso não se soma ao orçamento.
+
+### 53. O Estado concedeu empréstimo a município vizinho em dificuldade fiscal, na forma de refinanciamento de dívida que o município já tinha com ele. Essa operação é regular.
+
+**Gabarito:** ERRADO
+
+A LRF veda operação de crédito entre entes federados, ainda que disfarçada de refinanciamento. Art. 35: “É vedada a realização de operação de crédito entre um ente da Federação, diretamente ou por intermédio de fundo, autarquia, fundação ou empresa estatal dependente, e outro, inclusive suas entidades da administração indireta, ainda que sob a forma de novação, refinanciamento ou postergação de dívida contraída anteriormente”. A vedação busca evitar que um ente socorra outro com recursos próprios, o que fragilizaria o equilíbrio das contas de ambos.
+
+### 54. Um banco estatal estadual concedeu empréstimo ao próprio Estado, seu controlador, na qualidade de beneficiário.
+
+**Gabarito:** ERRADO
+
+A LRF proíbe o ente de tomar empréstimo da instituição financeira que controla. Art. 36: “É proibida a operação de crédito entre uma instituição financeira estatal e o ente da Federação que a controle, na qualidade de beneficiário do empréstimo”. A norma impede que o banco estatal seja usado como fonte de financiamento fácil do controlador. A vedação vale mesmo que o empréstimo seja concedido em condições de mercado.
+
+### 55. Para cobrir déficit do Tesouro Nacional, o Banco Central concedeu empréstimo direto ao Tesouro.
+
+**Gabarito:** ERRADO
+
+O Banco Central não pode financiar o Tesouro. CF, art. 164, § 1º: “É vedado ao banco central conceder, direta ou indiretamente, empréstimos ao Tesouro Nacional e a qualquer órgão ou entidade que não seja instituição financeira”. O § 2º, por sua vez, permite que o Banco Central “compre e venda títulos de emissão do Tesouro Nacional, com o objetivo de regular a oferta de moeda ou a taxa de juros”. Compra e venda de títulos para fins de política monetária é permitida; empréstimo ao Tesouro, não.
+
+### 56. Ao final do primeiro quadrimestre, a dívida consolidada de um Estado superou o limite fixado. O Estado tem até o fim dos três quadrimestres seguintes para reconduzi-la ao limite, reduzindo o excedente em pelo menos 25% no primeiro deles.
+
+**Gabarito:** CERTO
+
+O prazo e o ritmo de recondução constam da LRF, art. 31: “Se a dívida consolidada de um ente da Federação ultrapassar o respectivo limite ao final de um quadrimestre, deverá ser a ele reconduzida até o término dos três subseqüentes, reduzindo o excedente em pelo menos 25% no primeiro”. Enquanto perdurar o excesso, o ente fica proibido de realizar operação de crédito interna ou externa, inclusive por antecipação de receita (art. 31, § 1º, I), ressalvado o refinanciamento do principal atualizado da dívida mobiliária, e deve obter resultado primário para reduzir a dívida.
+
+### 57. Um município contraiu empréstimo bancário com amortização em cinco anos. Essa obrigação integra a dívida pública fundada, também chamada consolidada.
+
+**Gabarito:** CERTO
+
+A dívida fundada é a de longo prazo, superior a doze meses. LRF, art. 29, I: “dívida pública consolidada ou fundada: montante total, apurado sem duplicidade, das obrigações financeiras do ente da Federação, assumidas em virtude de leis, contratos, convênios ou tratados e da realização de operações de crédito, para amortização em prazo superior a doze meses”. A Lei 4.320/64, art. 98, no mesmo sentido: a dívida fundada “compreende os compromissos de exigibilidade superior a doze meses, contraídos para atender a desequilíbrio orçamentário ou a financiamento de obras e serviços públicos”. Empréstimo amortizado em cinco anos é típico caso.
+
+### 58. Em 31 de dezembro, o município mantinha restos a pagar processados e depósitos de caução de terceiros em caixa. Ambos integram a dívida pública fundada.
+
+**Gabarito:** ERRADO
+
+Restos a pagar e depósitos compõem a dívida flutuante, de curto prazo. Lei 4.320/64, art. 92: “A dívida flutuante compreende: I - os restos a pagar, excluídos os serviços da dívida; II - os serviços da dívida a pagar; III - os depósitos; IV - os débitos de tesouraria”. A dívida flutuante independe de autorização orçamentária e se reflete no fluxo de caixa, enquanto a fundada decorre de operações de longo prazo (art. 98). Por isso restos a pagar e cauções são dívida flutuante.
+
+### 59. Em 2025, um Estado incluiu no orçamento precatórios de R$ 200 milhões e pagou apenas R$ 120 milhões. O saldo não pago integra a dívida consolidada do Estado para fins de aplicação dos limites.
+
+**Gabarito:** CERTO
+
+A LRF equipara o saldo de precatórios à dívida consolidada. Art. 30, § 7º: “Os precatórios judiciais não pagos durante a execução do orçamento em que houverem sido incluídos integram a dívida consolidada, para fins de aplicação dos limites”. No caso, os R$ 80 milhões não pagos passam a pesar no cálculo do limite de endividamento, impedindo que o ente oculte esse passivo do controle fiscal.
+
+### 60. Um Estado suspendeu o pagamento da dívida fundada por mais de dois anos consecutivos, sem motivo de força maior. Essa conduta autoriza a intervenção da União no Estado.
+
+**Gabarito:** CERTO
+
+O inadimplemento prolongado da dívida fundada é hipótese constitucional de intervenção federal. CF, art. 34: “A União não intervirá nos Estados nem no Distrito Federal, exceto para: (...) V - reorganizar as finanças da unidade da Federação que: a) suspender o pagamento da dívida fundada por mais de dois anos consecutivos, salvo motivo de força maior”. Os dois requisitos são o prazo (mais de dois anos consecutivos) e a ausência de força maior. A mesma lógica de intervenção estadual nos Municípios consta do art. 35, I, da CF.
+
+### 61. O Presidente da República editou medida provisória para dispor sobre emissão e resgate de títulos da dívida pública.
+
+**Gabarito:** ERRADO
+
+Esse tema é reservado à lei complementar, matéria vedada às medidas provisórias. CF, art. 163: “Lei complementar disporá sobre: I - finanças públicas; II - dívida pública externa e interna, incluída a das autarquias, fundações e demais entidades controladas pelo Poder Público; III - concessão de garantias pelas entidades públicas; IV - emissão e resgate de títulos da dívida pública (...)”. E o art. 62, § 1º, III: “É vedada a edição de medidas provisórias sobre matéria: (...) III - reservada a lei complementar”. A MP, portanto, não pode regular emissão e resgate de títulos.
