@@ -302,6 +302,26 @@ button { cursor: pointer; }
 .tag.bad { background: var(--bad-bg); color: var(--bad); }
 .tag.dim { background: var(--surface-2); color: var(--muted); }
 label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 500; }
+.prio-row { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 13px; }
+.prio-row .note { margin: 0; font-size: 12px; }
+.prio-row .until { display: inline-flex; align-items: center; gap: 6px; }
+.prio-row input[type="date"], .field input[type="date"] { font: inherit; font-size: 13px; padding: 4px 8px; border: 2px solid var(--frame); border-radius: 4px; background: var(--field); color: var(--ink); min-height: 32px; }
+.drop { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 18px 14px; border: 3px dashed var(--line); border-radius: 6px; background: var(--surface-2); }
+.drop p { margin: 0; }
+.drop.over { border-color: var(--accent); background: var(--bad-bg); }
+.paste { border: 2px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+.paste summary { cursor: pointer; font-weight: 700; }
+.paste[open] { display: flex; flex-direction: column; gap: 8px; }
+.pvs { display: flex; flex-direction: column; gap: 12px; }
+.pv { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 3px solid var(--frame); border-radius: 6px; background: var(--surface); box-shadow: 4px 4px 0 var(--gold); }
+.pv-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 10px; overflow-wrap: anywhere; }
+.pv-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.pv .note { margin: 0; }
+.pv-det { font-size: 13px; background: var(--surface-2); border-radius: 4px; padding: 6px 10px; }
+.pv-det summary { cursor: pointer; font-weight: 700; }
+.pv-det ul { margin: 6px 0 0; padding-left: 18px; max-height: 190px; overflow-y: auto; }
+.pv-det li { margin-bottom: 4px; overflow-wrap: anywhere; }
+.pv-prio { border-top: 0; padding-top: 0; }
 .field input[type="text"], .field textarea, .field select {
   border: 2px solid var(--frame); border-radius: 4px; padding: 8px 10px; background: var(--field); color: var(--ink); width: 100%; font-weight: 500;
 }
@@ -582,30 +602,45 @@ details.err.due { border-left-color: var(--gold); }
           <div class="row"><button class="btn small" id="btn-restore" type="button" hidden>Restaurar as listas originais</button></div>
         </div>
         <div class="block">
-          <h2>Adicionar uma lista</h2>
-          <label class="field" for="in-name">Nome da lista
-            <input type="text" id="in-name" placeholder="Ex.: Constitucional – Cebraspe 2024" autocomplete="off">
-          </label>
-          <label class="field" for="in-text">Questões, uma por linha
-            <textarea id="in-text" spellcheck="false" placeholder="Matéria;Enunciado;C ou E;Comentário (opcional)"></textarea>
-          </label>
-          <label class="check" for="in-juris">
-            <input type="checkbox" id="in-juris">
-            <span><b>Lista de jurisprudência.</b> Usada na defesa, quando o adversário tenta capturar uma peça sua.</span>
-          </label>
-          <div class="row">
-            <button class="btn primary" id="btn-add" type="button">Adicionar lista</button>
-            <label class="btn" for="in-file">Abrir arquivo .csv, .txt ou .json</label>
-            <input type="file" id="in-file" accept=".csv,.txt,.json,text/plain,text/csv,application/json" hidden>
+          <h2>Importar decks</h2>
+          <div class="drop" id="drop">
+            <p><b>Arraste os arquivos para cá</b> (.md, .txt, .csv ou .json), um ou vários, ou</p>
+            <label class="btn primary" for="in-file">Escolher arquivos</label>
+            <input type="file" id="in-file" accept=".md,.markdown,.csv,.txt,.json,text/plain,text/markdown,text/csv,application/json" multiple hidden>
           </div>
+          <details class="paste">
+            <summary>Ou cole o texto</summary>
+            <label class="field" for="in-name">Nome da lista (opcional)
+              <input type="text" id="in-name" placeholder="Ex.: Direito Financeiro, orçamento" autocomplete="off">
+            </label>
+            <label class="field" for="in-text">Cartões
+              <textarea id="in-text" spellcheck="false" placeholder="1. Enunciado do cartão.&#10;Gabarito: CERTO&#10;&#10;Justificativa."></textarea>
+            </label>
+            <div class="row"><button class="btn" id="btn-add" type="button">Ler e mostrar a prévia</button></div>
+          </details>
+          <p class="note">Nada é gravado antes da prévia: você vê o que entra, o que já existe, o que foi recusado e escolhe tipo e prioridade.</p>
           <div class="msg" id="import-msg" hidden></div>
+          <div class="pvs" id="import-preview"></div>
         </div>
         <div class="block">
           <h3>Formato aceito</h3>
+          <p class="note">O mais simples é o de cartões em texto, com cabeçalho opcional no topo. O enunciado entra exatamente como escrito.</p>
+          <pre class="fmt">---
+deck: Direito Financeiro
+materia: Direito Financeiro
+tipo: ataque              # ou: jurisprudência
+prioridade: até 2026-12-15  # ou: sim, não
+---
+Créditos adicionais
+1. O município pode abrir crédito suplementar para reforçar dotação já existente.
+Gabarito: CERTO
+
+O suplementar reforça dotação que já consta do orçamento (Lei 4.320/64, art. 41, I).</pre>
+          <p class="note">Linhas curtas sem número, como "Créditos adicionais", são tratadas como título de tópico. Cartão sem a linha "Gabarito:", ou com gabarito que não seja certo/errado (Sim/Não também vale), é recusado e aparece na prévia. Se o número pular, você recebe um aviso.</p>
+          <p class="note"><b>Tabela, uma por linha:</b></p>
           <pre class="fmt">Matéria;Enunciado;Gabarito;Comentário
-Direito Penal;O crime é doloso quando o agente quis o resultado.;C;Art. 18, I, do CP.
-Direito Penal;A tentativa é punida com a mesma pena do crime consumado.;E</pre>
-          <p class="note">Separador: ponto e vírgula, tabulação ou barra vertical. Gabarito: C/E, Certo/Errado ou V/F. O comentário é opcional. Uma lista em que todas as matérias contêm "Jurisprudência" ou "Súmula" é marcada como defesa automaticamente. Em JSON, use uma lista de objetos com <code>materia</code>, <code>enunciado</code>, <code>gabarito</code> e <code>comentario</code>.</p>
+Direito Penal;O crime é doloso quando o agente quis o resultado.;C;Art. 18, I, do CP.</pre>
+          <p class="note">Separador: ponto e vírgula, tabulação ou barra vertical. Gabarito: C/E, Certo/Errado ou V/F. O comentário é opcional. Em JSON, use uma lista de objetos com <code>materia</code>, <code>enunciado</code>, <code>gabarito</code> e <code>comentario</code>. Listas em que todas as matérias contêm "Jurisprudência" ou "Súmula" são marcadas como defesa automaticamente (você pode trocar na prévia).</p>
         </div>
         <label class="check" for="opt-reforco">
           <input type="checkbox" id="opt-reforco">
@@ -887,11 +922,75 @@ function parseGab(v) {
   if (['e', 'errado', 'errada', 'incorreto', 'incorreta', 'f', 'falso', 'false', 'não', 'nao'].includes(s)) return false;
   return null;
 }
+// Cabeçalho opcional no topo do arquivo, entre linhas "---": deck, materia, tipo, prioridade.
+function parseFront(text) {
+  const m = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/.exec(text);
+  if (!m) return { meta: null, body: text };
+  const meta = {};
+  m[1].split(/\r?\n/).forEach(l => {
+    const k = /^\s*([^\s:#]+)\s*:\s*(.*?)\s*(?:\s+#.*)?$/.exec(l);
+    if (k) meta[k[1].toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')] = k[2].trim();
+  });
+  return { meta, body: text.slice(m[0].length) };
+}
+// Prioridade: "sim", "não" ou uma data ("até 2026-12-15" ou "15/12/2026", valendo até o fim desse dia).
+function parsePrio(v) {
+  const s = String(v == null ? '' : v).trim().toLowerCase();
+  if (!s || /^(n[ãa]o|nao|no|false|nenhuma|-)$/.test(s)) return { prio: null };
+  const iso = /(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s), br = /(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(s);
+  let y = 0, m = 0, d = 0;
+  if (iso) { y = +iso[1]; m = +iso[2]; d = +iso[3]; } else if (br) { d = +br[1]; m = +br[2]; y = +br[3]; }
+  if (y) {
+    const t = new Date(Date.UTC(y, m - 1, d));
+    if (t.getUTCFullYear() !== y || t.getUTCMonth() !== m - 1 || t.getUTCDate() !== d) return { prio: null, warn: 'Data de prioridade inválida: "' + v + '".' };
+    return { prio: { on: true, until: y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0') } };
+  }
+  if (/^(sim|s|true|yes|alta|prioridade)/.test(s)) return { prio: { on: true, until: null } };
+  return { prio: null, warn: 'Não entendi a prioridade "' + v + '": use "sim", "não" ou "até 2026-12-15".' };
+}
+// Cartões em texto corrido: "N. enunciado", linha "Gabarito: CERTO/ERRADO" e a justificativa em seguida.
+// É rígido de propósito: cartão sem gabarito claro é recusado, nunca adivinhado, e o enunciado entra sem nenhuma alteração.
+function parseCards(body, fb) {
+  const items = [], errors = [], warns = [], L = body.split(/\r?\n/), n = L.length;
+  const startRe = /^\s*(\d+)[.)]\s+\S/, gabRe = /^\s*(?:gabarito|resposta)\s*:\s*(.*?)\s*$/i;
+  let i = 0, prev = 0;
+  while (i < n) {
+    const sm = L[i].trim() ? startRe.exec(L[i]) : null;
+    if (!sm) { i++; continue; }   // título ou tópico solto
+    const num = +sm[1], qs = [L[i].replace(/^\s*\d+[.)]\s+/, '').trim()];
+    if (prev && num !== prev + 1 && num !== 1) warns.push('Numeração: do ' + prev + ' pulou para ' + num + ' (algum cartão pode ter se perdido).');
+    prev = num;
+    let k = i + 1;
+    while (k < n && L[k].trim() && !gabRe.test(L[k]) && !startRe.test(L[k])) { qs.push(L[k].trim()); k++; }
+    if (!(k < n && gabRe.test(L[k]))) { errors.push('Cartão ' + num + ' (linha ' + (i + 1) + '): sem a linha "Gabarito:". Não entrou: ' + qs[0].slice(0, 70) + '…'); i = k; continue; }
+    const gv = gabRe.exec(L[k])[1], g = parseGab(gv);
+    let j = k + 1; const jl = [];
+    while (j < n && !startRe.test(L[j])) { jl.push(L[j]); j++; }
+    if (g === null) { errors.push('Cartão ' + num + ': o gabarito "' + gv.slice(0, 40) + '" não é certo nem errado. Não entrou: ' + qs[0].slice(0, 70) + '…'); i = j; continue; }
+    if (j < n) {   // a última linha curta, sem ponto final, antes do próximo cartão é o título do tópico seguinte
+      const nb = []; jl.forEach((t, x) => { if (t.trim()) nb.push(x); });
+      if (nb.length >= 2) { const t = nb[nb.length - 1], h = jl[t].trim().replace(/^#+\s*|\*+/g, '').trim(); if (!jl[t - 1].trim() && h.length <= 90 && !/[.:;!?"”)]$/.test(h)) jl.splice(t, 1); }
+    }
+    const c = jl.map(t => t.trim()).filter(Boolean).join(' ');
+    const it = { m: fb, q: qs.join(' '), g, c };
+    if (/^(sim|n[ãa]o)\.?$/i.test(gv.trim())) it.y = 1;
+    items.push(it);
+    if (!c) warns.push('Cartão ' + num + ': sem justificativa.');
+    i = j;
+  }
+  if (!items.length && !errors.length) errors.push('Nenhum cartão no formato "1. enunciado", "Gabarito: CERTO" e justificativa.');
+  return { items, errors, warns, format: 'cartões' };
+}
 function parseList(text, fallbackSubject) {
   const items = [], errors = [];
   text = String(text || '').replace(/^﻿/, '').trim();
   if (!text) return { items, errors: ['Cole as questões ou abra um arquivo.'] };
-  const fb = fallbackSubject || 'Geral';
+  const fm = parseFront(text), meta = fm.meta;
+  if (meta) text = fm.body.trim();
+  if (!text) return { items, errors: ['O arquivo só tem o cabeçalho, sem questões.'], meta };
+  const fb = (meta && meta.materia) || fallbackSubject || 'Geral';
+  const out = r => Object.assign({ warns: [], format: 'tabela' }, r, { meta });
+  if (/^\s*(?:gabarito|resposta)\s*:/im.test(text) && /^\s*\d+[.)]\s+\S/m.test(text)) return out(parseCards(text, fb));
   if (text[0] === '[' || text[0] === '{') {
     let data;
     try { data = JSON.parse(text); } catch (e) { return { items, errors: ['O JSON não pôde ser lido: ' + e.message] }; }
@@ -904,7 +1003,7 @@ function parseList(text, fallbackSubject) {
       if (!q || g === null) { errors.push('Item ' + (i + 1) + ': falta enunciado ou gabarito certo/errado.'); return; }
       items.push({ m: String(o.materia || o['matéria'] || o.disciplina || o.assunto || fb).trim(), q: String(q).trim(), g, c: String(o.comentario || o['comentário'] || o.justificativa || '').trim() });
     });
-    return { items, errors };
+    return out({ items, errors, format: 'JSON' });
   }
   const unq = s => s.trim().replace(/^"(.*)"$/s, '$1').replace(/""/g, '"').trim();
   text.split(/\r?\n/).forEach((line, i) => {
@@ -925,7 +1024,7 @@ function parseList(text, fallbackSubject) {
     if (!q) { errors.push('Linha ' + (i + 1) + ': enunciado vazio.'); return; }
     items.push({ m: m || fb, q, g: parseGab(parts[gi]), c: parts.slice(gi + 1).join(sep === '\t' ? ' ' : sep + ' ').trim() });
   });
-  return { items, errors };
+  return out({ items, errors });
 }
 
 /* ---- Algoritmo de dificuldade ----
@@ -953,7 +1052,7 @@ function analyze(entries) {
   return rows;
 }
 
-if (typeof module !== 'undefined') module.exports = { startState, legalMoves, make, passTurn, inCheck, bestMove, parseList, analyze, wilsonLower, notate, attacked, kingSq, pseudoMoves };
+if (typeof module !== 'undefined') module.exports = { startState, legalMoves, make, passTurn, inCheck, bestMove, parseList, parsePrio, analyze, wilsonLower, notate, attacked, kingSq, pseudoMoves };
 
 /* ============ Interface ============ */
 if (typeof document !== 'undefined') (function () {
@@ -978,6 +1077,16 @@ if (typeof document !== 'undefined') (function () {
   // Listas embutidas vêm de questoes.json; as importadas pelo usuário ficam no navegador.
   let builtin = [], lists = [], bank = 'loading';
   let userLists = store.get('xq.userLists', []); if (!Array.isArray(userLists)) userLists = [];
+  // Prioridade de cobrança: da lista inteira, com data final opcional (vale até o fim desse dia). Nas listas do banco, o ajuste fica salvo aqui.
+  let prioOv = store.get('xq.prio', {}); if (!prioOv || typeof prioOv !== 'object' || Array.isArray(prioOv)) prioOv = {};
+  const prioOf = l => (l.id in prioOv ? prioOv[l.id] : l.prio) || null;
+  const isoDay = iso => { const [y, m, d] = iso.split('-').map(Number); return Math.floor(Date.UTC(y, m - 1, d) / 86400000); };
+  const brDate = iso => iso.split('-').reverse().join('/');
+  const prioActive = l => { const p = prioOf(l); return !!(p && p.on && (!p.until || today() <= isoDay(p.until))); };
+  function setPrio(l, v) {
+    if (l.builtin) { prioOv[l.id] = v; store.set('xq.prio', prioOv); } else { l.prio = v; store.set('xq.userLists', userLists); }
+    renderLists();
+  }
   let off = store.get('xq.off', []); if (!Array.isArray(off)) off = [];
   let jurOv = store.get('xq.jur', {}) || {};
   try { localStorage.removeItem('xq.lists'); localStorage.removeItem('xq.jurisSeeded'); } catch (e) { /* sem armazenamento */ }
@@ -1190,7 +1299,7 @@ if (typeof document !== 'undefined') (function () {
     let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
     return (q.k = h.toString(16).padStart(8, '0') + t.length.toString(36));
   }
-  const allQ = ls => ls.flatMap(l => l.items.map(q => Object.assign({ id: qkey(q) }, q)));
+  const allQ = ls => ls.flatMap(l => { const p = prioActive(l); return l.items.map(q => Object.assign({ id: qkey(q), p }, q)); });
   // 'def': só jurisprudência. 'atk': listas comuns (ou jurisprudência, se for tudo o que há).
   // Com matéria escolhida na partida, só entram as questões dessa matéria.
   function basePool(kind) {
@@ -1592,35 +1701,102 @@ if (typeof document !== 'undefined') (function () {
       ul.append(h('li', null,
         h('span', { class: 'nm' }, l.name),
         h('span', { class: 'tag ' + (l.juris ? 'bad' : 'dim') }, l.juris ? 'Jurisprudência · defesa' : 'Ataque'),
-        l.items.some(q => q.p) ? h('span', { class: 'tag ok' }, 'Prioridade') : null,
+        prioActive(l) ? h('span', { class: 'tag ok' }, 'Prioridade' + (prioOf(l).until ? ' até ' + brDate(prioOf(l).until) : '')) : (prioOf(l) && prioOf(l).on ? h('span', { class: 'tag dim' }, 'Prioridade encerrada') : null),
         h('span', { class: 'ct' }, l.items.length + ' q · ' + subjects + (subjects === 1 ? ' matéria' : ' matérias')),
         h('button', { type: 'button', class: 'btn small', 'aria-label': (l.juris ? 'Usar no ataque a lista ' : 'Usar na defesa a lista ') + l.name, onclick: () => toggleJuris(l) }, l.juris ? 'Usar no ataque' : 'Usar na defesa'),
-        h('button', { type: 'button', class: 'btn small', 'aria-label': 'Remover a lista ' + l.name, onclick: () => removeList(l) }, 'Remover')));
+        h('button', { type: 'button', class: 'btn small', 'aria-label': 'Remover a lista ' + l.name, onclick: () => removeList(l) }, 'Remover'),
+        h('div', { class: 'prio-row' },
+          h('label', { class: 'check' }, h('input', { type: 'checkbox', checked: prioOf(l) && prioOf(l).on ? '' : null, onchange: ev => setPrio(l, { on: ev.target.checked, until: (prioOf(l) || {}).until || null }) }), h('span', null, 'Cobrar de preferência')),
+          h('label', { class: 'until' }, 'até ', h('input', { type: 'date', value: (prioOf(l) || {}).until || '', 'aria-label': 'Prioridade até a data', onchange: ev => setPrio(l, { on: !!ev.target.value || !!(prioOf(l) && prioOf(l).on), until: ev.target.value || null }) })),
+          h('span', { class: 'note' }, 'Cartões ainda não respondidos entram primeiro.'))));
     }
     $('lists-empty').hidden = lists.length > 0 || bank === 'loading';
     $('btn-restore').hidden = !off.length;
   }
-  function importText(text, name) {
-    const msg = $('import-msg'), nm = (name || $('in-name').value || '').trim() || 'Lista ' + (userLists.length + 1);
-    const { items, errors } = parseList(text, nm);
-    msg.hidden = false;
-    if (!items.length) { msg.className = 'msg bad'; msg.textContent = 'Nenhuma questão importada. ' + errors.slice(0, 3).join(' '); return; }
-    const juris = $('in-juris').checked || items.every(q => /jurisprud|s[úu]mula/i.test(q.m));
-    userLists.push({ id: 'l' + Date.now().toString(36), name: nm, juris, items });
-    store.set('xq.userLists', userLists); rebuildLists();
-    msg.className = 'msg ' + (errors.length ? '' : 'ok');
-    msg.textContent = items.length + (items.length === 1 ? ' questão adicionada' : ' questões adicionadas') + ' em "' + nm + '"' + (juris ? ', como jurisprudência (defesa).' : ', para as suas capturas.') + (errors.length ? ' ' + errors.length + (errors.length === 1 ? ' linha ignorada: ' : ' linhas ignoradas: ') + errors.slice(0, 3).join(' ') : '');
-    $('in-text').value = ''; $('in-name').value = ''; $('in-juris').checked = false;
-    renderLists(); renderStatus();
+  /* ---- Importação com prévia ---- */
+  let pending = [];
+  const known = () => { const m = new Map(); for (const l of lists) for (const q of l.items) { const k = qkey(q); if (!m.has(k)) m.set(k, l.name); } return m; };
+  const clip = (t, n) => t.length > n ? t.slice(0, n).trimEnd() + '…' : t;
+  function say2(kind, text) { const m = $('import-msg'); m.hidden = !text; m.className = 'msg ' + kind; m.textContent = text || ''; }
+  // Lê e confere o arquivo, sem gravar nada: o que vale é a prévia.
+  function stageDeck(text, fileName) {
+    const base = fileName ? fileName.replace(/\.[^.]+$/, '') : '', typed = $('in-name').value.trim();
+    const res = parseList(text, typed || base || 'Geral'), meta = res.meta || {}, warns = (res.warns || []).slice();
+    const ex = known(), seen = new Set(), fresh = [], dups = []; let rep = 0;
+    for (const q of res.items) {
+      const k = qkey(q);
+      if (seen.has(k)) { rep++; continue; }
+      seen.add(k);
+      if (ex.has(k)) dups.push({ q, inList: ex.get(k) }); else fresh.push(q);
+    }
+    let juris = res.items.length > 0 && res.items.every(q => /jurisprud|s[úu]mula/i.test(q.m));
+    if (meta.tipo) { if (/defes|jurisprud|s[úu]mula/i.test(meta.tipo)) juris = true; else if (/ataque|comum|flashcard/i.test(meta.tipo)) juris = false; else warns.push('Tipo "' + meta.tipo + '" não reconhecido: use "ataque" ou "jurisprudência".'); }
+    const pr = parsePrio(meta.prioridade); if (pr.warn) warns.push(pr.warn);
+    pending.push({ file: fileName || 'texto colado', name: meta.deck || meta.nome || meta.lista || typed || base || 'Lista ' + (userLists.length + 1), juris,
+      prio: pr.prio ? { on: true, until: pr.prio.until } : { on: false, until: null }, format: res.format || 'tabela', total: res.items.length, fresh, dups, rep, errors: res.errors, warns, meta });
   }
-  $('btn-add').addEventListener('click', () => importText($('in-text').value));
-  $('in-file').addEventListener('change', ev => {
-    const f = ev.target.files[0]; if (!f) return;
-    const rd = new FileReader();
-    rd.onload = () => importText(String(rd.result), $('in-name').value.trim() || f.name.replace(/\.[^.]+$/, ''));
-    rd.onerror = () => { const msg = $('import-msg'); msg.hidden = false; msg.className = 'msg bad'; msg.textContent = 'Não foi possível ler o arquivo.'; };
-    rd.readAsText(f); ev.target.value = '';
-  });
+  function commitDeck(pv) {
+    const ex = known(), items = pv.fresh.filter(q => !ex.has(qkey(q))).map(q => Object.assign({}, q));   // confere de novo: outro arquivo da mesma leva pode ter trazido o mesmo cartão
+    if (!items.length) return 0;
+    userLists.push({ id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: pv.name.trim() || 'Lista', juris: pv.juris, items, prio: pv.prio.on ? { on: true, until: pv.prio.until || null } : null });
+    store.set('xq.userLists', userLists); rebuildLists();
+    return items.length;
+  }
+  function done(list) {
+    const parts = list.map(([pv, n]) => '"' + pv.name.trim() + '": ' + n + (n === 1 ? ' cartão' : ' cartões') + (pv.juris ? ' (defesa)' : ' (ataque)') + (pv.prio.on ? ', com prioridade' + (pv.prio.until ? ' até ' + brDate(pv.prio.until) : '') : ''));
+    pending = pending.filter(p => !list.some(([pv]) => pv === p));
+    renderLists(); renderStatus(); renderPending();
+    say2('ok', 'Importado. ' + parts.join(' · '));
+  }
+  function importOne(pv) { const n = commitDeck(pv); if (!n) { say2('bad', 'Nada novo para importar em "' + pv.name + '".'); return; } done([[pv, n]]); }
+  function importAll() { const out = []; for (const pv of pending.slice()) { const n = commitDeck(pv); if (n) out.push([pv, n]); } if (out.length) done(out); else say2('bad', 'Nada novo para importar.'); }
+  function pvCard(pv) {
+    const subj = new Map(); for (const q of pv.fresh) subj.set(q.m, (subj.get(q.m) || 0) + 1);
+    const nameIn = h('input', { type: 'text', value: pv.name, 'aria-label': 'Nome da lista', oninput: ev => { pv.name = ev.target.value; } });
+    const tipo = h('select', { 'aria-label': 'Tipo da lista', onchange: ev => { pv.juris = ev.target.value === 'def'; } },
+      h('option', { value: 'atk', selected: pv.juris ? null : '' }, 'Ataque: questões das suas capturas'),
+      h('option', { value: 'def', selected: pv.juris ? '' : null }, 'Jurisprudência: defesa'));
+    const on = h('input', { type: 'checkbox', checked: pv.prio.on ? '' : null, onchange: ev => { pv.prio.on = ev.target.checked; } });
+    const until = h('input', { type: 'date', value: pv.prio.until || '', 'aria-label': 'Prioridade até a data', onchange: ev => { pv.prio.until = ev.target.value || null; if (pv.prio.until) { pv.prio.on = true; on.checked = true; } } });
+    const det = (title, open, rows) => rows.length ? h('details', { class: 'pv-det', open: open ? '' : null }, h('summary', null, title), h('ul', null, rows.map(t => h('li', null, t)))) : null;
+    const sample = pv.fresh.slice(0, 3).map(q => clip(q.q, 170) + ' → ' + (q.y ? (q.g ? 'Sim' : 'Não') : (q.g ? 'Certo' : 'Errado')));
+    return h('div', { class: 'pv' },
+      h('div', { class: 'pv-top' }, h('b', null, pv.file), h('span', { class: 'note' }, 'formato: ' + pv.format)),
+      h('div', { class: 'pv-chips' },
+        h('span', { class: 'tag ' + (pv.fresh.length ? 'ok' : 'dim') }, pv.fresh.length + ' prontos'),
+        pv.dups.length || pv.rep ? h('span', { class: 'tag dim' }, (pv.dups.length + pv.rep) + (pv.dups.length + pv.rep === 1 ? ' repetido (pulado)' : ' repetidos (pulados)')) : null,
+        pv.errors.length ? h('span', { class: 'tag bad' }, pv.errors.length + (pv.errors.length === 1 ? ' recusado' : ' recusados')) : null,
+        pv.warns.length ? h('span', { class: 'tag' }, pv.warns.length + (pv.warns.length === 1 ? ' aviso' : ' avisos')) : null),
+      pv.fresh.length ? h('p', { class: 'note' }, [...subj].map(([m, c]) => m + ' (' + c + ')').join(' · ')) : null,
+      h('label', { class: 'field' }, 'Nome da lista', nameIn),
+      h('label', { class: 'field' }, 'Tipo', tipo),
+      h('div', { class: 'prio-row pv-prio' }, h('label', { class: 'check' }, on, h('span', null, 'Cobrar de preferência')), h('label', { class: 'until' }, 'até ', until), h('span', { class: 'note' }, 'Sem data, vale até você desmarcar.')),
+      det('Recusados: não entram, confira o arquivo', true, pv.errors),
+      det('Avisos', false, pv.warns),
+      det('Repetidos: já existem no jogo', false, pv.dups.map(d => clip(d.q.q, 110) + ' (em "' + d.inList + '")')),
+      det('Conferir os primeiros cartões', false, sample),
+      h('div', { class: 'row' },
+        h('button', { type: 'button', class: 'btn primary', disabled: pv.fresh.length ? null : '', onclick: () => importOne(pv) }, pv.fresh.length ? 'Importar ' + pv.fresh.length + (pv.fresh.length === 1 ? ' cartão' : ' cartões') : 'Nada para importar'),
+        h('button', { type: 'button', class: 'btn', onclick: () => { pending = pending.filter(p => p !== pv); renderPending(); } }, 'Descartar')));
+  }
+  function renderPending() {
+    const box = $('import-preview'); box.textContent = '';
+    if (pending.length > 1) box.append(h('div', { class: 'row' },
+      h('button', { type: 'button', class: 'btn primary', onclick: importAll }, 'Importar todos (' + pending.reduce((a, p) => a + p.fresh.length, 0) + ' cartões)'),
+      h('button', { type: 'button', class: 'btn', onclick: () => { pending = []; renderPending(); } }, 'Descartar tudo')));
+    for (const pv of pending) box.append(pvCard(pv));
+  }
+  async function readFiles(files) {
+    say2('', '');
+    for (const f of files) { try { stageDeck(await f.text(), f.name); } catch (e) { say2('bad', 'Não foi possível ler ' + f.name + '.'); } }
+    renderPending();
+  }
+  $('btn-add').addEventListener('click', () => { const t = $('in-text').value; if (!t.trim()) { say2('bad', 'Cole o texto dos cartões primeiro.'); return; } say2('', ''); stageDeck(t, ''); $('in-text').value = ''; $('in-name').value = ''; renderPending(); });
+  $('in-file').addEventListener('change', ev => { const fs = [...ev.target.files]; ev.target.value = ''; if (fs.length) readFiles(fs); });
+  const drop = $('drop');
+  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, ev => { ev.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, ev => { ev.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', ev => { const fs = [...ev.dataTransfer.files]; if (fs.length) readFiles(fs); });
 
   /* ---- Desempenho ---- */
   const LEVEL = { high: ['Prioridade alta', 'bad'], mid: ['Atenção', ''], ok: ['Dominando', 'ok'], few: ['Poucos dados', 'dim'] };
