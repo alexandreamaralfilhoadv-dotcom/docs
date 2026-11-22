@@ -1929,6 +1929,7 @@ if (typeof document !== 'undefined') (function () {
   const RAIN_VIDEO = 'cenario/janelas-chuva.mp4';   // a chuva é um vídeo em laço; a imagem acima é o quadro parado de reserva
   // Nos flashcards, a chuva mostra a mesa de estudo junto à janela (café, abajur e cadernos), também em laço.
   const DESK_RAIN = 'cenario/mesa-chuva.webp', DESK_RAIN_VIDEO = 'cenario/mesa-chuva.mp4';
+  const DESK = { morning: 'cenario/mesa-dia.webp', day: 'cenario/mesa-dia.webp', night: 'cenario/mesa-noite.webp' };   // ainda não há versão da manhã: usa a do dia
   const MORNING_FROM = 5, DAY_FROM = 9, AFTERNOON_FROM = 12, NIGHT_FROM = 18, RAIN_CHANCE = .75;
   const isAfternoon = () => { const h = new Date().getHours(); return h >= AFTERNOON_FROM && h < NIGHT_FROM; };
   const periodNow = () => { const h = new Date().getHours(); return h >= NIGHT_FROM || h < MORNING_FROM ? 'night' : h < DAY_FROM ? 'morning' : 'day'; };
@@ -1941,8 +1942,8 @@ if (typeof document !== 'undefined') (function () {
     const period = prefs.tema === 'escuro' ? 'night' : prefs.tema === 'claro' ? (clock === 'night' ? 'day' : clock) : clock;
     const night = period === 'night', rain = prefs.tema === 'chuva' || (prefs.tema === 'auto' && raining && isAfternoon());
     if (night) document.documentElement.dataset.scheme = 'noite'; else delete document.documentElement.dataset.scheme;
-    const desk = rain && app === 'cards', rainVideo = desk ? DESK_RAIN_VIDEO : RAIN_VIDEO;
-    const hero = $('hero'), src = desk ? DESK_RAIN : rain ? SCENES.rain : SCENES[period];
+    const desk = app === 'cards', rainVideo = desk ? DESK_RAIN_VIDEO : RAIN_VIDEO;
+    const hero = $('hero'), src = desk ? (rain ? DESK_RAIN : DESK[period]) : rain ? SCENES.rain : SCENES[period];
     hero.classList.toggle('night', night || rain); hero.classList.toggle('rain', rain); hero.classList.toggle('desk', desk);
     if ($('hero-img').getAttribute('src') !== src) $('hero-img').src = src;
     // Chuva animada: toca o vídeo por cima do quadro parado. Se o aparelho não tocar (ou pedir menos movimento), fica o quadro.
