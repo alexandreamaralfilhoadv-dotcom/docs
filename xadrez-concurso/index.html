@@ -1226,6 +1226,21 @@ if (typeof document !== 'undefined') (function () {
         draw: ["Empate. Tese e antítese, sem solução: uma antinomia.", "Empate. Tolerância como respeito: ninguém cede, ninguém vence.", "Empate. Duas durações que não se deixam medir.", "Empate. A paz perpétua, versão tabuleiro."] } }
   ];
   const rival = () => CAST.find(c => c.id === (G && G.rivalId)) || CAST[0];
+  // Falas de estudo (modo flashcards) aprovadas para cada personagem; onde não há fala própria, entram as neutras (STUDY).
+  const STUDY_OWN = {
+    tai: {
+      start: ['Sapere aude. Mas primeiro, o café.'],
+      right: ['Juízo correto. Kant assinaria embaixo.'],
+      wrong: ['Você tem direito à justificação. Leia a do cartão.'],
+      unknown: ['Só sei que nada sei é um bom começo. Agora leia.'],
+      end: ['Fim da sessão. A memória, diria Bergson, continua trabalhando.'] },
+    pedro: {
+      start: ['Trouxe café e baixa expectativa. Bora.'],
+      unknown: ['Honestidade intelectual: raro e gratuito. Respeito.', 'Não sei, só sei que foi assim. Olha a resposta.'],
+      streak: ['Três seguidas. Main character energy.', 'Três acertos. A vida é um dom, afinal.'],
+      end: ['Fechamos. Eu sou trezentos, mas cansei por todos.'] }
+  };
+  for (const c of CAST) if (STUDY_OWN[c.id]) { const o = STUDY_OWN[c.id]; c.study = Object.assign({}, o, o.end ? { endGood: o.end, endMid: o.end, endBad: o.end } : {}); }
   // Marcas de expressão sobre o retrato (o avatar é uma imagem única por personagem).
   const EMOTES = '<svg viewBox="60 0 40 40" xmlns="http://www.w3.org/2000/svg">' +
     '<g class="m m-angry" fill="none" stroke="#ff3d55" stroke-width="5" stroke-linecap="round"><path d="M70 8 q9 3 6 12 M92 8 q-9 3 -6 12 M70 36 q9 -3 6 -12 M92 36 q-9 -3 -6 -12"/></g>' +
