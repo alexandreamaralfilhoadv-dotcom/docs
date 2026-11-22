@@ -80,6 +80,7 @@ body {
 /* Modo cenário: o caderno some e a biblioteca ocupa a página inteira, atrás do tabuleiro. */
 .hero.full { position: fixed; inset: 0; height: auto; -webkit-mask-image: none; mask-image: none; }
 .hero.full img, .hero.full video { object-position: 24% 50%; }
+.hero.full.desk img, .hero.full.desk video { object-position: 78% 60%; }   /* mesa de estudo: mantém o abajur, o café e a janela à vista */
 .hero.full::after, .hero.full.night::after { background: linear-gradient(180deg, rgba(12, 9, 28, .6), rgba(12, 9, 28, .1) 26%, rgba(12, 9, 28, .1) 74%, rgba(12, 9, 28, .5)); }
 body.scenic .book, body.scenic .top p, body.scenic .table > .note { display: none; }
 @media (min-width: 881px) {
@@ -1926,6 +1927,8 @@ if (typeof document !== 'undefined') (function () {
   // À noite entra também o esquema escuro. No automático, chove à tarde (12h–18h) em três de cada quatro partidas.
   const SCENES = { morning: 'cenario/janelas-manha.webp', day: 'cenario/janelas-dia.webp', night: 'cenario/janelas-noite.webp', rain: 'cenario/janelas-chuva.webp' };
   const RAIN_VIDEO = 'cenario/janelas-chuva.mp4';   // a chuva é um vídeo em laço; a imagem acima é o quadro parado de reserva
+  // Nos flashcards, a chuva mostra a mesa de estudo junto à janela (café, abajur e cadernos), também em laço.
+  const DESK_RAIN = 'cenario/mesa-chuva.webp', DESK_RAIN_VIDEO = 'cenario/mesa-chuva.mp4';
   const MORNING_FROM = 5, DAY_FROM = 9, AFTERNOON_FROM = 12, NIGHT_FROM = 18, RAIN_CHANCE = .75;
   const isAfternoon = () => { const h = new Date().getHours(); return h >= AFTERNOON_FROM && h < NIGHT_FROM; };
   const periodNow = () => { const h = new Date().getHours(); return h >= NIGHT_FROM || h < MORNING_FROM ? 'night' : h < DAY_FROM ? 'morning' : 'day'; };
@@ -1938,13 +1941,14 @@ if (typeof document !== 'undefined') (function () {
     const period = prefs.tema === 'escuro' ? 'night' : prefs.tema === 'claro' ? (clock === 'night' ? 'day' : clock) : clock;
     const night = period === 'night', rain = prefs.tema === 'chuva' || (prefs.tema === 'auto' && raining && isAfternoon());
     if (night) document.documentElement.dataset.scheme = 'noite'; else delete document.documentElement.dataset.scheme;
-    const hero = $('hero'), src = rain ? SCENES.rain : SCENES[period];
-    hero.classList.toggle('night', night || rain); hero.classList.toggle('rain', rain);
+    const desk = rain && app === 'cards', rainVideo = desk ? DESK_RAIN_VIDEO : RAIN_VIDEO;
+    const hero = $('hero'), src = desk ? DESK_RAIN : rain ? SCENES.rain : SCENES[period];
+    hero.classList.toggle('night', night || rain); hero.classList.toggle('rain', rain); hero.classList.toggle('desk', desk);
     if ($('hero-img').getAttribute('src') !== src) $('hero-img').src = src;
     // Chuva animada: toca o vídeo por cima do quadro parado. Se o aparelho não tocar (ou pedir menos movimento), fica o quadro.
     const vid = $('hero-vid'), calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (rain && !calm && !vid.dataset.failed) {
-      if (vid.getAttribute('src') !== RAIN_VIDEO) vid.src = RAIN_VIDEO;
+      if (vid.getAttribute('src') !== rainVideo) { vid.hidden = true; vid.src = rainVideo; }
       if (vid.paused) { const pl = vid.play(); if (pl && pl.then) pl.then(() => { if ($('hero').classList.contains('rain')) vid.hidden = false; }).catch(() => { vid.hidden = true; }); }
     } else { vid.pause(); vid.hidden = true; }
     $('btn-scheme').textContent = TEMA_LABEL[prefs.tema];
@@ -1998,7 +2002,7 @@ if (typeof document !== 'undefined') (function () {
     document.body.classList.toggle('cards', a === 'cards'); $('deck').hidden = a !== 'cards';
     $('btn-new').textContent = a === 'cards' ? 'Nova sessão' : 'Nova partida';
     if (a === 'cards') { clearTimeout(aiTimer); closeCut(); }
-    applyScenic();
+    applyScenic(); applyScheme();
   }
   // Cartões da seleção (matéria e tipo de lista), sem repetir o mesmo enunciado vindo de duas listas.
   function cardPoolFor(subject, src) {
