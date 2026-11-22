@@ -1969,20 +1969,21 @@ if (typeof document !== 'undefined') (function () {
      Usa o mesmo banco, a mesma fila de fixação, a mesma prioridade e o mesmo caderno de erros do xadrez.
      Aqui os personagens não são adversários: um deles estuda com você e comenta as respostas. */
   const STUDY = {
-    start: ['Peguei um café para nós. Vamos aos cartões?', 'Senta aí. Hoje a gente revisa junto.', 'Mesa perto da janela, cartões na mão. Vamos.'],
-    right: ['Boa! Essa você sabia.', 'Certo. Próximo.', 'Isso. Está entrando.', 'Acertou. Continua assim.'],
-    wrong: ['Essa pegou. Leia a justificativa com calma.', 'Errou, mas é agora que fixa.', 'Anota essa. Ela volta amanhã.'],
-    unknown: ['Sem chute, gostei. Vamos ver a resposta.', 'Tudo bem não saber. Olha a justificativa.'],
-    streak: ['Três seguidas! O café está fazendo efeito.', 'Você embalou. Não para agora.'],
-    review: ['Esse é velho conhecido. Lembra dele?', 'Cartão da fila de fixação. Vamos ver se ficou.'],
-    endGood: ['Sessão fechada, e bem fechada.', 'Rendeu. Pode guardar os cartões com orgulho.'],
-    endMid: ['Sessão fechada. Metade do caminho é saber o que revisar.', 'Deu para o gasto. Amanhã os errados voltam.'],
-    endBad: ['Sessão difícil, mas é errando aqui que se acerta na prova.', 'Dia duro. Os cartões voltam amanhã, e eu também.'],
+    start: ['Peguei um café para nós. Vamos aos cartões?', 'Senta aí. Hoje a gente revisa junto.', 'Mesa perto da janela, cartões na mão. Vamos.', 'Cheguei. Qual matéria a gente enfrenta hoje?', 'Um cartão de cada vez. Começamos?'],
+    right: ['Boa! Essa você sabia.', 'Certo. Próximo.', 'Isso. Está entrando.', 'Acertou. Continua assim.', 'Exato. Essa já é sua.', 'Certinho. Vamos ao próximo.'],
+    wrong: ['Essa pegou. Leia a justificativa com calma.', 'Errou, mas é agora que fixa.', 'Anota essa. Ela volta amanhã.', 'Não foi dessa vez. Veja onde estava a pegadinha.', 'Acontece. Melhor errar aqui do que na prova.'],
+    unknown: ['Sem chute, gostei. Vamos ver a resposta.', 'Tudo bem não saber. Olha a justificativa.', 'Essa é nova para você. Aproveita e aprende agora.', 'Sem problema. Lê com calma que ela volta amanhã.'],
+    streak: ['Três seguidas! O café está fazendo efeito.', 'Você embalou. Não para agora.', 'Mais três na conta. Está rendendo.', 'Sequência boa. Segue no ritmo.'],
+    review: ['Esse é velho conhecido. Lembra dele?', 'Cartão da fila de fixação. Vamos ver se ficou.', 'Esse você já errou uma vez. Agora vai.', 'Revisão. Respira e pensa antes de marcar.'],
+    endGood: ['Sessão fechada, e bem fechada.', 'Rendeu. Pode guardar os cartões com orgulho.', 'Ótima sessão. Amanhã tem mais.', 'Mandou bem. O café valeu a pena.'],
+    endMid: ['Sessão fechada. Metade do caminho é saber o que revisar.', 'Deu para o gasto. Amanhã os errados voltam.', 'Sessão honesta. Os erros de hoje já estão na fila.', 'Foi um bom treino. Amanhã a gente melhora a conta.'],
+    endBad: ['Sessão difícil, mas é errando aqui que se acerta na prova.', 'Dia duro. Os cartões voltam amanhã, e eu também.', 'Pesou hoje. Descansa, que amanhã eles voltam mais fáceis.', 'Tudo isso entrou na fila. É assim que fixa.'],
     empty: ['Não achei cartões nessa seleção. Vamos mudar as opções?']
   };
   const buddy = () => CAST.find(c => c.id === (F && F.buddyId)) || CAST[0];
   function buddySay(key) {
-    const c = buddy(), own = c.study && c.study[key], opts = own && own.length ? own : STUDY[key];
+    // Quem tem fala própria para a situação usa-a em metade das vezes; na outra metade, entra uma das neutras.
+    const c = buddy(), own = c.study && c.study[key], opts = own && own.length && Math.random() < .5 ? own : STUDY[key];
     const fresh = opts.filter(t => t !== lastSaid['s' + c.id + key]), text = pick(fresh.length ? fresh : opts);
     lastSaid['s' + c.id + key] = text; F.line = text; $('buddy-line').textContent = text;
   }
