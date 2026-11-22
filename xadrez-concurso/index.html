@@ -518,6 +518,44 @@ details.err.due { border-left-color: var(--gold); }
   .portrait[data-mood="think"] img { animation: bob 2.4s ease-in-out infinite; }
   @keyframes bob { 0%, 100% { transform: none; } 50% { transform: translateY(2px); } }
 }
+/* ---- Modo flashcards: a biblioteca ocupa a página e o cartão fica no centro, com um colega de estudo ao lado ---- */
+body.cards .table { display: none; }
+body.cards .main { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+body.cards .book { width: 100%; max-width: 760px; }
+body.cards #panel-partida .block:has(#moves) { display: none; }
+body.cards .top p { display: none; }
+.deck { width: 100%; max-width: 680px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.buddy { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 14px; align-items: center; }
+.buddy .speech .line { min-height: 2.8em; }
+.deck-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.deck-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--on-bg); font-weight: 700; font-size: 13px; text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .7); }
+.deck-bar .meter { flex: 1; min-width: 80px; height: 10px; border: 2px solid var(--on-bg); border-radius: 99px; overflow: hidden; background: rgba(0, 0, 0, .4); }
+.deck-bar .meter i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .25s ease-out; }
+.deck-bar .btn { box-shadow: 2px 2px 0 var(--gold); text-shadow: none; }
+.item.fcard { width: 100%; }
+.fcard .sum-note { margin: 0; }
+.deck-note { color: var(--on-bg-muted); font-size: 12px; margin: 0; text-shadow: 0 1px 2px rgba(0, 0, 0, .9); }
+@media (hover: none) { .deck-note.keys { display: none; } }
+@media (min-width: 900px) {
+  .deck { max-width: 900px; grid-template-columns: 200px minmax(0, 640px); justify-content: center; align-items: start; gap: 24px; }
+  .buddy { grid-template-columns: minmax(0, 1fr); position: sticky; top: 16px; }
+  .buddy .speech::before { display: none; }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  body.cards .page { padding-block: 8px 24px; gap: 8px; }
+  body.cards .top { gap: 6px 10px; align-items: center; }
+  body.cards .top h1 { font-size: 20px; text-shadow: 2px 2px 0 var(--accent); }
+  body.cards .controls { gap: 6px; }
+  body.cards .controls .btn { min-height: 30px; padding: 3px 9px; font-size: 12px; box-shadow: 2px 2px 0 var(--gold); }
+  body.cards .chip { min-height: 28px; padding: 2px 10px; font-size: 11px; }
+  body.cards.scenic .page { display: flex; max-width: 1180px; padding-block: 8px; }
+  body.cards.scenic .main { display: grid; }
+  body.cards .deck { max-width: none; grid-template-columns: 132px minmax(0, 1fr); align-items: start; gap: 14px; }
+  body.cards .buddy { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  body.cards .buddy .speech::before { display: none; }
+  body.cards .buddy .speech { padding: 8px 10px; }
+  body.cards .buddy .speech .line { font-size: 13px; min-height: 0; }
+}
 </style>
 
 <div class="hero" id="hero" aria-hidden="true"><img id="hero-img" alt=""><video id="hero-vid" muted loop playsinline preload="none" hidden></video></div>
@@ -536,6 +574,25 @@ details.err.due { border-left-color: var(--gold); }
   </header>
 
   <div class="main">
+    <section class="deck" id="deck" aria-label="Flashcards" hidden>
+      <div class="buddy" id="buddy">
+        <div class="portrait" id="buddy-portrait" aria-hidden="true"></div>
+        <div class="speech">
+          <div class="nameplate"><b id="buddy-name"></b><span>estudando com você</span></div>
+          <p class="line" id="buddy-line" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="deck-main">
+        <div class="deck-bar" id="deck-bar">
+          <span id="deck-count"></span>
+          <div class="meter" id="deck-meter-wrap" aria-hidden="true"><i id="deck-meter"></i></div>
+          <button class="btn small" id="deck-end" type="button">Encerrar sessão</button>
+        </div>
+        <div class="item fcard" id="fcard"></div>
+        <p class="deck-note" id="deck-note"></p>
+        <p class="deck-note keys" id="deck-keys"></p>
+      </div>
+    </section>
     <section class="table" aria-label="Tabuleiro">
       <div class="stage" id="stage">
         <div class="portrait" id="rival-portrait" data-mood="neutral" aria-hidden="true"></div>
@@ -1088,6 +1145,9 @@ if (typeof document !== 'undefined') (function () {
     renderLists();
   }
   let off = store.get('xq.off', []); if (!Array.isArray(off)) off = [];
+  // Modo em uso ('chess' ou 'cards') e a sessão de flashcards em andamento.
+  let app = 'chess', F = null;
+  const sessId = () => (app === 'cards' && F ? F.id : G.id);
   let jurOv = store.get('xq.jur', {}) || {};
   try { localStorage.removeItem('xq.lists'); localStorage.removeItem('xq.jurisSeeded'); } catch (e) { /* sem armazenamento */ }
   function rebuildLists() {
@@ -1105,7 +1165,7 @@ if (typeof document !== 'undefined') (function () {
   }
   let history = store.get('xq.history', []);
   if (!Array.isArray(history)) history = [];
-  const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false, length: 'normal', scheme: 'padrao', tema: 'auto', cenario: false }, store.get('xq.prefs', {}));
+  const prefs = Object.assign({ mode: 'ai', level: 2, reforco: false, length: 'normal', scheme: 'padrao', tema: 'auto', cenario: false, app: 'chess', cardsSrc: 'atk', cardsGoal: 20, buddy: '' }, store.get('xq.prefs', {}));
   const view = { scope: 'game', player: 'w' };
   let G = null, aiTimer = null;
   let raining = false;   // sorteado a cada partida; só vale à tarde, no tema automático
@@ -1374,7 +1434,7 @@ if (typeof document !== 'undefined') (function () {
     el.className = cls; el.textContent = text;
     const na = pool('atk').length, nd = pool('def').length, qs = n => n + (n === 1 ? ' questão' : ' questões');
     if (bank === 'loading') { $('pool-note').textContent = 'Carregando o banco de questões…'; return; }
-    $('chip-subject').textContent = (G.subject || 'Todas as matérias') + (G.short ? ' · partida curta' : '');
+    if (app !== 'cards') $('chip-subject').textContent = (G.subject || 'Todas as matérias') + (G.short ? ' · partida curta' : '');
     const mine = errors.filter(e => e.g === G.id).length, be = $('btn-errs');
     be.hidden = !(G.over && mine); be.textContent = 'Ver os ' + mine + (mine === 1 ? ' erro' : ' erros') + ' desta partida';
     if (mine === 1) be.textContent = 'Ver o erro desta partida';
@@ -1387,7 +1447,7 @@ if (typeof document !== 'undefined') (function () {
     for (const e of G.log) ol.append(h('li', { class: e.kind === 'move' ? '' : e.kind, title: ({ void: 'Captura anulada pela questão', won: 'Captura confirmada: você acertou', lost: 'Peça perdida: você errou a questão de jurisprudência' })[e.kind] || null }, e.text));
     $('moves-empty').hidden = G.log.length > 0;
     ol.scrollTop = ol.scrollHeight;
-    const mine = history.filter(e => e.g === G.id), ok = mine.filter(e => e.ok).length;
+    const mine = history.filter(e => e.g === sessId()), ok = mine.filter(e => e.ok).length;
     $('sc-ok').textContent = ok; $('sc-bad').textContent = mine.length - ok;
     $('sc-rate').textContent = mine.length ? Math.round(100 * ok / mine.length) + '%' : '–';
   }
@@ -1654,7 +1714,7 @@ if (typeof document !== 'undefined') (function () {
     // given: true, false ou null ("não sei", que vale como erro no tabuleiro)
     const answer = given => {
       const unknown = given === null, ok = !unknown && given === q.g, checked = inCheck(G.st);
-      const before = track ? srs[q.id] : null;
+      const before = track && srs[q.id] ? Object.assign({}, srs[q.id]) : null;   // cópia: o registro muda ao gravar esta resposta
       history.push(Object.assign({ m: q.m, ok, t: Date.now() - t0, p: who, k: kind, g: G.id, ts: Date.now() }, unknown ? { u: 1 } : {}));
       if (history.length > 5000) history = history.slice(-5000);
       store.set('xq.history', history);
@@ -1807,7 +1867,7 @@ if (typeof document !== 'undefined') (function () {
     const player = twoP ? view.player : 'w';
     $('scope-game').setAttribute('aria-pressed', view.scope === 'game'); $('scope-all').setAttribute('aria-pressed', view.scope === 'all');
     $('pl-w').setAttribute('aria-pressed', player === 'w'); $('pl-b').setAttribute('aria-pressed', player === 'b');
-    const entries = history.filter(e => e.p === player && (view.scope === 'all' || e.g === G.id));
+    const entries = history.filter(e => e.p === player && (view.scope === 'all' || e.g === sessId()));
     const box = $('perf'); box.textContent = ''; box.className = 'block';
     if (!entries.length) {
       box.append(h('p', { class: 'note' }, view.scope === 'game' ? 'Nenhuma questão respondida nesta partida. Tente capturar uma peça: a primeira questão aparece na hora, e o ranking das matérias é montado a cada resposta.' : 'Ainda não há histórico. As respostas de todas as partidas ficam guardadas neste navegador.'));
@@ -1882,6 +1942,7 @@ if (typeof document !== 'undefined') (function () {
   function applyScenic() {
     const on = !!prefs.cenario;
     document.body.classList.toggle('scenic', on); $('hero').classList.toggle('full', on);
+    $('hero').classList.toggle('full', on || app === 'cards');   // nos flashcards a biblioteca é sempre o fundo da página
     $('btn-menu').textContent = on ? 'Mostrar menu' : 'Ocultar menu'; $('btn-menu').setAttribute('aria-pressed', on);
   }
   $('btn-menu').addEventListener('click', () => { prefs.cenario = !prefs.cenario; store.set('xq.prefs', prefs); applyScenic(); });
@@ -1889,19 +1950,207 @@ if (typeof document !== 'undefined') (function () {
   setInterval(applyScheme, 5 * 60 * 1000);   // acompanha a virada do horário com o jogo aberto
   $('btn-errs').addEventListener('click', () => { errView.game = G.id; rvView.fila = false; showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); });
 
-  /* ---- Início de partida: matéria, adversário, nível ---- */
+  /* ---- Modo flashcards ----
+     Usa o mesmo banco, a mesma fila de fixação, a mesma prioridade e o mesmo caderno de erros do xadrez.
+     Aqui os personagens não são adversários: um deles estuda com você e comenta as respostas. */
+  const STUDY = {
+    start: ['Peguei um café para nós. Vamos aos cartões?', 'Senta aí. Hoje a gente revisa junto.', 'Mesa perto da janela, cartões na mão. Vamos.'],
+    right: ['Boa! Essa você sabia.', 'Certo. Próximo.', 'Isso. Está entrando.', 'Acertou. Continua assim.'],
+    wrong: ['Essa pegou. Leia a justificativa com calma.', 'Errou, mas é agora que fixa.', 'Anota essa. Ela volta amanhã.'],
+    unknown: ['Sem chute, gostei. Vamos ver a resposta.', 'Tudo bem não saber. Olha a justificativa.'],
+    streak: ['Três seguidas! O café está fazendo efeito.', 'Você embalou. Não para agora.'],
+    review: ['Esse é velho conhecido. Lembra dele?', 'Cartão da fila de fixação. Vamos ver se ficou.'],
+    endGood: ['Sessão fechada, e bem fechada.', 'Rendeu. Pode guardar os cartões com orgulho.'],
+    endMid: ['Sessão fechada. Metade do caminho é saber o que revisar.', 'Deu para o gasto. Amanhã os errados voltam.'],
+    endBad: ['Sessão difícil, mas é errando aqui que se acerta na prova.', 'Dia duro. Os cartões voltam amanhã, e eu também.'],
+    empty: ['Não achei cartões nessa seleção. Vamos mudar as opções?']
+  };
+  const buddy = () => CAST.find(c => c.id === (F && F.buddyId)) || CAST[0];
+  function buddySay(key) {
+    const c = buddy(), own = c.study && c.study[key], opts = own && own.length ? own : STUDY[key];
+    const fresh = opts.filter(t => t !== lastSaid['s' + c.id + key]), text = pick(fresh.length ? fresh : opts);
+    lastSaid['s' + c.id + key] = text; F.line = text; $('buddy-line').textContent = text;
+  }
+  function paintBuddy() {
+    const c = buddy(), pt = $('buddy-portrait');
+    $('buddy').hidden = !F;
+    if (pt.dataset.who !== c.id) { pt.dataset.who = c.id; pt.innerHTML = portraitHTML(c); }
+    $('buddy-name').textContent = c.name; $('buddy-line').textContent = (F && F.line) || '';
+  }
+  function setApp(a) {
+    app = a; prefs.app = a; store.set('xq.prefs', prefs);
+    document.body.classList.toggle('cards', a === 'cards'); $('deck').hidden = a !== 'cards';
+    $('btn-new').textContent = a === 'cards' ? 'Nova sessão' : 'Nova partida';
+    if (a === 'cards') { clearTimeout(aiTimer); closeCut(); }
+    applyScenic();
+  }
+  // Cartões da seleção (matéria e tipo de lista), sem repetir o mesmo enunciado vindo de duas listas.
+  function cardPoolFor(subject, src) {
+    const seen = new Set(), out = [];
+    for (const q of allQ(lists.filter(l => src === 'both' || (src === 'def') === !!l.juris))) {
+      if (seen.has(q.id) || (subject && !subjectsOf(q.m).includes(subject))) continue;
+      seen.add(q.id); out.push(q);
+    }
+    return out;
+  }
+  // Mesmo sorteio do xadrez: fila vencida (até 60%), depois decks com prioridade, depois o resto; gabarito meio a meio.
+  function pickCard() {
+    let all = cardPoolFor(F.subject, F.src).filter(q => !F.used.includes(q.id));
+    if (!all.length) return null;
+    const t = today(), due = [], novel = []; let review = false;
+    for (const q of all) { const r = srs[q.id]; if (r && r.s === 1) { if (r.d <= t) due.push(q); } else if (!r || r.s === 0 || r.d <= t) novel.push(q); }
+    if (due.length && (Math.random() < REVIEW_SHARE || !novel.length)) { all = due; review = true; }
+    else if (novel.length) { const first = novel.filter(q => q.p && !srs[q.id]); all = first.length && Math.random() < PRIORITY_SHARE ? first : novel; }
+    const want = Math.random() < .5, side = all.filter(q => q.g === want), cands = side.length ? side : all;
+    let weights = cands.map(() => 1);
+    if (prefs.reforco) { const idx = new Map(analyze(history.filter(e => e.p === 'w')).map(r => [r.subject, r.index])); weights = cands.map(q => 1 + 4 * (idx.has(q.m) ? idx.get(q.m) : .25)); }
+    let x = Math.random() * weights.reduce((a, b) => a + b, 0), got = cands[cands.length - 1];
+    for (let i = 0; i < cands.length; i++) { x -= weights[i]; if (x <= 0) { got = cands[i]; break; } }
+    return Object.assign({}, got, { review });
+  }
+  function deckChrome() {
+    const on = !!F && !F.done && !!F.cur;
+    $('deck-bar').hidden = !on;
+    if (F) {
+      $('deck-count').textContent = 'Cartão ' + Math.min(F.n + (F.phase === 'v' ? 0 : 1), F.goal || Infinity) + (F.goal ? ' de ' + F.goal : '') + ' · ' + F.ok + (F.ok === 1 ? ' acerto' : ' acertos');
+      $('deck-meter-wrap').hidden = !F.goal; $('deck-meter').style.width = F.goal ? Math.round(100 * F.n / F.goal) + '%' : '0';
+      $('chip-subject').textContent = (F.subject || 'Todas as matérias') + ' · flashcards';
+    }
+    $('deck-keys').textContent = on ? (F.phase === 'q' ? 'Teclado: ' + (F.cur.y ? 'S sim · N não' : 'C certo · E errado') + ' · ? não sei' : F.last && F.last.ok ? 'Teclado: F fácil · D difícil' : 'Teclado: Enter continua') : '';
+  }
+  function cardHead(label, right) {
+    return h('div', { class: 'duelhead' }, h('div', { class: 'duel atk' }, h('span', { class: 'side' }, label), h('span', { class: 'vs' }, right)));
+  }
+  function renderIdle() {
+    $('buddy').hidden = true; $('deck-bar').hidden = true; $('deck-note').textContent = ''; $('deck-keys').textContent = '';
+    const box = $('fcard'); box.textContent = '';
+    box.append(cardHead('FLASHCARDS', 'Revisão direta'), h('p', { class: 'stake' }, 'Escolha a matéria e o tamanho da sessão para começar.'),
+      h('div', { class: 'go' }, h('button', { type: 'button', class: 'btn primary', onclick: openSetup }, 'Montar a sessão')));
+  }
+  function renderCard() {
+    const q = F.cur, box = $('fcard'); box.textContent = '';
+    const YES = q.y ? 'Sim' : 'Certo', NO = q.y ? 'Não' : 'Errado';
+    const head = cardHead(q.review ? 'REVISÃO' : 'FLASHCARD', F.goal ? (F.phase === 'v' ? F.n : F.n + 1) + ' de ' + F.goal : 'Sessão livre · ' + (F.phase === 'v' ? F.n : F.n + 1) + 'º cartão');
+    const text = h('p', { class: 'text' }, q.q);
+    if (F.phase === 'q') {
+      box.append(head, h('p', { class: 'cmd' }, (q.review ? 'Este cartão está na sua fila de fixação. ' : '') + (q.y ? 'Responda sim ou não.' : 'Julgue o item a seguir.')), text,
+        h('div', { class: 'answers' },
+          h('button', { type: 'button', class: 'ans c', onclick: () => answerCard(true) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, YES[0]), YES),
+          h('button', { type: 'button', class: 'ans e', onclick: () => answerCard(false) }, h('span', { class: 'bubble', 'aria-hidden': 'true' }, NO[0]), NO),
+          h('button', { type: 'button', class: 'ans u', onclick: () => answerCard(null) }, 'Não sei')));
+    } else {
+      const L = F.last, last = F.goal && F.n >= F.goal, go = last ? 'Ver o resumo' : 'Próximo cartão';
+      box.append(head, text,
+        h('div', { class: 'verdict ' + (L.ok ? 'ok' : 'bad') },
+          h('span', { class: 'impact ' + (L.ok ? 'ok' : 'bad') + (L.unknown ? ' long' : '') }, L.ok ? 'ACERTOU!' : L.unknown ? 'NÃO SABIA' : 'ERROU!'),
+          h('p', null, 'Gabarito: ', h('b', null, q.g ? YES : NO), '. Você marcou ' + (L.unknown ? 'Não sei' : L.given ? YES : NO) + '.'),
+          h('p', null, q.c || 'Este cartão não tem justificativa no material.'),
+          h('p', { class: 'hist' }, histLine(L.before, L.ok, L.unknown))),
+        L.ok ? h('div', { class: 'rate' },
+          h('button', { type: 'button', class: 'btn easy', onclick: () => rateCard('easy') }, 'Fácil', h('small', null, L.before && L.before.s === 1 ? 'Eu sabia: conta para a fixação' : 'Eu sabia: só volta em um mês')),
+          h('button', { type: 'button', class: 'btn hard', onclick: () => rateCard('hard') }, 'Difícil', h('small', null, 'Chutei ou hesitei: volta amanhã')))
+          : h('div', { class: 'go' }, h('button', { type: 'button', class: 'btn primary', onclick: nextCard }, go)));
+    }
+    $('deck-note').textContent = '';
+    deckChrome();
+  }
+  function answerCard(given) {
+    const q = F && F.cur; if (!q || F.phase !== 'q' || F.done) return;
+    const unknown = given === null, ok = !unknown && given === q.g, before = srs[q.id] ? Object.assign({}, srs[q.id]) : null;
+    history.push(Object.assign({ m: q.m, ok, t: Date.now() - F.t0, p: 'w', k: 'card', g: F.id, ts: Date.now() }, unknown ? { u: 1 } : {}));
+    if (history.length > 5000) history = history.slice(-5000);
+    store.set('xq.history', history);
+    if (!ok) {
+      addError({ id: F.id + '-' + Date.now().toString(36), m: q.m, q: q.q, gab: !!q.g, y: q.y ? 1 : 0, given: !!given, ns: unknown ? 1 : 0, c: q.c || '', k: 'card', p: 'w', g: F.id, gs: F.subject || '', ts: Date.now() });
+      srsAnswer(q.id, unknown ? 'unknown' : 'wrong'); F.queued++; F.bad++; F.streak = 0;
+    } else { F.ok++; F.streak++; }
+    F.n++; F.phase = 'v'; F.last = { ok, unknown, given, before };
+    buddySay(ok ? (F.streak % 3 === 0 ? 'streak' : 'right') : unknown ? 'unknown' : 'wrong');
+    renderCard(); renderLog(); if (!$('panel-desempenho').hidden) renderPerf();
+    const f = $('fcard').querySelector('.rate .btn, .go .btn'); if (f) f.focus({ preventScroll: true });
+  }
+  function rateCard(how) {
+    if (!F || !F.cur || F.phase !== 'v' || !F.last.ok) return;
+    srsAnswer(F.cur.id, how); if (how === 'hard') F.queued++;
+    nextCard();
+  }
+  function nextCard(first) {
+    if (!F || F.done) return;
+    if (F.goal && F.n >= F.goal) return endCards();
+    const q = pickCard();
+    if (!q) {
+      if (bank === 'loading') { F.waiting = true; F.cur = null; const box = $('fcard'); box.textContent = ''; box.append(cardHead('FLASHCARDS', 'Um instante'), h('p', { class: 'stake' }, 'Carregando o banco de questões…')); deckChrome(); return; }
+      return endCards(true);
+    }
+    F.used.push(q.id); F.cur = q; F.t0 = Date.now(); F.phase = 'q'; F.last = null;
+    if (first !== true && q.review) buddySay('review');
+    renderCard();
+  }
+  function endCards(exhausted) {
+    if (!F) return;
+    F.done = true; F.cur = null; F.exhausted = exhausted === true;
+    const rate = F.n ? F.ok / F.n : 0;
+    buddySay(!F.n ? 'empty' : rate >= .7 ? 'endGood' : rate >= .5 ? 'endMid' : 'endBad');
+    renderSummary();
+  }
+  function renderSummary() {
+    const box = $('fcard'); box.textContent = '';
+    const rate = F.n ? Math.round(100 * F.ok / F.n) + '%' : '–';
+    box.append(...[cardHead('RESUMO', F.n + (F.n === 1 ? ' cartão' : ' cartões')),
+      h('p', { class: 'stake' }, !F.n ? 'Nenhum cartão nesta seleção.' : 'Sessão encerrada.'),
+      F.n ? h('div', { class: 'score' }, h('div', null, h('b', null, String(F.ok)), h('span', null, 'acertos')), h('div', null, h('b', null, String(F.bad)), h('span', null, F.bad === 1 ? 'erro ou "não sei"' : 'erros e "não sei"')), h('div', null, h('b', null, rate), h('span', null, 'aproveitamento'))) : null,
+      F.n ? h('p', { class: 'note sum-note' }, F.queued ? F.queued + (F.queued === 1 ? ' cartão entrou na fila de fixação e volta amanhã.' : ' cartões entraram na fila de fixação e voltam amanhã.') : 'Nenhum cartão entrou na fila de fixação nesta sessão.') : null,
+      F.exhausted && F.n ? h('p', { class: 'note sum-note' }, 'Você viu todos os cartões desta seleção.') : null,
+      !F.n ? h('p', { class: 'note sum-note' }, 'Troque a matéria ou o tipo de cartão, ou importe um deck na aba Questões.') : null,
+      h('div', { class: 'row' },
+        F.n ? h('button', { type: 'button', class: 'btn primary', onclick: startCards }, 'Nova sessão igual') : null,
+        h('button', { type: 'button', class: F.n ? 'btn' : 'btn primary', onclick: openSetup }, 'Mudar as opções'),
+        F.bad ? h('button', { type: 'button', class: 'btn', onclick: () => { errView.game = F.id; rvView.fila = false; if (prefs.cenario) { prefs.cenario = false; store.set('xq.prefs', prefs); applyScenic(); } showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); } }, 'Ver os erros desta sessão') : null)].filter(Boolean));
+    $('deck-note').textContent = '';
+    paintBuddy(); deckChrome();
+  }
+  function startCards() {
+    setApp('cards');
+    F = { id: 'f' + Date.now().toString(36), subject: prefs.subject || '', src: prefs.cardsSrc || 'atk', goal: Math.max(0, +prefs.cardsGoal || 0), n: 0, ok: 0, bad: 0, queued: 0, streak: 0, used: [],
+      buddyId: CAST.some(c => c.id === prefs.buddy) ? prefs.buddy : pick(CAST).id, cur: null, phase: 'q', last: null, done: false, line: '' };
+    raining = Math.random() < RAIN_CHANCE; applyScheme();
+    closeVeil(); paintBuddy(); buddySay('start'); nextCard(true); renderLog(); if (!$('panel-desempenho').hidden) renderPerf();
+  }
+  $('deck-end').addEventListener('click', () => endCards());
+  document.addEventListener('keydown', e => {
+    if (app !== 'cards' || !F || F.done || !F.cur || !$('veil').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
+    const t = e.target; if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+    const k = e.key.toLowerCase();
+    if (F.phase === 'q') {
+      const yes = F.cur.y ? 's' : 'c', no = F.cur.y ? 'n' : 'e';
+      if (k === yes) { e.preventDefault(); answerCard(true); } else if (k === no) { e.preventDefault(); answerCard(false); } else if (k === '?') { e.preventDefault(); answerCard(null); }
+    } else if (F.last && F.last.ok) { if (k === 'f') { e.preventDefault(); rateCard('easy'); } else if (k === 'd') { e.preventDefault(); rateCard('hard'); } }
+    else if (k === 'enter' && !(t && t.tagName === 'BUTTON')) { e.preventDefault(); nextCard(); }
+  });
+
+  /* ---- Início: modo (xadrez ou flashcards), matéria e opções de cada um ---- */
   let setupOpen = false;
   function fillSubjects() {
     const sel = $('set-subject'); if (!sel) return;
+    const cards = $('set-app').value === 'cards';
     const cur = sel.value || prefs.subject || '', counts = subjectCounts(), n = v => v.toLocaleString('pt-BR');
     sel.textContent = '';
     sel.append(h('option', { value: '' }, bank === 'loading' ? 'Todas as matérias (carregando…)' : 'Todas as matérias'));
-    for (const c of counts) sel.append(h('option', { value: c.name }, c.name + ' — ' + n(c.atk) + ' de ataque · ' + n(c.def) + ' de defesa'));
+    for (const c of counts) sel.append(h('option', { value: c.name }, c.name + ' — ' + (cards ? n(c.atk) + ' flashcards · ' + n(c.def) + ' de jurisprudência' : n(c.atk) + ' de ataque · ' + n(c.def) + ' de defesa')));
     sel.value = counts.some(c => c.name === cur) ? cur : '';
     setupNote();
   }
   function setupNote() {
     const sel = $('set-subject'), note = $('set-note'); if (!sel || !note) return;
+    const cards = $('set-app').value === 'cards';
+    for (const el of $('item').querySelectorAll('[data-for]')) el.hidden = el.dataset.for !== (cards ? 'cards' : 'chess');
+    if (cards) {
+      const pool = cardPoolFor(sel.value, $('set-src').value), t = today(), nf = v => v.toLocaleString('pt-BR');
+      const due = pool.filter(q => { const r = srs[q.id]; return r && r.s === 1 && r.d <= t; }).length, pri = pool.filter(q => q.p && !srs[q.id]).length;
+      note.textContent = bank === 'loading' ? 'Carregando o banco de questões…' : !pool.length ? 'Não há cartões nesta seleção.'
+        : nf(pool.length) + (pool.length === 1 ? ' cartão' : ' cartões') + ' nesta seleção' + (due ? ' · ' + nf(due) + ' na fila de fixação para hoje' : '') + (pri ? ' · ' + nf(pri) + ' com prioridade, ainda não vistos' : '') + '.';
+      return;
+    }
     const c = subjectCounts().find(x => x.name === sel.value), ai = $('set-mode').value === 'ai';
     $('set-level-wrap').hidden = !ai;
     note.textContent = !c ? 'As questões serão sorteadas de todas as matérias.'
@@ -1914,19 +2163,27 @@ if (typeof document !== 'undefined') (function () {
     setupOpen = true;
     const opt = (v, t, cur) => h('option', { value: v, selected: String(cur) === String(v) ? '' : null }, t);
     openVeil(
-      h('p', { class: 'stake', id: 'item-stake' }, 'Nova partida'),
-      h('label', { class: 'field', for: 'set-subject' }, 'Matéria das questões', h('select', { id: 'set-subject', onchange: setupNote })),
+      h('p', { class: 'stake', id: 'item-stake' }, 'Como vamos estudar?'),
+      h('label', { class: 'field', for: 'set-app' }, 'Modo', h('select', { id: 'set-app', onchange: fillSubjects }, opt('chess', 'Xadrez: uma questão a cada captura', prefs.app), opt('cards', 'Flashcards: revisão direta dos cartões', prefs.app))),
+      h('label', { class: 'field', for: 'set-subject' }, 'Matéria', h('select', { id: 'set-subject', onchange: setupNote })),
+      h('label', { class: 'field', 'data-for': 'cards', for: 'set-src' }, 'Cartões', h('select', { id: 'set-src', onchange: setupNote }, opt('atk', 'Flashcards (listas de ataque)', prefs.cardsSrc), opt('def', 'Jurisprudência e súmulas (listas de defesa)', prefs.cardsSrc), opt('both', 'Tudo junto', prefs.cardsSrc))),
       h('p', { class: 'note', id: 'set-note' }),
-      h('label', { class: 'field', for: 'set-length' }, 'Tipo de partida', h('select', { id: 'set-length' }, opt('normal', 'Normal: questão em toda captura', prefs.length), opt('curta', 'Curta: sem questão para peões, uma tentativa por captura', prefs.length))),
-      h('label', { class: 'field', for: 'set-mode' }, 'Adversário', h('select', { id: 'set-mode', onchange: setupNote }, opt('ai', 'Computador', prefs.mode), opt('2p', 'Outro jogador, no mesmo aparelho', prefs.mode))),
-      h('label', { class: 'field', id: 'set-level-wrap', for: 'set-level' }, 'Nível do computador', h('select', { id: 'set-level' }, opt(1, 'Fácil', prefs.level), opt(2, 'Médio', prefs.level), opt(3, 'Difícil', prefs.level))),
+      h('label', { class: 'field', 'data-for': 'cards', for: 'set-goal' }, 'Tamanho da sessão', h('select', { id: 'set-goal' }, opt(10, '10 cartões', prefs.cardsGoal), opt(20, '20 cartões', prefs.cardsGoal), opt(40, '40 cartões', prefs.cardsGoal), opt(0, 'Livre: até eu encerrar', prefs.cardsGoal))),
+      h('label', { class: 'field', 'data-for': 'cards', for: 'set-buddy' }, 'Quem estuda com você', h('select', { id: 'set-buddy' }, opt('', 'Sorteado a cada sessão', prefs.buddy), CAST.map(c => opt(c.id, c.name, prefs.buddy)))),
+      h('label', { class: 'field', 'data-for': 'chess', for: 'set-length' }, 'Tipo de partida', h('select', { id: 'set-length' }, opt('normal', 'Normal: questão em toda captura', prefs.length), opt('curta', 'Curta: sem questão para peões, uma tentativa por captura', prefs.length))),
+      h('label', { class: 'field', 'data-for': 'chess', for: 'set-mode' }, 'Adversário', h('select', { id: 'set-mode', onchange: setupNote }, opt('ai', 'Computador', prefs.mode), opt('2p', 'Outro jogador, no mesmo aparelho', prefs.mode))),
+      h('label', { class: 'field', 'data-for': 'chess', id: 'set-level-wrap', for: 'set-level' }, 'Nível do computador', h('select', { id: 'set-level' }, opt(1, 'Fácil', prefs.level), opt(2, 'Médio', prefs.level), opt(3, 'Difícil', prefs.level))),
       h('div', { class: 'row' },
         h('button', { type: 'button', class: 'btn primary', onclick: () => {
-          prefs.subject = $('set-subject').value; prefs.length = $('set-length').value; prefs.mode = $('set-mode').value; prefs.level = +$('set-level').value;
-          store.set('xq.prefs', prefs); setupOpen = false; newGame();
+          const cards = $('set-app').value === 'cards';
+          prefs.subject = $('set-subject').value;
+          if (cards) { prefs.cardsSrc = $('set-src').value; prefs.cardsGoal = +$('set-goal').value; prefs.buddy = $('set-buddy').value; }
+          else { prefs.length = $('set-length').value; prefs.mode = $('set-mode').value; prefs.level = +$('set-level').value; }
+          store.set('xq.prefs', prefs); setupOpen = false;
+          if (cards) startCards(); else { setApp('chess'); newGame(); }
         } }, 'Começar'),
         h('button', { type: 'button', class: 'btn', onclick: () => { setupOpen = false; closeVeil(); } }, 'Cancelar')));
-    fillSubjects(); $('set-subject').focus();
+    fillSubjects(); $('set-app').focus();
   }
 
   /* ---- Fixação (repetição espaçada) ----
@@ -2081,10 +2338,10 @@ if (typeof document !== 'undefined') (function () {
     for (const [gid, arr] of order) {
       const first = Math.min(...arr.map(e => e.ts || 0));
       const when = first ? new Date(first).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : 'Data não registrada';
-      const title = (G && gid === G.id ? 'Partida atual · ' : 'Partida de ') + when + ' · ' + (arr[0].gs || 'Todas as matérias') + ' · ' + arr.length + (arr.length === 1 ? ' erro' : ' erros');
+      const title = (arr[0].k === 'card' ? (F && gid === F.id ? 'Flashcards, sessão atual · ' : 'Flashcards de ') : G && gid === G.id ? 'Partida atual · ' : 'Partida de ') + when + ' · ' + (arr[0].gs || 'Todas as matérias') + ' · ' + arr.length + (arr.length === 1 ? ' erro' : ' erros');
       box.append(h('div', { class: 'errgroup' }, h('h3', null, title), arr.slice().reverse().map(e => h('details', { class: 'err', open: errView.game === gid ? '' : null },
         h('summary', null,
-          h('span', { class: 'meta' }, h('span', null, e.m), h('span', { class: 'tag ' + (e.k === 'def' ? 'bad' : 'dim') }, e.k === 'def' ? 'Defesa' : 'Ataque')),
+          h('span', { class: 'meta' }, h('span', null, e.m), h('span', { class: 'tag ' + (e.k === 'def' ? 'bad' : 'dim') }, e.k === 'def' ? 'Defesa' : e.k === 'card' ? 'Flashcard' : 'Ataque')),
           h('span', { class: 'q' }, e.q), h('span', { class: 'more' }, 'Ver gabarito e justificativa')),
         h('div', { class: 'ans-box' },
           h('p', null, 'Você marcou ', h('b', null, e.ns ? 'Não sei' : lbl(e.given, e.y)), '. Gabarito: ', h('b', null, lbl(e.gab, e.y)), '.'),
@@ -2107,16 +2364,17 @@ if (typeof document !== 'undefined') (function () {
   fetch('questoes.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(d => { builtin = Array.isArray(d.lists) ? d.lists : []; bank = 'ok'; })
     .catch(() => { bank = 'fail'; })
-    .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } if (setupOpen) fillSubjects(); });
+    .then(() => { rebuildLists(); if (G) { renderLists(); renderStatus(); } if (setupOpen) fillSubjects(); if (F && F.waiting) { F.waiting = false; nextCard(true); } });
   function start(data) {
     if (data && data.G && data.G.st) {
       G = data.G; G.thinking = false; G.sel = -1; G.defTries = 0; G.defSubj = []; G.capTries = {}; closeVeil(); paintRival(false); clearHype(); if (G.mode === 'ai' && G.hyped) showScene(Number(G.hyped));
       if (!G.over && G.mode === 'ai' && G.st.turn === 'b') afterTurn(legalMoves(G.st), inCheck(G.st)); else renderAll();
-    } else { newGame(true); openSetup(); }
+      if (data.app === 'cards' && data.F && data.F.id) { F = data.F; setApp('cards'); paintBuddy(); if (F.done || !F.cur) renderSummary(); else renderCard(); renderLog(); }
+    } else { newGame(true); if (prefs.app === 'cards') { setApp('cards'); renderIdle(); } openSetup(); }
     renderErrs(); renderFila(); initCloud();
   }
   const hot = window.claude && window.claude.hot;
-  if (hot && hot.snapshot) hot.snapshot(() => ({ G }));
+  if (hot && hot.snapshot) hot.snapshot(() => ({ G, F, app }));
   if (hot && hot.ready) hot.ready(start); else start((hot && hot.data) || {});
 })();
 </script>
