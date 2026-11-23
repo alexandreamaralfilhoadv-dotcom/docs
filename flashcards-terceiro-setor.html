@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flashcards — Terceiro Setor</title>
+<style>
+:root{--bg:#0f1117;--panel:#181b24;--line:#2a2f3d;--text:#e8eaf0;--mut:#9aa1b2;--ok:#34c47c;--bad:#ef5b5b;--idk:#e6b84a;--acc:#7c8cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:16px}
+h1{font-size:1.2rem;margin:4px 0 12px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.filters button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:.9rem}
+.filters button.on{border-color:var(--acc);background:#232842}
+.stats{display:flex;gap:8px;margin-bottom:10px}
+.stat{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.stat b{display:block;font-size:1.3rem}
+.ok b{color:var(--ok)}.bad b{color:var(--bad)}.idk b{color:var(--idk)}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);width:0}
+.barlbl{color:var(--mut);font-size:.82rem;margin:4px 0 14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tag{color:var(--mut);font-size:.8rem;margin-bottom:8px}
+.q{white-space:pre-wrap;font-size:1.05rem}
+.primary{margin-top:16px;width:100%;background:var(--acc);color:#0f1117;border:0;border-radius:10px;padding:12px;font-weight:700;font-size:1rem;cursor:pointer}
+.verdict{font-weight:800;font-size:1.15rem;margin:0 0 8px}
+.verdict.CERTO{color:var(--ok)}.verdict.ERRADO{color:var(--bad)}
+.just{white-space:pre-wrap;border-top:1px solid var(--line);padding-top:10px;margin-top:10px;font-size:.96rem}
+.answers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px}
+.answers button{border:0;border-radius:10px;padding:12px 4px;font-weight:700;cursor:pointer;font-size:.95rem;color:#0f1117}
+.b-ok{background:var(--ok)}.b-idk{background:var(--idk)}.b-bad{background:var(--bad)}
+.hide{display:none}
+.foot{display:flex;justify-content:space-between;color:var(--mut);font-size:.8rem;margin-top:14px}
+.foot button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:4px 10px;cursor:pointer}
+.empty{text-align:center;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Flashcards — Terceiro Setor (Certo ou Errado)</h1>
+  <div class="filters" id="filters"></div>
+  <div class="stats">
+    <div class="stat ok"><b id="sOk">0</b>Acertei</div>
+    <div class="stat idk"><b id="sIdk">0</b>Não sei</div>
+    <div class="stat bad"><b id="sBad">0</b>Errei</div>
+  </div>
+  <div class="bar"><i id="bar"></i></div>
+  <div class="barlbl" id="barlbl"></div>
+  <div class="card" id="card"></div>
+  <div class="foot"><span id="info"></span><button id="reset">Zerar progresso</button></div>
+</div>
+<script>
+const RAW = [
+ {
+  "id": 0,
+  "subject": "Terceiro Setor",
+  "question": "A Associação Vida Plena, qualificada como OSCIP, pretende formalizar com o Ministério da Saúde um vínculo de cooperação para o fomento e a execução de atividades de interesse público. O instrumento adequado a essa parceria é o termo de parceria, ao passo que o contrato de gestão é o instrumento próprio das organizações sociais.",
+  "answer": "CERTO",
+  "justification": "O instrumento muda conforme a qualificação, e o material destaca que esse é um tópico frequentemente cobrado em provas. A OSCIP firma TERMO DE PARCERIA. A OS firma CONTRATO DE GESTÃO.\n\nArt. 9º, Lei 9.790/99: \"Fica instituído o Termo de Parceria, assim considerado o instrumento passível de ser firmado entre o Poder Público e as entidades qualificadas como Organizações da Sociedade Civil de Interesse Público destinado à formação de vínculo de cooperação entre as partes, para o fomento e a execução das atividades de interesse público previstas no art. 3º desta Lei.\"\n\nArt. 5º, Lei 9.637/98: \"Para os efeitos desta Lei, entende-se por contrato de gestão o instrumento firmado entre o Poder Público e a entidade qualificada como organização social, com vistas à formação de parceria entre as partes para fomento e execução de atividades relativas às áreas relacionadas no art. 1º.\""
+ },
+ {
+  "id": 1,
+  "subject": "Terceiro Setor",
+  "question": "O Instituto Saber, associação privada que atua em pesquisa científica, comprovou todos os requisitos do art. 2º, I, da Lei 9.637/98 e requereu a qualificação como organização social. Cumpridos esses requisitos, a autoridade competente fica obrigada a conceder a qualificação, pois o ato é vinculado.",
+  "answer": "ERRADO",
+  "justification": "A qualificação como OS é ato DISCRICIONÁRIO. Além dos requisitos do art. 2º, I, a lei exige um juízo de conveniência e oportunidade.\n\nArt. 2º, II, Lei 9.637/98: \"haver aprovação, quanto à conveniência e oportunidade de sua qualificação como organização social, do Ministro ou titular de órgão supervisor ou regulador da área de atividade correspondente ao seu objeto social e do Ministro de Estado da Administração Federal e Reforma do Estado.\"\n\nEm contraste, a qualificação como OSCIP é ato vinculado. Art. 1º, §2º, Lei 9.790/99: \"A outorga da qualificação prevista neste artigo é ato vinculado ao cumprimento dos requisitos instituídos por esta Lei.\""
+ },
+ {
+  "id": 2,
+  "subject": "Terceiro Setor",
+  "question": "A Associação Mãos Solidárias, pessoa jurídica de direito privado sem fins lucrativos, funciona regularmente há quatro anos, atua em assistência social e tem objetivos sociais e estatuto compatíveis com a Lei 9.790/99. Preenchidos esses requisitos, a qualificação como OSCIP é ato vinculado, e a entidade tem direito de obtê-la.",
+  "answer": "CERTO",
+  "justification": "Art. 1º, caput, Lei 9.790/99: \"Podem qualificar-se como Organizações da Sociedade Civil de Interesse Público as pessoas jurídicas de direito privado sem fins lucrativos que tenham sido constituídas e se encontrem em funcionamento regular há, no mínimo, 3 (três) anos, desde que os respectivos objetivos sociais e normas estatutárias atendam aos requisitos instituídos por esta Lei.\"\n\nArt. 1º, §2º: \"A outorga da qualificação prevista neste artigo é ato vinculado ao cumprimento dos requisitos instituídos por esta Lei.\"\n\nAssistência social é finalidade prevista no art. 3º, I, da mesma lei (\"promoção da assistência social\"). Segundo o material, o Ministério da Justiça decide o pedido em trinta dias e, deferido o pedido, emite o certificado em quinze dias (arts. 5º e 6º)."
+ },
+ {
+  "id": 3,
+  "subject": "Terceiro Setor",
+  "question": "A Associação Mata Viva, que atua na defesa do meio ambiente, deve requerer a qualificação como OSCIP ao Ministério da Justiça. A execução do termo de parceria será acompanhada e fiscalizada pelo órgão público da área ambiental e pelos Conselhos de Políticas Públicas da área.",
+  "answer": "CERTO",
+  "justification": "A qualificação da OSCIP é sempre concedida pelo Ministério da Justiça (art. 5º, Lei 9.790/99), e nunca pelo ministério correspondente à área de atuação da entidade. Esse é um ponto de contraste com a OS, cuja qualificação depende de aprovação do Ministro ou titular de órgão supervisor ou regulador da área de atividade correspondente ao objeto social (art. 2º, II, Lei 9.637/98).\n\nQuanto à execução, o material informa que, embora a qualificação seja conferida pelo Ministério da Justiça, a execução do objeto do termo de parceria será acompanhada e fiscalizada por órgão do Poder Público da área de atuação correspondente à atividade fomentada e pelos Conselhos de Políticas Públicas das áreas correspondentes, em cada nível de governo (art. 11). A celebração do termo deve ser precedida de consulta a esses Conselhos (art. 10, §1º)."
+ },
+ {
+  "id": 4,
+  "subject": "Terceiro Setor",
+  "question": "A Associação Amparo atua exclusivamente na promoção da assistência social e requereu qualificação como organização social. Como assistência social é área relevante de interesse público, a entidade atende ao requisito do art. 1º da Lei 9.637/98.",
+  "answer": "ERRADO",
+  "justification": "O rol de áreas da OS é taxativo, segundo a doutrina majoritária, e a assistência social está fora dele.\n\nArt. 1º, Lei 9.637/98: \"O Poder Executivo poderá qualificar como organizações sociais pessoas jurídicas de direito privado, sem fins lucrativos, cujas atividades sejam dirigidas ao ensino, à pesquisa científica, ao desenvolvimento tecnológico, à proteção e preservação do meio ambiente, à cultura e à saúde, atendidos aos requisitos previstos nesta Lei.\"\n\nAs áreas da OS são: ensino, pesquisa científica, desenvolvimento tecnológico, meio ambiente, cultura e saúde. Já a OSCIP pode atuar em assistência social, pois o art. 3º, I, da Lei 9.790/99 prevê \"promoção da assistência social\"."
+ },
+ {
+  "id": 5,
+  "subject": "Terceiro Setor",
+  "question": "Uma associação elabora dois estatutos: um para requerer a qualificação como OS e outro para requerer a qualificação como OSCIP. Ela entende que a presença de representantes do Poder Público no órgão de deliberação superior é obrigatória nos dois casos. Esse entendimento está correto.",
+  "answer": "ERRADO",
+  "justification": "A presença de representantes do Poder Público no órgão de deliberação superior é OBRIGATÓRIA para a OS e FACULTATIVA para a OSCIP.\n\nArt. 2º, I, \"d\", Lei 9.637/98 (OS): \"previsão de participação, no órgão colegiado de deliberação superior, de representantes do Poder Público e de membros da comunidade, de notória capacidade profissional e idoneidade moral;\"\n\nNa OSCIP, o material indica que a lei exige Conselho Fiscal e que não há exigência de representantes do Poder Público, embora eles possam estar presentes e ser remunerados. A OS, por sua vez, tem conselho de administração e diretoria, e a lei não exige Conselho Fiscal. O material também registra que é permitida a participação de servidores públicos na composição de conselho ou diretoria da OSCIP (art. 4º, parágrafo único, Lei 9.790/99)."
+ },
+ {
+  "id": 6,
+  "subject": "Terceiro Setor",
+  "question": "A Cooperativa Raízes do Campo, voltada ao combate à pobreza e à geração de trabalho e renda no meio rural, dedica-se a finalidades previstas no art. 3º da Lei 9.790/99. Em razão disso, a cooperativa pode obter a qualificação como OSCIP.",
+  "answer": "ERRADO",
+  "justification": "Existe um rol de entidades que ficam impedidas de se qualificar como OSCIP ainda que se dediquem às finalidades do art. 3º. As cooperativas estão nesse rol (inciso X).\n\nArt. 2º, Lei 9.790/99: \"Não são passíveis de qualificação como Organizações da Sociedade Civil de Interesse Público, ainda que se dediquem de qualquer forma às atividades descritas no art. 3º desta Lei:\nI - as sociedades comerciais;\nII - os sindicatos, as associações de classe ou de representação de categoria profissional;\nIII - as instituições religiosas ou voltadas para a disseminação de credos, cultos, práticas e visões devocionais e confessionais;\nIV - as organizações partidárias e assemelhadas, inclusive suas fundações;\nV - as entidades de benefício mútuo destinadas a proporcionar bens ou serviços a um círculo restrito de associados ou sócios;\nVI - as entidades e empresas que comercializam planos de saúde e assemelhados;\nVII - as instituições hospitalares privadas não gratuitas e suas mantenedoras;\nVIII - as escolas privadas dedicadas ao ensino formal não gratuito e suas mantenedoras;\nIX - as organizações sociais;\nX - as cooperativas;\nXI - as fundações públicas;\nXII - as fundações, sociedades civis ou associações de direito privado criadas por órgão público ou por fundações públicas;\nXIII - as organizações creditícias que tenham quaisquer tipos de vinculação com o sistema financeiro nacional a que se refere o art. 192 da Constituição Federal.\""
+ },
+ {
+  "id": 7,
+  "subject": "Terceiro Setor",
+  "question": "Um fornecedor pretende cobrar judicialmente uma dívida do SESI (Serviço Social da Indústria). A ação deve ser proposta na Justiça Estadual, e o SESI litiga como pessoa jurídica de direito privado comum, sem os privilégios processuais da Fazenda Pública.",
+  "answer": "CERTO",
+  "justification": "Súmula 516 do STF: \"O Serviço Social da Indústria (SESI) está sujeito à jurisdição da justiça estadual.\"\n\nOs serviços sociais autônomos (Sistema S), mesmo recebendo recursos públicos, não gozam de prerrogativas estatais fiscais, processuais ou contratuais. O STF decidiu que as entidades paraestatais com personalidade jurídica de direito privado não fazem jus aos privilégios processuais concedidos à Fazenda Pública (AgRg no AI 783136, Segunda Turma, Rel. Min. Eros Grau, j. 20.04.2010).\n\nPela mesma razão, o Ministério Público Federal não atua perante essas entidades: são pessoas jurídicas de direito privado, entes de colaboração e não integrantes da Administração Pública (ACO 1953, Plenário, Rel. Min. Ricardo Lewandowski, j. 18.12.2013). Também ficam fora da imunidade tributária recíproca do art. 150, VI, \"a\", da CF/88, que alcança as entidades de direito público. Podem, contudo, ser enquadradas na imunidade do art. 150, VI, \"c\", se forem entidades filantrópicas."
+ },
+ {
+  "id": 8,
+  "subject": "Terceiro Setor",
+  "question": "O SESC contratou novos empregados pelo regime da CLT mediante seleção própria. A contratação é regular, pois o pessoal do Sistema S é celetista e a admissão independe de concurso público.",
+  "answer": "CERTO",
+  "justification": "O pessoal do Sistema S é contratado pelo regime celetista e a admissão independe de concurso público (RE 789874, Plenário, Rel. Min. Teori Zavascki, j. 17.09.2014, Repercussão Geral, Tema 569).\n\nOs serviços sociais autônomos são pessoas jurídicas de direito privado, instituídas mediante autorização legislativa, sem fins lucrativos, e têm a prerrogativa de autogerir seus recursos, inclusive na definição de seus quadros de cargos e salários. Eles se mantêm por contribuições dos empregadores sobre a folha salarial, nos termos do art. 240 da CF/88: \"Ficam ressalvadas do disposto no art. 195 as atuais contribuições compulsórias dos empregadores sobre a folha de salários, destinadas às entidades privadas de serviço social e de formação profissional vinculadas ao sistema sindical.\""
+ },
+ {
+  "id": 9,
+  "subject": "Terceiro Setor",
+  "question": "O SENAI, entidade do Sistema S, contratou uma obra com base em seu regulamento próprio de licitações e contratos, devidamente publicado, e respeitou os princípios da licitação pública. Segundo a jurisprudência do TCU, esse procedimento é regular.",
+  "answer": "CERTO",
+  "justification": "O TCU afastou a aplicação da Lei 8.666/93 e da Lei 10.520/02 (Lei dos pregões) às entidades do Sistema S, porque a expressão \"entidades controladas\", constante do parágrafo único do art. 1º da Lei 8.666/93, refere-se às empresas públicas e sociedades de economia mista (TCU, Primeira Câmara, Acórdão 5613/2012). Por isso, os serviços sociais autônomos devem obedecer às regras previstas em seus regulamentos próprios devidamente publicados (Regulamento Simplificado do Sistema \"S\"), respeitados os princípios inerentes à licitação pública.\n\nEssas entidades continuam sujeitas ao controle: devem prestar contas ordinariamente ao Tribunal de Contas da União. Art. 183, Decreto-Lei 200/67: \"As entidades e organizações em geral, dotadas de personalidade jurídica de direito privado, que recebem contribuições parafiscais e prestam serviços de interesse público ou social, estão sujeitas à fiscalização do Estado nos termos e condições estabelecidas na legislação pertinente a cada uma.\""
+ },
+ {
+  "id": 10,
+  "subject": "Terceiro Setor",
+  "question": "A FAPEX (Fundação de Apoio à Pesquisa e Extensão), ligada a uma universidade pública, é fundação pública integrante da Administração Indireta. Por isso, ela contrata empregados mediante concurso público e firma seus contratos mediante licitação.",
+  "answer": "ERRADO",
+  "justification": "As entidades de apoio são pessoas jurídicas de direito privado sem fins lucrativos, instituídas como fundações, associações ou cooperativas. Quando têm forma de fundação, são fundações PRIVADAS, formadas por destinação de patrimônio de particulares e submetidas às regras do Direito Civil. Não são fundações públicas.\n\nElas foram previstas na Lei 8.958/94, regulamentada pelo Decreto 5.205/04, para permitir que as instituições federais de ensino superior e de pesquisa contratem, com dispensa de licitação (art. 24, XIII, da Lei 8.666/93), \"as instituições criadas com a finalidade de dar apoio a projetos de pesquisa, ensino e extensão e de desenvolvimento institucional, científico e tecnológico de interesse das instituições federais contratantes\".\n\nComo não são criadas por lei nem mantidas pela União, submetem-se ao regime privado: seus contratos independem de licitação e a contratação de seus empregados dispensa concurso público. Devem ter credenciamento prévio junto ao Ministério da Educação e ao Ministério da Ciência e Tecnologia, renovado a cada 5 anos (art. 2º, III, Lei 8.958/94)."
+ },
+ {
+  "id": 11,
+  "subject": "Terceiro Setor",
+  "question": "Um Estado qualificou várias entidades da área da saúde como organização social e dispensou licitação para escolher entre elas. O STF entende que a qualificação como OS configura credenciamento, hipótese em que a licitação é incabível.",
+  "answer": "CERTO",
+  "justification": "A atribuição do título jurídico de legitimação da entidade por meio da qualificação \"configura hipótese de credenciamento, no qual não incide a licitação pela própria natureza jurídica do ato, que não é contrato, e pela inexistência de qualquer competição, já que todos os interessados podem alcançar o mesmo objetivo, de modo includente, e não excludente\" (ADI 1923, Plenário, Rel. Min. Luiz Fux, j. 16.04.2015).\n\nSegundo o material, nenhuma entidade nasce com o nome de organização social. Ela é criada como associação ou fundação privada e, habilitando-se perante o Poder Público, recebe a qualificação, que é título jurídico outorgado e cancelado pelo Poder Público. Na mesma ADI 1923, o contrato de gestão foi descrito como instrumento que mais se aproxima de um convênio."
+ },
+ {
+  "id": 12,
+  "subject": "Terceiro Setor",
+  "question": "Um Estado celebrou contrato de gestão com uma OS da área da saúde, cedeu a ela servidores públicos estaduais, cuja remuneração continua a ser paga pelo órgão de origem, e concedeu permissão de uso de bens públicos mediante dispensa de licitação. Ambas as medidas figuram entre os incentivos que a OS pode receber do Poder Público.",
+  "answer": "CERTO",
+  "justification": "O material lista os incentivos que as OS podem receber para cumprir o contrato de gestão:\nI) recursos orçamentários (podem receber dinheiro público);\nII) cessão de bens públicos, mediante permissão de uso, dispensada licitação;\nIII) cessão especial de servidor, com ônus para o órgão de origem do servidor cedido, que continua recebendo sua remuneração dos cofres públicos;\nIV) contratação com dispensa de licitação, para que prestem serviço a órgãos e entidades da Administração Pública, conforme art. 24, XXIV, da Lei 8.666/93, desde que a atividade esteja prevista no contrato de gestão.\n\nPor receber recursos orçamentários, a OS fica submetida ao controle do Tribunal de Contas, e a execução do contrato de gestão é supervisionada pelo órgão ou entidade da área de atuação, em controle de resultado (art. 8º, Lei 9.637/98)."
+ },
+ {
+  "id": 13,
+  "subject": "Terceiro Setor",
+  "question": "Empregados contratados por uma OS são servidores públicos. Por isso, sua remuneração depende de fixação em lei, submete-se ao teto do art. 37, XI, da CF/88 e o ingresso exige concurso público.",
+  "answer": "ERRADO",
+  "justification": "Os empregados das organizações sociais são empregados privados, e não servidores públicos. A remuneração não precisa ser fixada em lei (art. 37, X, CF/88) nem se submeter ao teto remuneratório (art. 37, XI, CF/88): basta estar prevista no contrato de trabalho firmado entre a OS e o empregado. A exigência de concurso público do art. 37, II, da CF/88 também é inaplicável. O STF exigiu, porém, que a OS estabeleça procedimento objetivo e impessoal para contratar seus funcionários.\n\nA lei controla a remuneração por outro caminho: o contrato de gestão. Art. 7º, II, Lei 9.637/98: \"a estipulação dos limites e critérios para despesa com remuneração e vantagens de qualquer natureza a serem percebidas pelos dirigentes e empregados das organizações sociais, no exercício de suas funções.\""
+ },
+ {
+  "id": 14,
+  "subject": "Terceiro Setor",
+  "question": "O Município pretende formalizar parceria com o SENAI (Sistema S), com um contrato de gestão com OS e com um termo de parceria com OSCIP. A Procuradoria afirma que a Lei 13.019/14 é a norma aplicável a todas essas três parcerias.",
+  "answer": "ERRADO",
+  "justification": "A Lei 13.019/14 exclui expressamente essas parcerias do seu regime. Segundo o rol apresentado no material (Rafael Carvalho Rezende Oliveira), os institutos da Lei 13.019/14 são inaplicáveis a:\nI) transferências de recursos homologadas pelo Congresso Nacional ou autorizadas pelo Senado Federal, quando as disposições de tratados, acordos e convenções internacionais conflitarem com a lei e os recursos forem integralmente de fonte externa;\nII) contratos de gestão celebrados com Organizações Sociais, na forma da Lei 9.637/98;\nIII) convênios e contratos com entidades filantrópicas e sem fins lucrativos no âmbito do SUS, nos termos do § 1º do art. 199 da CF/88;\nIV) termos de compromisso cultural, mencionados no § 1º do art. 9º da Lei 13.019/14;\nV) termos de parceria celebrados com OSCIPs, desde que cumpridos os requisitos da Lei 9.790/99;\nVI) transferências referidas no art. 2º da Lei 10.845/04 e nos arts. 5º e 22 da Lei 11.947/09;\nVII) pagamentos a título de anuidades, contribuições ou taxas associativas em favor de organismos internacionais ou de entidades obrigatoriamente constituídas por membros de Poder ou do Ministério Público, dirigentes de órgão ou entidade da administração pública, pessoas jurídicas de direito público interno ou integrantes da administração pública;\nVIII) parcerias entre a administração pública e os Serviços Sociais Autônomos (Sistema S)."
+ },
+ {
+  "id": 15,
+  "subject": "Terceiro Setor",
+  "question": "Uma associação beneficente sem fins lucrativos pretende firmar termo de fomento com o Município. A Secretaria sustenta que, antes disso, a entidade precisa obter qualificação formal como OSC, por ato administrativo, nos moldes do que ocorre com o título de OS e de OSCIP.",
+  "answer": "ERRADO",
+  "justification": "A Lei 13.019/14 dispensa qualquer qualificação formal da entidade privada como OSC por ato administrativo, diferentemente do que ocorre com OS e OSCIP. Para ser considerada OSC, basta que a entidade se enquadre em uma das três espécies do art. 2º, I:\n\n\"I - Organização da sociedade civil:\na) entidade privada sem fins lucrativos que não distribua entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva;\nb) as sociedades cooperativas previstas na Lei nº 9.867, de 10 de novembro de 1999; as integradas por pessoas em situação de risco ou vulnerabilidade pessoal ou social; as alcançadas por programas e ações de combate à pobreza e de geração de trabalho e renda; as voltadas para fomento, educação e capacitação de trabalhadores rurais ou capacitação de agentes de assistência técnica e extensão rural; e as capacitadas para execução de atividades ou de projetos de interesse público e de cunho social.\nc) as organizações religiosas que se dediquem a atividades ou a projetos de interesse público e de cunho social distintas das destinadas a fins exclusivamente religiosos;\""
+ },
+ {
+  "id": 16,
+  "subject": "Terceiro Setor",
+  "question": "O Município identificou a necessidade de ampliar o número de vagas em creches, elaborou o plano de trabalho com transferência voluntária de recursos e selecionou a OSC por chamamento público. O instrumento adequado a essa parceria é o termo de colaboração.",
+  "answer": "CERTO",
+  "justification": "A Lei 13.019/14 prevê três instrumentos com as OSC:\nI) Termo de Colaboração: adotado pela administração pública em caso de transferências voluntárias de recursos para consecução de planos de trabalho PROPOSTOS PELA ADMINISTRAÇÃO PÚBLICA, em regime de mútua cooperação com OSC selecionadas por chamamento público.\nII) Termo de Fomento: celebrado para finalidades de interesse público e recíproco cujos planos de trabalho são PROPOSTOS PELAS OSC, também selecionadas por chamamento público e com transferência voluntária de recursos.\nIII) Acordo de Cooperação: parceria que NÃO envolve transferência de recursos financeiros.\n\nComo a proposta partiu da Administração e envolve repasse de recursos, o caso é de termo de colaboração. Art. 1º, Lei 13.019/14: \"Esta Lei institui normas gerais para as parcerias entre a administração pública e organizações da sociedade civil, em regime de mútua cooperação, para a consecução de finalidades de interesse público e recíproco, mediante a execução de atividades ou de projetos previamente estabelecidos em planos de trabalho inseridos em termos de colaboração, em termos de fomento ou em acordos de cooperação.\""
+ },
+ {
+  "id": 17,
+  "subject": "Terceiro Setor",
+  "question": "A Prefeitura pretende firmar acordo de cooperação com uma OSC, limitado à doação de bens públicos para a execução de projeto de interesse recíproco. A Prefeitura afirma que o acordo de cooperação dispensa o chamamento público em qualquer hipótese, de modo que a doação poderá ser formalizada diretamente.",
+  "answer": "ERRADO",
+  "justification": "O acordo de cooperação dispensa o chamamento público apenas quando não há transferência de recursos financeiros. A regra tem uma exceção: haverá chamamento público também para a celebração de acordos de cooperação quando o objeto envolver a celebração de comodato, doação de bens ou outra forma de compartilhamento de recurso patrimonial (art. 29, Lei 13.019/14).\n\nComo a doação de bens é compartilhamento de recurso patrimonial, o chamamento é exigido. O material resume o acordo de cooperação assim: independentemente de quem proponha a parceria, o aspecto fundamental é a ausência de transferência de recursos financeiros, dispensando-se o chamamento, exceto quando envolver comodato, doação de bens ou outra forma de compartilhamento de recurso patrimonial."
+ },
+ {
+  "id": 18,
+  "subject": "Terceiro Setor",
+  "question": "A União pretende celebrar termo de fomento com recursos decorrentes de emenda parlamentar à lei orçamentária anual. Como a celebração de termos de colaboração e de fomento depende, em regra, de prévio chamamento público, essa exigência também alcança as parcerias financiadas por emendas parlamentares.",
+  "answer": "ERRADO",
+  "justification": "Em regra, a celebração de termos de colaboração ou de termos de fomento depende da prévia realização de chamamento público, exceto aqueles que envolvem recursos decorrentes de emendas parlamentares às leis orçamentárias anuais (art. 24 c/c arts. 29 e 35, I, Lei 13.019/14).\n\nChamamento público é o procedimento destinado a selecionar OSC para firmar parceria por termo de colaboração ou de fomento, com observância dos princípios da isonomia, da legalidade, da impessoalidade, da moralidade, da igualdade, da publicidade, da probidade administrativa, da vinculação ao instrumento convocatório e do julgamento objetivo, dentre outros (art. 2º, XII).\n\nArt. 24, §2º: \"É vedado admitir, prever, incluir ou tolerar, nos atos de convocação, cláusulas ou condições que comprometam, restrinjam ou frustrem o seu caráter competitivo em decorrência de qualquer circunstância impertinente ou irrelevante para o específico objeto da parceria, admitidos: I - a seleção de propostas apresentadas exclusivamente por concorrentes sediados ou com representação atuante e reconhecida na unidade da Federação onde será executado o objeto da parceria; II - o estabelecimento de cláusula que delimite o território ou a abrangência da prestação de atividades ou da execução de projetos, conforme estabelecido nas políticas setoriais.\""
+ },
+ {
+  "id": 19,
+  "subject": "Terceiro Setor",
+  "question": "Houve iminência de paralisação de atividades de relevante interesse público executadas no âmbito de parceria já celebrada. Diante da urgência, a Administração pode dispensar o chamamento público para a nova parceria pelo prazo de até 180 dias, decidindo de forma discricionária e mediante justificativa motivada.",
+  "answer": "CERTO",
+  "justification": "Art. 30, Lei 13.019/14: \"A administração pública poderá dispensar a realização do chamamento público:\nI - no caso de urgência decorrente de paralisação ou iminência de paralisação de atividades de relevante interesse público, pelo prazo de até cento e oitenta dias;\nII - nos casos de guerra, calamidade pública, grave perturbação da ordem pública ou ameaça à paz social;\nIII - quando se tratar da realização de programa de proteção a pessoas ameaçadas ou em situação que possa comprometer a sua segurança;\nIV - (VETADO).\nV - (VETADO);\nVI - no caso de atividades voltadas ou vinculadas a serviços de educação, saúde e assistência social, desde que executadas por organizações da sociedade civil PREVIAMENTE CREDENCIADAS pelo órgão gestor da respectiva política.\"\n\nAssim como ocorre na dispensa de licitação, a dispensa de chamamento é facultativa: cabe à Administração decidir discricionariamente entre dispensar ou abrir o chamamento, mediante adequada motivação. Os casos de dispensa e de inexigibilidade devem ser conduzidos por processo administrativo em que o ente público apresente justificativa dos motivos que ensejaram a celebração direta do termo (art. 32, caput)."
+ },
+ {
+  "id": 20,
+  "subject": "Terceiro Setor",
+  "question": "Uma Secretaria constatou que apenas uma OSC reúne condições de atingir as metas da parceria, em razão da natureza singular do objeto, situação distinta daquelas descritas nos incisos I e II do art. 31 da Lei 13.019/14. Mesmo assim, o chamamento público é inexigível, pois o rol do art. 31 é exemplificativo.",
+  "answer": "CERTO",
+  "justification": "Art. 31, Lei 13.019/14: \"Será considerado inexigível o chamamento público na hipótese de inviabilidade de competição entre as organizações da sociedade civil, em razão da natureza singular do objeto da parceria ou se as metas somente puderem ser atingidas por uma entidade específica, especialmente quando:\nI - o objeto da parceria constituir incumbência prevista em acordo, ato ou compromisso internacional, no qual sejam indicadas as instituições que utilizarão os recursos;\nII - a parceria decorrer de transferência para organização da sociedade civil que esteja autorizada em lei na qual seja identificada expressamente a entidade beneficiária, inclusive quando se tratar da subvenção prevista no inciso I do § 3º do art. 12 da Lei nº 4.320, de 17 de março de 1964, observado o disposto no art. 26 da Lei Complementar no 101, de 4 de maio de 2000.\"\n\nO chamamento é inexigível sempre que for impossível haver competição entre OSC, e as duas situações listadas são apenas exemplificativas. Ao contrário da dispensa, a inexigibilidade não comporta margem de discricionariedade do gestor. Exige-se justificativa em processo administrativo (art. 32, caput), e é admitida impugnação no prazo de cinco dias a contar da publicação (art. 32, §2º)."
+ },
+ {
+  "id": 21,
+  "subject": "Terceiro Setor",
+  "question": "A OSC Alvorada tem como dirigente a cunhada do Secretário Municipal de Assistência Social e pretende firmar termo de fomento com o próprio Município. Há impedimento legal à celebração dessa parceria.",
+  "answer": "CERTO",
+  "justification": "Art. 39, Lei 13.019/14: \"Ficará impedida de celebrar qualquer modalidade de parceria prevista nesta Lei a organização da sociedade civil que:\nI - não esteja regularmente constituída ou, se estrangeira, não esteja autorizada a funcionar no território nacional;\nII - esteja omissa no dever de prestar contas de parceria anteriormente celebrada;\nIII - tenha como dirigente membro de Poder ou do Ministério Público, ou dirigente de órgão ou entidade da administração pública da mesma esfera governamental na qual será celebrado o termo de colaboração ou de fomento, estendendo-se a vedação aos respectivos cônjuges ou companheiros, bem como parentes em linha reta, colateral ou por afinidade, até o segundo grau;\nIV - tenha tido as contas rejeitadas pela administração pública nos últimos cinco anos, exceto se a) for sanada a irregularidade que motivou a rejeição e quitados os débitos eventualmente imputados; b) for reconsiderada ou revista a decisão pela rejeição; c) a apreciação das contas estiver pendente de decisão sobre recurso com efeito suspensivo;\nV - tenha sido punida com uma das seguintes sanções, pelo período que durar a penalidade: a) suspensão de participação em licitação e impedimento de contratar com a administração; b) declaração de inidoneidade para licitar ou contratar com a administração pública; c) a prevista no inciso II do art. 73 desta Lei; d) a prevista no inciso III do art. 73 desta Lei;\nVI - tenha tido contas de parceria julgadas irregulares ou rejeitadas por Tribunal ou Conselho de Contas de qualquer esfera da Federação, em decisão irrecorrível, nos últimos 8 (oito) anos;\nVII - tenha entre seus dirigentes pessoa: a) cujas contas relativas a parcerias tenham sido julgadas irregulares ou rejeitadas por Tribunal ou Conselho de Contas de qualquer esfera da Federação, em decisão irrecorrível, nos últimos 8 (oito) anos; b) julgada responsável por falta grave e inabilitada para o exercício de cargo em comissão ou função de confiança, enquanto durar a inabilitação; c) considerada responsável por ato de improbidade, enquanto durarem os prazos estabelecidos nos incisos I, II e III do art. 12 da Lei nº 8.429, de 2 de junho de 1992.\"\n\nA cunhada é parente por afinidade em linha colateral de segundo grau do Secretário, dirigente de órgão da administração da mesma esfera governamental, o que atrai o inciso III."
+ },
+ {
+  "id": 22,
+  "subject": "Terceiro Setor",
+  "question": "Um Município pretende celebrar termo de colaboração com uma OSC para que ela fiscalize obras particulares e aplique multas aos infratores, em exercício de poder de polícia. A parceria é juridicamente possível, desde que a OSC seja selecionada por chamamento público.",
+  "answer": "ERRADO",
+  "justification": "É vedada a celebração de parcerias que tenham por objeto, envolvam ou incluam, direta ou indiretamente, delegação das funções de regulação, de fiscalização, de exercício do poder de polícia ou de outras atividades exclusivas de Estado (art. 40, Lei 13.019/14).\n\nA vedação se aplica ainda que haja chamamento público, pois recai sobre o objeto da parceria. Fiscalizar obras e aplicar multas é exercício de poder de polícia, atividade exclusiva de Estado, e por isso não pode ser delegada a OSC por termo de colaboração ou de fomento."
+ },
+ {
+  "id": 23,
+  "subject": "Terceiro Setor",
+  "question": "Ao executar um termo de fomento, a OSC Futuro Bom adquiriu equipamentos permanentes essenciais ao objeto e pagou a remuneração da equipe do projeto, com os encargos trabalhistas, usando recursos da parceria. Para fazê-lo, a OSC precisava realizar licitação e seguir regulamento próprio de compras, e o pagamento da equipe gerou vínculo trabalhista com o Poder Público.",
+  "answer": "ERRADO",
+  "justification": "A OSC tem responsabilidade exclusiva pelo gerenciamento administrativo e financeiro dos recursos recebidos, inclusive quanto às despesas de custeio, investimento e pessoal. Segundo o material, ela dispensa licitação e regulamento próprio para empregar os recursos transferidos pela Administração. O pagamento de remuneração da equipe contratada pela OSC com recursos da parceria também não gera vínculo trabalhista com o poder público.\n\nHá limites: é vedada a utilização dos recursos para finalidade alheia ao objeto da parceria, bem como pagar, a qualquer título, servidor ou empregado público com recursos vinculados à parceria, salvo nas hipóteses previstas em lei específica e na LDO.\n\nArt. 46, Lei 13.019/14, segundo o material, permite pagar com recursos vinculados, entre outras despesas:\nI) remuneração da equipe encarregada da execução do plano de trabalho, inclusive de pessoal próprio da organização da sociedade civil, durante a vigência da parceria, compreendendo as despesas com pagamentos de impostos, contribuições sociais, Fundo de Garantia do Tempo de Serviço - FGTS, férias, décimo terceiro salário, salários proporcionais, verbas rescisórias e demais encargos sociais e trabalhistas;\nII) diárias referentes a deslocamento, hospedagem e alimentação nos casos em que a execução do objeto da parceria assim o exija;\nIII) custos indiretos necessários à execução do objeto, seja qual for a proporção em relação ao valor total da parceria;\nIV) aquisição de equipamentos e materiais permanentes essenciais à consecução do objeto e serviços de adequação de espaço físico, desde que necessários à instalação dos referidos equipamentos e materiais."
+ },
+ {
+  "id": 24,
+  "subject": "Terceiro Setor",
+  "question": "A Administração deixou escoar o prazo de 150 dias para analisar a prestação de contas de uma OSC. Esgotado esse prazo, ocorre preclusão: a Administração perde a possibilidade de apreciar a prestação de contas e de exigir ressarcimento de eventual dano.",
+  "answer": "ERRADO",
+  "justification": "O prazo de 150 dias para a Administração analisar a prestação de contas, contado do recebimento ou do cumprimento de diligência por ela determinada, é prorrogável por igual período, desde que justificado (art. 71, Lei 13.019/14). Trata-se de PRAZO IMPRÓPRIO: a falta de apreciação dentro do prazo não significa impossibilidade de apreciação em data posterior, nem veda medidas saneadoras, punitivas ou destinadas a ressarcir danos aos cofres públicos.\n\nDecorrido o prazo legal, quando constatada a ausência de dolo da OSC ou de seus agentes, e sem prejuízo da atualização monetária, fica afastada a incidência de juros de mora sobre débitos eventualmente apurados, no período entre o fim dos 150 dias e a data em que foi ultimada a apreciação.\n\nDemais prazos apontados no material: a OSC presta contas em até 90 dias do término da vigência da parceria, ou ao final de cada exercício se a duração exceder um ano, prorrogáveis por até 30 dias, desde que devidamente justificado (art. 69 e §4º). A OSC mantém em arquivo os documentos originais por 10 anos, contados do dia útil subsequente ao da prestação de contas (art. 68, parágrafo único). Constatada irregularidade ou ausência de prestação, concede-se prazo de 45 dias, prorrogável por igual período, para sanar (art. 70). A prestação de contas ocorre em plataforma eletrônica, visível a qualquer interessado (art. 65)."
+ }
+];
+const KEY = "fc_terceiro_setor_v1";
+let state;
+try { state = JSON.parse(localStorage.getItem(KEY)) || null; } catch(e) { state = null; }
+if (!state) state = {session: 0, cards: {}, stats: {ok: 0, idk: 0, bad: 0}};
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} }
+function cs(id){ if(!state.cards[id]) state.cards[id] = {interval: 1, due: 0}; return state.cards[id]; }
+let subject = "ALL", current = null, last = undefined;
+const subjects = [...new Set(RAW.map(c => c.subject))];
+
+function pool(){ return RAW.filter(c => subject === "ALL" || c.subject === subject).map(c => c.id); }
+function dueCards(){ return pool().filter(id => cs(id).due <= state.session); }
+function pickNext(exclude){
+  let due = dueCards();
+  if (exclude !== undefined) due = due.filter(id => id !== exclude);
+  if (!due.length) return null;
+  due.sort((a,b) => cs(a).due - cs(b).due);
+  const n = Math.min(5, due.length);
+  return due[Math.floor(Math.random()*n)];
+}
+function renderFilters(){
+  const f = document.getElementById("filters"); f.innerHTML = "";
+  [["ALL","Todas as matérias"], ...subjects.map(s => [s,s])].forEach(([v,l]) => {
+    const b = document.createElement("button"); b.textContent = l;
+    if (v === subject) b.className = "on";
+    b.onclick = () => { subject = v; last = undefined; next(); renderFilters(); };
+    f.appendChild(b);
+  });
+}
+function renderStats(){
+  document.getElementById("sOk").textContent = state.stats.ok;
+  document.getElementById("sIdk").textContent = state.stats.idk;
+  document.getElementById("sBad").textContent = state.stats.bad;
+  const ids = pool(), mastered = ids.filter(id => cs(id).interval >= 10).length;
+  document.getElementById("bar").style.width = (ids.length ? mastered/ids.length*100 : 0) + "%";
+  document.getElementById("barlbl").textContent = mastered + " de " + ids.length + " cards dominados";
+  document.getElementById("info").textContent = dueCards().length + " disponíveis para revisão";
+}
+function el(tag, cls, text){ const e = document.createElement(tag); if(cls) e.className = cls; if(text !== undefined) e.textContent = text; return e; }
+function showFront(){
+  const c = RAW[current], box = document.getElementById("card"); box.innerHTML = "";
+  box.appendChild(el("div","tag",c.subject + " · card " + (c.id+1)));
+  box.appendChild(el("div","q",c.question));
+  const b = el("button","primary","Ver resposta"); b.onclick = showBack; box.appendChild(b);
+}
+function showBack(){
+  const c = RAW[current], box = document.getElementById("card"); box.innerHTML = "";
+  box.appendChild(el("div","tag",c.subject + " · card " + (c.id+1)));
+  box.appendChild(el("div","q",c.question));
+  box.appendChild(el("div","verdict " + c.answer, c.answer === "CERTO" ? "Gabarito: CERTO ✅" : "Gabarito: ERRADO ❌"));
+  box.appendChild(el("div","just",c.justification));
+  const row = el("div","answers");
+  [["ok","b-ok","✅ Acertei"],["idk","b-idk","🤔 Não sei"],["bad","b-bad","❌ Errei"]].forEach(([k,cls,t]) => {
+    const b = el("button",cls,t); b.onclick = () => answer(k); row.appendChild(b);
+  });
+  box.appendChild(row);
+}
+function answer(kind){
+  const s = cs(current);
+  if (kind === "ok") s.interval = s.interval * 2.5;
+  else if (kind === "bad") s.interval = 1;
+  else s.interval = s.interval * 0.6;
+  s.interval = Math.round(s.interval*100)/100;
+  state.stats[kind]++;
+  state.session += 1;
+  s.due = state.session + s.interval;
+  last = current; save(); next();
+}
+function next(){
+  renderStats();
+  current = pickNext(last);
+  if (current === null && last !== undefined) current = pickNext(undefined);
+  const box = document.getElementById("card");
+  if (current === null){
+    box.innerHTML = ""; box.className = "card empty";
+    box.appendChild(el("p","","Nenhum card disponível agora."));
+    const b = el("button","primary","Revisar mesmo assim");
+    b.onclick = () => { const ids = pool(); state.session = Math.min(...ids.map(id => cs(id).due)); save(); next(); };
+    box.appendChild(b); return;
+  }
+  box.className = "card"; showFront();
+}
+document.getElementById("reset").onclick = () => {
+  if (confirm("Zerar todo o progresso?")) { state = {session:0,cards:{},stats:{ok:0,idk:0,bad:0}}; save(); last = undefined; next(); }
+};
+renderFilters(); next();
+</script>
+</body>
+</html>
