@@ -411,7 +411,7 @@ details.err .just { background: var(--surface-2); border-radius: 4px; padding: 1
 .taunt p { margin: 0; background: var(--dark); color: var(--on-bg); padding: 10px 14px; border-radius: 10px; font-weight: 500; font-size: 15px; line-height: 1.4; position: relative; overflow-wrap: anywhere; }
 .taunt p::before { content: ""; position: absolute; right: 22%; top: -8px; border: 8px solid transparent; border-top: 0; border-bottom-color: var(--frame); }
 .rivalrow { display: contents; }
-.go { display: grid; }
+.go { display: grid; gap: 10px; }
 /* Questão ao lado do tabuleiro (computador e telefone deitado): o tabuleiro continua aceso e à vista,
    com o lance marcado nele, e o resto da tela escurece. O JS (placeVeil) escolhe o lado e mede o espaço. */
 .veil-spot { display: none; position: fixed; border-radius: 4px; box-shadow: 0 0 0 200vmax var(--shade); pointer-events: none; }
@@ -557,6 +557,15 @@ body.cards .top p { display: none; }
   body.cards .buddy .speech { padding: 8px 10px; }
   body.cards .buddy .speech .line { font-size: 13px; min-height: 0; }
 }
+/* ---- Sinalizar questão com problema (aparece depois da resposta, nos dois modos) ---- */
+.flag { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 6px; }
+.flag-btn { align-self: flex-start; background: transparent; color: var(--muted); border-style: dashed; box-shadow: none; font-weight: 500; }
+.flag-btn:hover, .flag-btn:focus-visible { color: var(--ink); background: var(--surface-2); }
+.flag .note { margin: 0; }
+.flag-form { display: flex; flex-direction: column; gap: 6px; }
+.flag-form select, .flag-form input { font: inherit; font-size: 14px; border: 2px solid var(--frame); border-radius: 4px; padding: 6px 8px; background: var(--field); color: var(--ink); width: 100%; min-height: 36px; }
+.linkbtn { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer; }
+.seg { flex-wrap: wrap; }
 </style>
 
 <div class="hero" id="hero" aria-hidden="true"><img id="hero-img" alt=""><video id="hero-vid" muted loop playsinline preload="none" hidden></video></div>
@@ -710,6 +719,14 @@ Direito Penal;O crime é doloso quando o agente quis o resultado.;C;Art. 18, I, 
         <div class="seg" role="group" aria-label="O que mostrar">
           <button type="button" id="rv-fila" aria-pressed="true">Fila de fixação</button>
           <button type="button" id="rv-erros" aria-pressed="false">Erros por partida</button>
+          <button type="button" id="rv-flags" aria-pressed="false">Sinalizadas</button>
+        </div>
+        <div id="view-flags" class="block" hidden>
+          <h2>Questões sinalizadas</h2>
+          <p class="note">Questões que você marcou como possivelmente erradas, com justificativa ruim ou enunciado confuso. Enquanto estiverem aqui, elas não são sorteadas em nenhum dos modos.</p>
+          <div id="flags" class="block"></div>
+          <div class="row" id="flags-actions" hidden><button class="btn small" id="btn-copy-flags" type="button">Copiar relatório para revisão</button></div>
+          <textarea id="flags-report" class="flags-report" readonly hidden rows="8" style="width:100%;font-size:12px"></textarea>
         </div>
         <div id="view-fila" class="block">
           <p class="note" id="fila-where"></p>
@@ -1148,6 +1165,51 @@ if (typeof document !== 'undefined') (function () {
   let off = store.get('xq.off', []); if (!Array.isArray(off)) off = [];
   // Modo em uso ('chess' ou 'cards') e a sessão de flashcards em andamento.
   let app = 'chess', F = null;
+  // Questões sinalizadas pelo jogador (chave da questão → motivo e cópia do cartão). Ficam fora dos sorteios até serem revistas.
+  let flags = store.get('xq.flags', {}); if (!flags || typeof flags !== 'object' || Array.isArray(flags)) flags = {};
+  let flagCol = null;
+  const FLAG_WHY = { gab: 'O gabarito parece errado', just: 'A justificativa está ruim ou incompleta', enun: 'O enunciado está confuso ou ambíguo', outro: 'Outro problema' };
+  function flagQuestion(q, why, note, src) {
+    flags[q.id] = { q: q.q, m: q.m, g: !!q.g, y: q.y ? 1 : 0, c: q.c || '', why, note: note || '', src, ts: Date.now() };
+    store.set('xq.flags', flags); if (flagCol) flagCol.doc(q.id).set(flags[q.id]).catch(() => {});
+    renderFlags();
+  }
+  function unflag(id) { delete flags[id]; store.set('xq.flags', flags); if (flagCol) flagCol.doc(id).delete().catch(() => {}); renderFlags(); }
+  // Botão discreto ao lado de Fácil/Difícil (ou do Continuar): abre o motivo e uma observação opcional.
+  function flagBox(q, src) {
+    const box = h('div', { class: 'flag' });
+    const idle = () => { box.textContent = ''; box.append(h('button', { type: 'button', class: 'btn small flag-btn', onclick: form }, 'Sinalizar problema nesta questão')); };
+    const doneView = () => { box.textContent = ''; box.append(h('p', { class: 'note' }, 'Sinalizada: ela sai dos sorteios até você rever, na aba Revisão. ', h('button', { type: 'button', class: 'linkbtn', onclick: () => { unflag(q.id); idle(); } }, 'Desfazer'))); };
+    function form() {
+      const sel = h('select', { 'aria-label': 'Qual é o problema' }, Object.keys(FLAG_WHY).map(k => h('option', { value: k }, FLAG_WHY[k])));
+      const note = h('input', { type: 'text', placeholder: 'Observação (opcional)', 'aria-label': 'Observação', maxlength: '300' });
+      box.textContent = '';
+      box.append(h('div', { class: 'flag-form' }, sel, note, h('div', { class: 'row' },
+        h('button', { type: 'button', class: 'btn small primary', onclick: () => { flagQuestion(q, sel.value, note.value.trim(), src); doneView(); } }, 'Sinalizar'),
+        h('button', { type: 'button', class: 'btn small', onclick: idle }, 'Cancelar'))));
+      sel.focus(); box.scrollIntoView({ block: 'nearest' });
+    }
+    if (flags[q.id]) doneView(); else idle();
+    return box;
+  }
+  function flagsReport() {
+    return Object.values(flags).sort((a, b) => a.ts - b.ts).map((f, i) => (i + 1) + '. [' + f.m + '] ' + FLAG_WHY[f.why] + (f.note ? ' — ' + f.note : '') + '\nEnunciado: ' + f.q + '\nGabarito no jogo: ' + (f.y ? (f.g ? 'Sim' : 'Não') : (f.g ? 'Certo' : 'Errado')) + '\nJustificativa: ' + (f.c || '(sem justificativa)')).join('\n\n');
+  }
+  function renderFlags() {
+    const list = Object.entries(flags).sort((a, b) => b[1].ts - a[1].ts), box = $('flags');
+    $('rv-flags').textContent = 'Sinalizadas' + (list.length ? ' (' + list.length + ')' : '');
+    if ($('view-flags').hidden) return;
+    box.textContent = ''; $('flags-actions').hidden = !list.length; $('flags-report').hidden = true;
+    if (!list.length) { box.append(h('p', { class: 'note' }, 'Nenhuma questão sinalizada. Depois de responder, use "Sinalizar problema nesta questão" quando o gabarito, a justificativa ou o enunciado parecerem errados.')); return; }
+    for (const [id, f] of list) box.append(h('details', { class: 'err' },
+      h('summary', null, h('span', { class: 'meta' }, h('span', null, f.m), h('span', { class: 'tag bad' }, FLAG_WHY[f.why] || 'Problema')),
+        h('span', { class: 'q' }, f.q), h('span', { class: 'more' }, 'Ver gabarito e justificativa')),
+      h('div', { class: 'ans-box' },
+        h('p', null, 'Gabarito no jogo: ', h('b', null, f.y ? (f.g ? 'Sim' : 'Não') : (f.g ? 'Certo' : 'Errado')), '.'),
+        h('p', { class: 'just' }, f.c || 'Este item não tem justificativa no material.'),
+        f.note ? h('p', null, h('b', null, 'Sua observação: '), f.note) : null,
+        h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn small', onclick: () => unflag(id) }, 'Está certa: voltar aos sorteios')))));
+  }
   const sessId = () => (app === 'cards' && F ? F.id : G.id);
   let jurOv = store.get('xq.jur', {}) || {};
   try { localStorage.removeItem('xq.lists'); localStorage.removeItem('xq.jurisSeeded'); } catch (e) { /* sem armazenamento */ }
@@ -1613,7 +1675,7 @@ if (typeof document !== 'undefined') (function () {
   }
   // avoid: matérias proibidas (novas tentativas do computador na mesma jogada).
   function pickQuestion(kind, who, avoid) {
-    const base = basePool(kind); if (!base.length) return null;
+    const base = basePool(kind).filter(q => !flags[q.id]); if (!base.length) return null;
     const fresh = arr => arr.filter(q => !G.used.includes(q.id));
     let all, extra = '';
     if (avoid && avoid.length) {
@@ -1757,8 +1819,8 @@ if (typeof document !== 'undefined') (function () {
         // Depois de um acerto, a avaliação substitui o "Continuar": os dois botões seguem o jogo.
         ok && track ? h('div', { class: 'rate act' },
           h('button', { type: 'button', class: 'btn easy', onclick: () => { closeVeil(); srsAnswer(q.id, 'easy'); next(); } }, 'Fácil', h('small', null, before && before.s === 1 ? 'Eu sabia: conta para a fixação' : 'Eu sabia: só volta em um mês')),
-          h('button', { type: 'button', class: 'btn hard', onclick: () => { closeVeil(); srsAnswer(q.id, 'hard'); next(); } }, 'Difícil', h('small', null, 'Chutei ou hesitei: volta amanhã')))
-          : h('div', { class: 'go act' }, h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar')));
+          h('button', { type: 'button', class: 'btn hard', onclick: () => { closeVeil(); srsAnswer(q.id, 'hard'); next(); } }, 'Difícil', h('small', null, 'Chutei ou hesitei: volta amanhã')), flagBox(q, 'xadrez'))
+          : h('div', { class: 'go act' }, h('button', { type: 'button', class: 'btn primary', onclick: () => { closeVeil(); next(); } }, 'Continuar'), flagBox(q, 'xadrez')));
       if (!ok) $('item').classList.add('shake');
     };
     markDuel(m);
@@ -2009,7 +2071,7 @@ if (typeof document !== 'undefined') (function () {
   function cardPoolFor(subject, src) {
     const seen = new Set(), out = [];
     for (const q of allQ(lists.filter(l => src === 'both' || (src === 'def') === !!l.juris))) {
-      if (seen.has(q.id) || (subject && !subjectsOf(q.m).includes(subject))) continue;
+      if (seen.has(q.id) || flags[q.id] || (subject && !subjectsOf(q.m).includes(subject))) continue;
       seen.add(q.id); out.push(q);
     }
     return out;
@@ -2069,8 +2131,8 @@ if (typeof document !== 'undefined') (function () {
           h('p', { class: 'hist' }, histLine(L.before, L.ok, L.unknown))),
         L.ok ? h('div', { class: 'rate' },
           h('button', { type: 'button', class: 'btn easy', onclick: () => rateCard('easy') }, 'Fácil', h('small', null, L.before && L.before.s === 1 ? 'Eu sabia: conta para a fixação' : 'Eu sabia: só volta em um mês')),
-          h('button', { type: 'button', class: 'btn hard', onclick: () => rateCard('hard') }, 'Difícil', h('small', null, 'Chutei ou hesitei: volta amanhã')))
-          : h('div', { class: 'go' }, h('button', { type: 'button', class: 'btn primary', onclick: nextCard }, go)));
+          h('button', { type: 'button', class: 'btn hard', onclick: () => rateCard('hard') }, 'Difícil', h('small', null, 'Chutei ou hesitei: volta amanhã')), flagBox(q, 'flashcards'))
+          : h('div', { class: 'go' }, h('button', { type: 'button', class: 'btn primary', onclick: nextCard }, go), flagBox(q, 'flashcards')));
     }
     $('deck-note').textContent = '';
     deckChrome();
@@ -2308,8 +2370,19 @@ if (typeof document !== 'undefined') (function () {
   const rvView = { fila: true };
   function showReview(fila) {
     rvView.fila = fila; $('rv-fila').setAttribute('aria-pressed', fila); $('rv-erros').setAttribute('aria-pressed', !fila);
+    $('rv-flags').setAttribute('aria-pressed', false); $('view-flags').hidden = true;
     $('view-fila').hidden = !fila; $('view-erros').hidden = fila; if (fila) renderFila(); else renderErrs();
+    renderFlags();
   }
+  $('rv-flags').addEventListener('click', () => {
+    for (const b of ['rv-fila', 'rv-erros']) $(b).setAttribute('aria-pressed', false);
+    $('rv-flags').setAttribute('aria-pressed', true); $('view-fila').hidden = true; $('view-erros').hidden = true; $('view-flags').hidden = false; renderFlags();
+  });
+  $('btn-copy-flags').addEventListener('click', async ev => {
+    const text = flagsReport(), ta = $('flags-report'), btn = ev.currentTarget;
+    try { await navigator.clipboard.writeText(text); btn.textContent = 'Copiado'; setTimeout(() => { btn.textContent = 'Copiar relatório para revisão'; }, 2500); }
+    catch (e) { ta.hidden = false; ta.value = text; ta.focus(); ta.select(); }
+  });
   $('rv-fila').addEventListener('click', () => showReview(true));
   $('rv-erros').addEventListener('click', () => showReview(false));
   $('fila-filter').addEventListener('change', renderFila);
@@ -2332,6 +2405,13 @@ if (typeof document !== 'undefined') (function () {
       const uid = await user.id(); if (!uid) return;
       cloudCol = db.doc('data/users/' + uid + '/caderno').collection('erros');
       srsCol = db.doc('data/users/' + uid + '/caderno').collection('srs'); loadSrsCloud();
+      flagCol = db.doc('data/users/' + uid + '/caderno').collection('sinalizadas');
+      flagCol.get().then(snap => {
+        const remote = new Set();
+        for (const d of snap.docs) { remote.add(d.id); const v = d.data(); if (!flags[d.id] && v && typeof v.q === 'string') flags[d.id] = v; }
+        for (const id of Object.keys(flags)) if (!remote.has(id)) flagCol.doc(id).set(flags[id]).catch(() => {});
+        store.set('xq.flags', flags); renderFlags();
+      }).catch(() => {});
       const snap = await cloudCol.orderBy('ts', 'desc').limit(1000).get();
       const have = new Set(errors.map(e => e.id)), remote = new Set();
       for (const d of snap.docs) { remote.add(d.id); const v = d.data(); if (!have.has(d.id) && v && typeof v.q === 'string') errors.push(Object.assign({}, v, { id: d.id })); }
