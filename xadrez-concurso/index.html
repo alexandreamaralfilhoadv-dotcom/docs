@@ -566,6 +566,14 @@ body.cards .top p { display: none; }
 .flag-form select, .flag-form input { font: inherit; font-size: 14px; border: 2px solid var(--frame); border-radius: 4px; padding: 6px 8px; background: var(--field); color: var(--ink); width: 100%; min-height: 36px; }
 .linkbtn { border: 0; background: none; padding: 0; font: inherit; color: var(--accent); font-weight: 700; text-decoration: underline; cursor: pointer; }
 .seg { flex-wrap: wrap; }
+/* ---- New Stuff: decks adicionados nos últimos dias ---- */
+.btn.fresh { background: var(--gold); color: var(--on-gold); font-family: var(--f-display); font-weight: 400; }
+.fresh-list { display: flex; flex-direction: column; gap: 6px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.fresh-list label { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: start; padding: 8px 10px; border: 2px solid var(--line); border-radius: 4px; cursor: pointer; }
+.fresh-list label:has(input:checked) { border-color: var(--frame); background: var(--surface-2); }
+.fresh-list input { margin-top: 4px; accent-color: var(--accent); }
+.fresh-list b { overflow-wrap: anywhere; }
+.fresh-list small { grid-column: 2; color: var(--muted); font-size: 12px; }
 </style>
 
 <div class="hero" id="hero" aria-hidden="true"><img id="hero-img" alt=""><video id="hero-vid" muted loop playsinline preload="none" hidden></video></div>
@@ -579,6 +587,7 @@ body.cards .top p { display: none; }
       <span class="chip" id="chip-subject">Todas as matérias</span>
       <button class="btn" id="btn-menu" type="button" aria-pressed="false">Ocultar menu</button>
       <button class="btn" id="btn-scheme" type="button">Tema: automático</button>
+      <button class="btn fresh" id="btn-fresh" type="button" hidden>New Stuff</button>
       <button class="btn primary" id="btn-new" type="button">Nova partida</button>
     </div>
   </header>
@@ -1165,6 +1174,15 @@ if (typeof document !== 'undefined') (function () {
   let off = store.get('xq.off', []); if (!Array.isArray(off)) off = [];
   // Modo em uso ('chess' ou 'cards') e a sessão de flashcards em andamento.
   let app = 'chess', F = null;
+  // New Stuff: decks adicionados há pouco. A data vem do banco ("added"), da importação, ou do próprio código das listas antigas.
+  const NEW_DAYS = 15;
+  function addedTs(l) {
+    if (typeof l.added === 'number') return l.added;
+    if (typeof l.added === 'string') { const t = Date.parse(l.added + 'T12:00:00'); return isNaN(t) ? 0 : t; }
+    if (!l.builtin && /^l[0-9a-z]{8}$/.test(l.id)) { const t = parseInt(l.id.slice(1), 36); return t > 1.6e12 && t <= Date.now() ? t : 0; }
+    return 0;
+  }
+  const recentLists = () => lists.filter(l => { const t = addedTs(l); return t && Date.now() - t <= NEW_DAYS * 864e5; }).sort((a, b) => addedTs(b) - addedTs(a));
   // Questões sinalizadas pelo jogador (chave da questão → motivo e cópia do cartão). Ficam fora dos sorteios até serem revistas.
   let flags = store.get('xq.flags', {}); if (!flags || typeof flags !== 'object' || Array.isArray(flags)) flags = {};
   let flagCol = null;
@@ -1390,10 +1408,10 @@ if (typeof document !== 'undefined') (function () {
   document.addEventListener('keydown', e => { if (!$('cut').hidden && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); closeCut(); } });
 
   // quiet: prepara o tabuleiro sem a cena de abertura (usado ao abrir o jogo, antes da tela de escolha).
-  function newGame(quiet) {
+  function newGame(quiet, scope) {
     clearTimeout(aiTimer); clearHype(); closeCut();
     const rivalId = pick(CAST).id;
-    G = { rivalId, short: prefs.length === 'curta', st: startState(), mode: prefs.mode, level: prefs.level, subject: prefs.subject || '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [], capTries: {} };
+    G = { rivalId, short: prefs.length === 'curta', st: startState(), mode: prefs.mode, level: prefs.level, subject: scope && scope.decks ? '' : prefs.subject || '', decks: scope && scope.decks ? scope.decks : null, label: scope && scope.decks ? scope.label : '', sel: -1, banned: [], log: [], capW: [], capB: [], over: null, last: null, reps: {}, id: Date.now().toString(36), used: [], thinking: false, flash: '', defTries: 0, defSubj: [], capTries: {} };
     G.reps[posKey(G.st)] = 1;
     raining = Math.random() < RAIN_CHANCE; applyScheme();
     closeVeil(); renderAll();
@@ -1441,6 +1459,8 @@ if (typeof document !== 'undefined') (function () {
   // 'def': só jurisprudência. 'atk': listas comuns (ou jurisprudência, se for tudo o que há).
   // Com matéria escolhida na partida, só entram as questões dessa matéria.
   function basePool(kind) {
+    // Partida de New Stuff: só os decks escolhidos; se faltar questão do tipo pedido (ataque ou defesa), vale o banco todo.
+    if (G && G.decks) { const sc = lists.filter(l => G.decks.includes(l.id)), part = sc.filter(l => (kind === 'def') === !!l.juris); if (part.length) return allQ(part); }
     const jur = lists.filter(l => l.juris), reg = lists.filter(l => !l.juris);
     return allQ(kind === 'def' ? jur : (reg.length ? reg : jur));
   }
@@ -1512,7 +1532,7 @@ if (typeof document !== 'undefined') (function () {
     el.className = cls; el.textContent = text;
     const na = pool('atk').length, nd = pool('def').length, qs = n => n + (n === 1 ? ' questão' : ' questões');
     if (bank === 'loading') { $('pool-note').textContent = 'Carregando o banco de questões…'; return; }
-    if (app !== 'cards') $('chip-subject').textContent = (G.subject || 'Todas as matérias') + (G.short ? ' · partida curta' : '');
+    if (app !== 'cards') $('chip-subject').textContent = (G.label || G.subject || 'Todas as matérias') + (G.short ? ' · partida curta' : '');
     const mine = errors.filter(e => e.g === G.id).length, be = $('btn-errs');
     be.hidden = !(G.over && mine); be.textContent = 'Ver os ' + mine + (mine === 1 ? ' erro' : ' erros') + ' desta partida';
     if (mine === 1) be.textContent = 'Ver o erro desta partida';
@@ -1834,11 +1854,13 @@ if (typeof document !== 'undefined') (function () {
   /* ---- Listas ---- */
   function renderLists() {
     const ul = $('lists'); ul.textContent = '';
+    const fresh = recentLists(); $('btn-fresh').hidden = !fresh.length;
     for (const l of lists) {
       const subjects = new Set(l.items.map(q => q.m)).size;
       ul.append(h('li', null,
         h('span', { class: 'nm' }, l.name),
         h('span', { class: 'tag ' + (l.juris ? 'bad' : 'dim') }, l.juris ? 'Jurisprudência · defesa' : 'Ataque'),
+        fresh.includes(l) ? h('span', { class: 'tag' }, 'Novo') : null,
         prioActive(l) ? h('span', { class: 'tag ok' }, 'Prioridade' + (prioOf(l).until ? ' até ' + brDate(prioOf(l).until) : '')) : (prioOf(l) && prioOf(l).on ? h('span', { class: 'tag dim' }, 'Prioridade encerrada') : null),
         h('span', { class: 'ct' }, l.items.length + ' q · ' + subjects + (subjects === 1 ? ' matéria' : ' matérias')),
         h('button', { type: 'button', class: 'btn small', 'aria-label': (l.juris ? 'Usar no ataque a lista ' : 'Usar na defesa a lista ') + l.name, onclick: () => toggleJuris(l) }, l.juris ? 'Usar no ataque' : 'Usar na defesa'),
@@ -1876,7 +1898,7 @@ if (typeof document !== 'undefined') (function () {
   function commitDeck(pv) {
     const ex = known(), items = pv.fresh.filter(q => !ex.has(qkey(q))).map(q => Object.assign({}, q));   // confere de novo: outro arquivo da mesma leva pode ter trazido o mesmo cartão
     if (!items.length) return 0;
-    userLists.push({ id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: pv.name.trim() || 'Lista', juris: pv.juris, items, prio: pv.prio.on ? { on: true, until: pv.prio.until || null } : null });
+    userLists.push({ added: Date.now(), id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: pv.name.trim() || 'Lista', juris: pv.juris, items, prio: pv.prio.on ? { on: true, until: pv.prio.until || null } : null });
     store.set('xq.userLists', userLists); rebuildLists();
     return items.length;
   }
@@ -2068,9 +2090,9 @@ if (typeof document !== 'undefined') (function () {
     applyScenic(); applyScheme();
   }
   // Cartões da seleção (matéria e tipo de lista), sem repetir o mesmo enunciado vindo de duas listas.
-  function cardPoolFor(subject, src) {
+  function cardPoolFor(subject, src, decks) {
     const seen = new Set(), out = [];
-    for (const q of allQ(lists.filter(l => src === 'both' || (src === 'def') === !!l.juris))) {
+    for (const q of allQ(lists.filter(l => decks ? decks.includes(l.id) : src === 'both' || (src === 'def') === !!l.juris))) {
       if (seen.has(q.id) || flags[q.id] || (subject && !subjectsOf(q.m).includes(subject))) continue;
       seen.add(q.id); out.push(q);
     }
@@ -2078,7 +2100,7 @@ if (typeof document !== 'undefined') (function () {
   }
   // Mesmo sorteio do xadrez: fila vencida (até 60%), depois decks com prioridade, depois o resto; gabarito meio a meio.
   function pickCard() {
-    let all = cardPoolFor(F.subject, F.src).filter(q => !F.used.includes(q.id));
+    let all = cardPoolFor(F.subject, F.src, F.decks).filter(q => !F.used.includes(q.id));
     if (!all.length) return null;
     const t = today(), due = [], novel = []; let review = false;
     for (const q of all) { const r = srs[q.id]; if (r && r.s === 1) { if (r.d <= t) due.push(q); } else if (!r || r.s === 0 || r.d <= t) novel.push(q); }
@@ -2097,7 +2119,7 @@ if (typeof document !== 'undefined') (function () {
     if (F) {
       $('deck-count').textContent = 'Cartão ' + Math.min(F.n + (F.phase === 'v' ? 0 : 1), F.goal || Infinity) + (F.goal ? ' de ' + F.goal : '') + ' · ' + F.ok + (F.ok === 1 ? ' acerto' : ' acertos');
       $('deck-meter-wrap').hidden = !F.goal; $('deck-meter').style.width = F.goal ? Math.round(100 * F.n / F.goal) + '%' : '0';
-      $('chip-subject').textContent = (F.subject || 'Todas as matérias') + ' · flashcards';
+      $('chip-subject').textContent = (F.label || F.subject || 'Todas as matérias') + ' · flashcards';
     }
     $('deck-keys').textContent = on ? (F.phase === 'q' ? 'Teclado: ' + (F.cur.y ? 'S sim · N não' : 'C certo · E errado') + ' · ? não sei' : F.last && F.last.ok ? 'Teclado: F fácil · D difícil' : 'Teclado: Enter continua') : '';
   }
@@ -2186,15 +2208,16 @@ if (typeof document !== 'undefined') (function () {
       F.exhausted && F.n ? h('p', { class: 'note sum-note' }, 'Você viu todos os cartões desta seleção.') : null,
       !F.n ? h('p', { class: 'note sum-note' }, 'Troque a matéria ou o tipo de cartão, ou importe um deck na aba Questões.') : null,
       h('div', { class: 'row' },
-        F.n ? h('button', { type: 'button', class: 'btn primary', onclick: startCards }, 'Nova sessão igual') : null,
+        F.n ? h('button', { type: 'button', class: 'btn primary', onclick: () => startCards(F.decks ? { decks: F.decks, label: F.label } : null) }, 'Nova sessão igual') : null,
         h('button', { type: 'button', class: F.n ? 'btn' : 'btn primary', onclick: openSetup }, 'Mudar as opções'),
         F.bad ? h('button', { type: 'button', class: 'btn', onclick: () => { errView.game = F.id; rvView.fila = false; if (prefs.cenario) { prefs.cenario = false; store.set('xq.prefs', prefs); applyScenic(); } showTab('erros'); $('panel-erros').scrollIntoView({ block: 'nearest' }); } }, 'Ver os erros desta sessão') : null)].filter(Boolean));
     $('deck-note').textContent = '';
     paintBuddy(); deckChrome();
   }
-  function startCards() {
+  function startCards(scope) {
+    const sc = scope && scope.decks ? scope : null;
     setApp('cards');
-    F = { id: 'f' + Date.now().toString(36), subject: prefs.subject || '', src: prefs.cardsSrc || 'atk', goal: Math.max(0, +prefs.cardsGoal || 0), n: 0, ok: 0, bad: 0, queued: 0, streak: 0, used: [],
+    F = { id: 'f' + Date.now().toString(36), subject: sc ? '' : prefs.subject || '', decks: sc ? sc.decks : null, label: sc ? sc.label : '', src: prefs.cardsSrc || 'atk', goal: Math.max(0, +prefs.cardsGoal || 0), n: 0, ok: 0, bad: 0, queued: 0, streak: 0, used: [],
       buddyId: CAST.some(c => c.id === prefs.buddy) ? prefs.buddy : pick(CAST).id, cur: null, phase: 'q', last: null, done: false, line: '' };
     raining = Math.random() < RAIN_CHANCE; applyScheme();
     closeVeil(); paintBuddy(); buddySay('start'); nextCard(true); renderLog(); if (!$('panel-desempenho').hidden) renderPerf();
@@ -2210,6 +2233,39 @@ if (typeof document !== 'undefined') (function () {
     } else if (F.last && F.last.ok) { if (k === 'f') { e.preventDefault(); rateCard('easy'); } else if (k === 'd') { e.preventDefault(); rateCard('hard'); } }
     else if (k === 'enter' && !(t && t.tagName === 'BUTTON')) { e.preventDefault(); nextCard(); }
   });
+
+  /* ---- New Stuff: estudar só o que entrou nos últimos dias, tudo junto ou um deck por vez ---- */
+  function openNewStuff() {
+    setupOpen = false;
+    const fresh = recentLists(), nf = v => v.toLocaleString('pt-BR');
+    const opt = (v, t, cur) => h('option', { value: v, selected: String(cur) === String(v) ? '' : null }, t);
+    if (!fresh.length) {
+      openVeil(h('p', { class: 'stake', id: 'item-stake' }, 'New Stuff'), h('p', { class: 'note' }, 'Nenhum deck foi adicionado nos últimos ' + NEW_DAYS + ' dias. Importe um na aba Questões e ele aparece aqui.'),
+        h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn primary', onclick: closeVeil }, 'Fechar')));
+      return;
+    }
+    const count = ids => cardPoolFor('', 'both', ids).length;
+    const ago = t => { const d = Math.floor((Date.now() - t) / 864e5); return d <= 0 ? 'hoje' : d === 1 ? 'ontem' : 'há ' + d + ' dias'; };
+    const row = (value, title, sub, checked) => h('label', null, h('input', { type: 'radio', name: 'fresh-pick', value, checked: checked ? '' : null }), h('b', null, title), h('small', null, sub));
+    const all = fresh.map(l => l.id);
+    openVeil(
+      h('p', { class: 'stake', id: 'item-stake' }, 'New Stuff'),
+      h('p', { class: 'note' }, 'Decks adicionados nos últimos ' + NEW_DAYS + ' dias. Eles continuam também dentro da matéria de cada um.'),
+      h('fieldset', { class: 'fresh-list', 'aria-label': 'O que estudar' },
+        row('*', 'Tudo dos últimos ' + NEW_DAYS + ' dias', nf(count(all)) + ' cartões · ' + fresh.length + (fresh.length === 1 ? ' deck' : ' decks'), true),
+        fresh.map(l => row(l.id, l.name, nf(count([l.id])) + ' cartões · ' + [...new Set(l.items.flatMap(q => subjectsOf(q.m)))].slice(0, 3).join(', ') + ' · ' + (l.juris ? 'jurisprudência' : 'flashcards') + ' · adicionado ' + ago(addedTs(l))))),
+      h('label', { class: 'field', for: 'fresh-app' }, 'Modo', h('select', { id: 'fresh-app', onchange: ev => { $('fresh-goal-wrap').hidden = ev.target.value !== 'cards'; } }, opt('cards', 'Flashcards: revisão direta dos cartões', 'cards'), opt('chess', 'Xadrez: uma questão a cada captura', 'cards'))),
+      h('label', { class: 'field', id: 'fresh-goal-wrap', for: 'fresh-goal' }, 'Tamanho da sessão', h('select', { id: 'fresh-goal' }, opt(10, '10 cartões', prefs.cardsGoal), opt(20, '20 cartões', prefs.cardsGoal), opt(40, '40 cartões', prefs.cardsGoal), opt(0, 'Livre: até eu encerrar ou acabar o deck', prefs.cardsGoal))),
+      h('div', { class: 'row' },
+        h('button', { type: 'button', class: 'btn primary', onclick: () => {
+          const v = ($('item').querySelector('input[name="fresh-pick"]:checked') || {}).value || '*', one = fresh.find(l => l.id === v);
+          const scope = { decks: one ? [one.id] : all, label: 'New Stuff' + (one ? ': ' + one.name : '') };
+          if ($('fresh-app').value === 'cards') { prefs.cardsGoal = +$('fresh-goal').value; store.set('xq.prefs', prefs); startCards(scope); }
+          else { setApp('chess'); newGame(false, scope); }
+        } }, 'Começar'),
+        h('button', { type: 'button', class: 'btn', onclick: closeVeil }, 'Cancelar')));
+  }
+  $('btn-fresh').addEventListener('click', openNewStuff);
 
   /* ---- Início: modo (xadrez ou flashcards), matéria e opções de cada um ---- */
   let setupOpen = false;
@@ -2247,6 +2303,7 @@ if (typeof document !== 'undefined') (function () {
     const opt = (v, t, cur) => h('option', { value: v, selected: String(cur) === String(v) ? '' : null }, t);
     openVeil(
       h('p', { class: 'stake', id: 'item-stake' }, 'Como vamos estudar?'),
+      recentLists().length ? h('div', { class: 'row' }, h('button', { type: 'button', class: 'btn fresh', onclick: openNewStuff }, 'New Stuff'), h('span', { class: 'note' }, 'Só o que entrou nos últimos ' + NEW_DAYS + ' dias')) : null,
       h('label', { class: 'field', for: 'set-app' }, 'Modo', h('select', { id: 'set-app', onchange: fillSubjects }, opt('chess', 'Xadrez: uma questão a cada captura', prefs.app), opt('cards', 'Flashcards: revisão direta dos cartões', prefs.app))),
       h('label', { class: 'field', for: 'set-subject' }, 'Matéria', h('select', { id: 'set-subject', onchange: setupNote })),
       h('label', { class: 'field', 'data-for': 'cards', for: 'set-src' }, 'Cartões', h('select', { id: 'set-src', onchange: setupNote }, opt('atk', 'Flashcards (listas de ataque)', prefs.cardsSrc), opt('def', 'Jurisprudência e súmulas (listas de defesa)', prefs.cardsSrc), opt('both', 'Tudo junto', prefs.cardsSrc))),
